@@ -4,4 +4,7 @@ project(Oli_Nat C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(Oli_Nat main.c
-        common.h)
+        common.h
+        scanner.c
+        scanner.h
+)

@@ -8,5 +8,4 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #endif //OLI_NAT_COMMON_H
