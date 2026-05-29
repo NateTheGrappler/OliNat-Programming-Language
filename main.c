@@ -25,10 +25,10 @@ static const char* readFile(const char* filepath)
 
     //set aside enough memory to store the file and then toss it up in there
     char* sourceBuffer = (char*)malloc(fileSize + 1);
-    if (sourceBuffer == NULL) {}
+    if (sourceBuffer == NULL) { fprintf(stderr, "Not enough memory to read \"%s\".\n", filepath); exit(74); }
     size_t bytesRead = fread(sourceBuffer, sizeof(char), fileSize, file);
-    if (bytesRead < fileSize) {}
-    sourceBuffer[0] = '\0'; //add EOF char
+    if (bytesRead < fileSize) {fprintf(stderr, "Could not read file \"%s\".\n", filepath); exit(74); }
+    sourceBuffer[fileSize] = '\0'; //add EOF char
 
     fclose(file);
     return sourceBuffer;
@@ -38,8 +38,13 @@ static const char* readFile(const char* filepath)
 //passing it to rest of vm
 static void runFile(const char* filePath)
 {
+    //get a char array of the source
     const char* source = readFile(filePath);
-    printf("%s\n", source);
+
+    //pass it over to the scanner so it can read the tokens
+
+    //printf("%s\n", source);
+    //free((void*)source);
 }
 
 
