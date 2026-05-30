@@ -1,0 +1,49 @@
+(
+)
+{
+}
+,
+.
+-
++
+;
+/
+*
+!
+!=  //broken
+=
+==  //broken
+>
+>=  //broken
+<
+<=  //broken
+||
+&&
++=  //broken
+-=  //broken
+*=  //broken
+/=  //broken
+someIdentifier
+"someString"
+12.10
+12
+12.1f
+false
+true
+make
+while
+for  //broken
+if
+else
+return
+class
+fun
+empty
+inherit
+this
+pullf
+int
+float
+double
+string
+bool

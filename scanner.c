@@ -135,16 +135,16 @@ static TokenType identifierType(Scanner* scanner)
     switch (scanner->start[0])
     {
         //only the starting letters matter
-        case 'a' : return checkKeyword(1, 2, "nd", T_AND, scanner);
-        case 'b' : return checkKeyword(1, 3, "ool", T_BOOL, scanner);
-        case 'c' : return checkKeyword(1, 4, "lass", T_CLASS, scanner);
+        case 'a' : return checkKeyword(1, 2, "nd",    T_AND, scanner);
+        case 'b' : return checkKeyword(1, 3, "ool",   T_BOOL, scanner);
+        case 'c' : return checkKeyword(1, 4, "lass",  T_CLASS, scanner);
         case 'd' : return checkKeyword(1, 5, "ouble", T_DOUBLE, scanner);
-        case 'm' : return checkKeyword(1, 3, "ake", T_MAKE, scanner);
-        case 'o' : return checkKeyword(1, 1, "r", T_OR, scanner);
-        case 'p' : return checkKeyword(1, 4, "ullf", T_PULLF, scanner);
+        case 'm' : return checkKeyword(1, 3, "ake",   T_MAKE, scanner);
+        case 'o' : return checkKeyword(1, 1, "r",     T_OR, scanner);
+        case 'p' : return checkKeyword(1, 4, "ullf",  T_PULLF, scanner);
         case 'r' : return checkKeyword(1, 5, "eturn", T_RETURN, scanner);
         case 's' : return checkKeyword(1, 5, "tring", T_STRING, scanner);
-        case 'w' : return checkKeyword(1, 4, "hile", T_WHILE, scanner);
+        case 'w' : return checkKeyword(1, 4, "hile",  T_WHILE, scanner);
 
         //cases for words with branching letters
         case 'e':
@@ -196,7 +196,7 @@ static TokenType identifierType(Scanner* scanner)
             {
                 switch (scanner->start[1])
                 {
-                    case 'o': return checkKeyword(2, 2, "is", T_THIS, scanner);
+                    case 'o': return checkKeyword(2, 1, "r", T_FOR, scanner);
                     case 'u': return checkKeyword(2, 1, "n", T_FUN, scanner);
                     case 'a': return checkKeyword(2, 3, "lse", T_FALSE, scanner);
                     case 'l': return checkKeyword(2, 3, "oat", T_FLOAT, scanner);
@@ -217,11 +217,42 @@ static Token identifier(Scanner* scanner)
     //find out if it's a keyword or just an identifier
     return makeToken(identifierType(scanner), scanner);
 }
+
+//skipping all that whitespace nonsense
+static void skipWhiteSpace(Scanner* scanner)
+{
+    for (;;)
+    {
+        //printf("stuck in loop");
+        char c = peekChar(scanner);
+        switch (c)
+        {
+            case ' ':   //regular spaces
+            case '\r':  //moves cursor to column one
+            case '\t':  //tabs
+                advance(scanner);
+                break;
+            case '\n':  //newline
+                scanner->line++;
+                advance(scanner);
+                break;
+            //comments
+            case '/':
+                if (peekNextChar(scanner) == '/')
+                {
+                    while (peekChar(scanner) != '\n' && !isAtEnd(scanner)) advance(scanner);
+                    break;
+                }
+                return;
+            default: return;
+        }
+    }
+}
 //---------------------Actual like, meat function-------------------------//
 
 Token scanToken(Scanner* scanner)
 {
-    //TODO: add whitespace skipping
+    skipWhiteSpace(scanner);
 
     scanner->start = scanner->current;
 
@@ -232,8 +263,6 @@ Token scanToken(Scanner* scanner)
     if (isDigit(c)) return number(scanner);
     if (isAlpha(c)) return identifier(scanner);
     //printf("Character getting scanner: '%c'.", c);
-
-    //TODO: add handlings for numbers and strings
 
     switch (c)
     {
@@ -248,14 +277,16 @@ Token scanToken(Scanner* scanner)
 
 
         //possibly single or double tokens
-        case '*': return makeToken(match('*', scanner) ? T_STAR_EQUAL    : T_STAR,    scanner);
-        case '+': return makeToken(match('+', scanner) ? T_PLUS_EQUAL    : T_PLUS,    scanner);
-        case '-': return makeToken(match('-', scanner) ? T_MINUS_EQUAL   : T_MINUS,   scanner); //TODO: add support for '->'
-        case '/': return makeToken(match('/', scanner) ? T_SLASH_EQUAL   : T_SLASH,   scanner);
+        case '*': return makeToken(match('=', scanner) ? T_STAR_EQUAL    : T_STAR,    scanner);
+        case '+': return makeToken(match('=', scanner) ? T_PLUS_EQUAL    : T_PLUS,    scanner);
+        case '-': return makeToken(match('=', scanner) ? T_MINUS_EQUAL   : T_MINUS,   scanner); //TODO: add support for '->'
+        case '/': return makeToken(match('=', scanner) ? T_SLASH_EQUAL   : T_SLASH,   scanner);
         case '=': return makeToken(match('=', scanner) ? T_EQUAL_EQUAL   : T_EQUAL,   scanner);
-        case '!': return makeToken(match('!', scanner) ? T_BANG_EQUAL    : T_BANG,    scanner);
-        case '>': return makeToken(match('>', scanner) ? T_GREATER_EQUAL : T_GREATER, scanner);
-        case '<': return makeToken(match('<', scanner) ? T_LESS_EQUAL    : T_LESS,    scanner);
+        case '!': return makeToken(match('=', scanner) ? T_BANG_EQUAL    : T_BANG,    scanner);
+        case '>': return makeToken(match('=', scanner) ? T_GREATER_EQUAL : T_GREATER, scanner);
+        case '<': return makeToken(match('=', scanner) ? T_LESS_EQUAL    : T_LESS,    scanner);
+        case '|': if (match('|', scanner)) return makeToken(T_OR, scanner);
+        case '&': if (match('&', scanner)) return makeToken(T_AND, scanner);
 
         //handle strings
         case '"': return string(scanner); //TODO: see if you can add chars
@@ -263,4 +294,5 @@ Token scanToken(Scanner* scanner)
 
     //base return case for error tokens
     return errorToken("An unexpected character was encountered, what on earth are you typing?", scanner);
+
 }

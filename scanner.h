@@ -60,7 +60,7 @@ typedef struct
 
 
 void initScanner(const char* source, Scanner* scanner);
-Token scanToken();
+Token scanToken(Scanner* scanner);
 
 
 #endif //OLI_NAT_SCANNER_H
