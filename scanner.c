@@ -36,6 +36,7 @@ static Token makeToken(TokenType type, Scanner* scanner)
     token.line = scanner->line;
     token.lexemeStart = scanner->start;
     token.length = (int)(scanner->current - scanner->start);
+    return token;
 }
 static Token errorToken(const char* message, Scanner* scanner)
 {
@@ -81,19 +82,20 @@ Token scanToken(Scanner* scanner)
     if (isAtEnd(scanner)) {return makeToken(T_EOF, scanner); }
 
     char c = advance(scanner);
+    printf("Character getting scanner: '%c'.", c);
 
     //TODO: add handlings for numbers and strings
 
     switch (c)
     {
         //single char tokens
-        case '(': return makeToken(T_LEFT_PAREN, scanner);
+        case '(': return makeToken(T_LEFT_PAREN,  scanner);
         case ')': return makeToken(T_RIGHT_PAREN, scanner);
-        case '{': return makeToken(T_LEFT_BRACE, scanner);
+        case '{': return makeToken(T_LEFT_BRACE,  scanner);
         case '}': return makeToken(T_RIGHT_BRACE, scanner);
-        case ';': return makeToken(T_SEMICOLON, scanner);
-        case ',': return makeToken(T_COMMA, scanner);
-        case '.': return makeToken(T_DOT, scanner);
+        case ';': return makeToken(T_SEMICOLON,   scanner);
+        case ',': return makeToken(T_COMMA,       scanner);
+        case '.': return makeToken(T_DOT,         scanner);
 
 
         //possibly single or double tokens
@@ -109,4 +111,7 @@ Token scanToken(Scanner* scanner)
         //handle strings
         case '"': return string(scanner);
     }
+
+    //base return case for error tokens
+    return errorToken("An unexpected character was encountered, what on earth are you typing?", scanner);
 }

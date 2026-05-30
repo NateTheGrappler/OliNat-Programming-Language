@@ -7,4 +7,6 @@ add_executable(Oli_Nat main.c
         common.h
         scanner.c
         scanner.h
+        debug.c
+        debug.h
 )

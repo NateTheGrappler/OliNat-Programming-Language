@@ -1,4 +1,6 @@
 #include "common.h"
+#include "scanner.h"
+#include "debug.h"
 
 //start repl loop
 static void repl()
@@ -41,10 +43,16 @@ static void runFile(const char* filePath)
     //get a char array of the source
     const char* source = readFile(filePath);
 
-    //pass it over to the scanner so it can read the tokens
+    Scanner scanner;
+    initScanner(source, &scanner);
 
-    //printf("%s\n", source);
-    //free((void*)source);
+    //pass it over to the scanner so it can read the tokens
+    Token token = scanToken(&scanner);
+    while (token.type != T_EOF)
+    {
+        printToken(token, &scanner);
+        token = scanToken(&scanner);
+    }
 }
 
 
