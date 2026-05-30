@@ -8,6 +8,7 @@
 void printToken(Token token, Scanner* scanner)
 {
     //Print out token / scanner information
-    printf("Token lexeme '%s', Token type: '%d', Token Line: '%d', Token Length '%d'\n ",  token.lexemeStart, token.type, token.line, token.length);
+    printf("Token lexeme '%.*s', Token type: '%d', Token Line: '%d', Token Length '%d'\n ",
+    token.length, token.lexemeStart, token.type, token.line, token.length);
 
 }
