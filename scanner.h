@@ -12,8 +12,8 @@ typedef enum
     //single char
     T_LEFT_PAREN, T_RIGHT_PAREN,
     T_LEFT_BRACE, T_RIGHT_BRACE,
-    T_COMMA, DOT, T_MINUS, T_PLUS,
-    T_SEMICOLON, T_SLASH, T_START,
+    T_COMMA, T_DOT, T_MINUS, T_PLUS,
+    T_SEMICOLON, T_SLASH, T_STAR,
 
     //one or two chars
     T_BANG, T_BANG_EQUAL,
@@ -32,8 +32,7 @@ typedef enum
     //keywords
     T_FALSE, T_TRUE, T_MAKE, T_WHILE,
     T_FOR, T_IF, T_ELSE, T_RETURN,
-    T_CLASS, T_FUN, T_EMPTY, T_CLASS,
-    T_INHERIT,
+    T_CLASS, T_FUN, T_EMPTY, T_INHERIT,
 
     //extras
     T_ERROR, T_EOF
@@ -48,7 +47,17 @@ typedef struct
     int line;
 } Token;
 
-void initScanner(const char* source);
+//scanner class holding current state in source code string
+typedef struct
+{
+    const char* current; //current char your on
+    const char* start;   //starter char for current token
+    int line;
+} Scanner;
+
+
+void initScanner(const char* source, Scanner* scanner);
 Token scanToken();
+
 
 #endif //OLI_NAT_SCANNER_H
