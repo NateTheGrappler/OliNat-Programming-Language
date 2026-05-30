@@ -13,4 +13,8 @@ add_executable(Oli_Nat main.c
         ASTcompiler.h
         Bytecompiler.c
         Bytecompiler.h
+        vm.c
+        vm.h
+        Expr.c
+        Expr.h
 )
