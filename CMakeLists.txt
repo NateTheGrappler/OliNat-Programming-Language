@@ -9,4 +9,8 @@ add_executable(Oli_Nat main.c
         scanner.h
         debug.c
         debug.h
+        ASTcompiler.c
+        ASTcompiler.h
+        Bytecompiler.c
+        Bytecompiler.h
 )

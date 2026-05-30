@@ -43,16 +43,16 @@ static void runFile(const char* filePath)
     //get a char array of the source
     const char* source = readFile(filePath);
 
-    Scanner scanner;
-    initScanner(source, &scanner);
-
-    //pass it over to the scanner so it can read the tokens
-    Token token = scanToken(&scanner);
-    while (token.type != T_EOF)
-    {
-        printToken(token, &scanner);
-        token = scanToken(&scanner);
-    }
+    // Scanner scanner;
+    // initScanner(source, &scanner);
+    //
+    // //pass it over to the scanner so it can read the tokens
+    // Token token = scanToken(&scanner);
+    // while (token.type != T_EOF)
+    // {
+    //     printToken(token, &scanner);
+    //     token = scanToken(&scanner);
+    // }
 }
 
 
