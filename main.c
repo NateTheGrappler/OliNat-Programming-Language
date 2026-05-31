@@ -1,5 +1,6 @@
 #include "common.h"
-#include "scanner.h"
+#include "vm.h"
+#include "Expr.h"
 #include "debug.h"
 
 //start repl loop
@@ -38,26 +39,33 @@ static const char* readFile(const char* filepath)
 
 //handle the reference to getting the info from the file and
 //passing it to rest of vm
-static void runFile(const char* filePath)
+static void runFile(const char* filePath, Vm* vm)
 {
     //get a char array of the source
     const char* source = readFile(filePath);
 
-    // Scanner scanner;
-    // initScanner(source, &scanner);
-    //
-    // //pass it over to the scanner so it can read the tokens
-    // Token token = scanToken(&scanner);
-    // while (token.type != T_EOF)
-    // {
-    //     printToken(token, &scanner);
-    //     token = scanToken(&scanner);
-    // }
+    //test out if expressions and printing are working
+    //(5+3)+2
+
+    Expr* five = createLiteralInt(5);
+    Expr* three = createLiteralInt(3);
+    Expr* two = createLiteralInt(2);
+    Expr* add = createBinary(five, three, '+');
+    Expr* group = createGrouping(add);
+    Expr* multiply = createBinary(group, two, '*');
+
+    printExpression(multiply);
+
+    // Expr* add = createBinary(createLiteralInt(1), createLiteralInt(2), '+');
+    // printExpression(add);
 }
 
 
 int main(int argc, const char* argv[])
 {
+    Vm vm;
+    initVM(&vm);
+
     if (argc == 1)
     {
         //take in code from repl
@@ -66,12 +74,16 @@ int main(int argc, const char* argv[])
     else if (argc == 2)
     {
         //start running the code from the passed in file
-        runFile(argv[1]);
+        runFile(argv[1], &vm);
     }
     else
     {
         //incorrect usage of executable
         fprintf(stderr, "Please pass in either one file path, or no file paths.");
     }
+
+    freeVM(&vm);
+
+
     return 0;
 }

@@ -17,4 +17,6 @@ add_executable(Oli_Nat main.c
         vm.h
         Expr.c
         Expr.h
+        memory.c
+        memory.h
 )
