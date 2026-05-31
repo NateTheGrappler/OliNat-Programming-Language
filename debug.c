@@ -25,21 +25,32 @@ void printExpression(Expr* expr)
     {
         case EXPR_LITERAL:
         {
+
+            //small switch cases for prettier printing out of types
+            const char* type;
             switch (expr->literal.type)
             {
+                case VALUE_INT:    type= "INT"; break;
+                case VALUE_DOUBLE: type= "DOUBLE"; break;
+                case VALUE_FLOAT:  type= "FLOAT"; break;
+            }
+
+            switch (expr->literal.type)
+            {
+                //print out both the actual value as well as the associated type (for type checking later on)
                 case VALUE_INT:
                 {
-                    printf("%d", expr->literal.value.integer_val);
+                    printf("%s-%d", type,  expr->literal.value.integer_val);
                     break;
                 }
                 case VALUE_FLOAT:
                 {
-                    printf("%f", expr->literal.value.float_val);
+                    printf("%s-%f", type, expr->literal.value.float_val);
                     break;
                 }
                 case VALUE_DOUBLE:
                 {
-                    printf("%lf", expr->literal.value.double_val);
+                    printf("%s-%lf", type, expr->literal.value.double_val);
                     break;
                 }
             }

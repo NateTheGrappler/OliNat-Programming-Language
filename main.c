@@ -48,8 +48,8 @@ static void runFile(const char* filePath, Vm* vm)
     //(5+3)+2
 
     Expr* five = createLiteralInt(5);
-    Expr* three = createLiteralInt(3);
-    Expr* two = createLiteralInt(2);
+    Expr* three = createLiteralDouble(3);
+    Expr* two = createLiteralFloat(2.2);
     Expr* add = createBinary(five, three, '+');
     Expr* group = createGrouping(add);
     Expr* multiply = createBinary(group, two, '*');
