@@ -139,7 +139,7 @@ static void errorAt(Token* token, const char* message, ASTparser* parser)
         fprintf(stderr, " at '%.*s'", token->length, token->lexemeStart);
     }
 
-    fprintf(stderr, ": %s\n", message);
+    fprintf(stderr, ": %s\n]", message);
     parser->hadError = true;
     parser->panicMode = true;
 }
@@ -200,17 +200,17 @@ static Expr* number(bool canAssign, ASTparser* parser)
         case T_DOUBLE_VAL:
         {
             double value = strtod(parser->previous.lexemeStart, NULL);
-            return createLiteralDouble(value);
+            return createLiteralDouble(value, parser->previous.line);
         }
         case T_FLOAT_VAL:
         {
             float value = strtof(parser->previous.lexemeStart, NULL);
-            return createLiteralFloat(value);
+            return createLiteralFloat(value, parser->previous.line);
         }
         case T_INTEGER_VAL:
         {
             long value = strtol(parser->previous.lexemeStart, NULL, 10);
-            return createLiteralInt((int)value);
+            return createLiteralInt((int)value, parser->previous.line);
         }
         default:
             return NULL; //unreachable (hopefully)
@@ -229,12 +229,12 @@ static Expr* unary(bool canAssign, ASTparser* parser)
     {
         case T_MINUS:
         {
-            return createUnary('-', right);
+            return createUnary('-', right, parser->previous.line);
         }
         case T_BANG:
         {
             //TODO: implement whenever you have strings and bools
-            return createUnary('!', right);
+            return createUnary('!', right, parser->previous.line);
         }
         default: return NULL; //unreachable
     }
@@ -254,16 +254,16 @@ static Expr* binary(bool canAssign, ASTparser* parser, Expr* left)
 
     switch (operatorType)
     {
-        case T_PLUS:          return createBinary(left, right, "+");
-        case T_MINUS:         return createBinary(left, right, "-");
-        case T_STAR:          return createBinary(left, right, "*");
-        case T_SLASH:         return createBinary(left, right, "/");
-        case T_BANG_EQUAL:    return createBinary(left, right, "!=");
-        case T_EQUAL_EQUAL:   return createBinary(left, right, "==");
-        case T_GREATER:       return createBinary(left, right, ">");
-        case T_GREATER_EQUAL: return createBinary(left, right, ">=");
-        case T_LESS:          return createBinary(left, right, "<");
-        case T_LESS_EQUAL:    return createBinary(left, right, "<=");
+        case T_PLUS:          return createBinary(left, right, "+", parser->previous.line);
+        case T_MINUS:         return createBinary(left, right, "-", parser->previous.line);
+        case T_STAR:          return createBinary(left, right, "*", parser->previous.line);
+        case T_SLASH:         return createBinary(left, right, "/", parser->previous.line);
+        case T_BANG_EQUAL:    return createBinary(left, right, "!=", parser->previous.line);
+        case T_EQUAL_EQUAL:   return createBinary(left, right, "==", parser->previous.line);
+        case T_GREATER:       return createBinary(left, right, ">", parser->previous.line);
+        case T_GREATER_EQUAL: return createBinary(left, right, ">=", parser->previous.line);
+        case T_LESS:          return createBinary(left, right, "<", parser->previous.line);
+        case T_LESS_EQUAL:    return createBinary(left, right, "<=", parser->previous.line);
     }
 }
 
@@ -312,11 +312,15 @@ bool compile(const char* source)
     ASTparser parser;
     initParser(&parser, source);
 
+    TypeChecker checker;
+    initTypeChecker(&checker);
+
     //print out each of the ASTs
-    while (!match(T_EOF, &parser))
-    {
+    while (!match(T_EOF, &parser) && !checker.hadError)
+   {
         Expr* expr = astExpression(&parser);
-        printExpression(expr);
+        ValueType type = checkExpression(&checker, expr);
+        printf("Expression Type: %d", type);
     }
 
 

@@ -9,6 +9,7 @@
 #include "common.h"
 #include "Expr.h"
 #include "debug.h"
+#include "typeChecker.h"
 
 //Parser struct for making ASTs
 typedef struct

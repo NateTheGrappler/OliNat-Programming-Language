@@ -21,6 +21,8 @@ typedef enum {
     VALUE_STRING,
     VALUE_DOUBLE,
     VALUE_FLOAT,
+    VALUE_EMPTY,
+    VALUE_ERROR,
 } ValueType;
 
 struct Expr;
@@ -59,6 +61,7 @@ typedef struct
 
 typedef struct Expr {
     ExprType type;
+    int line;
     union {
         Literal literal;
         Binary binary;
@@ -67,12 +70,12 @@ typedef struct Expr {
     };
 } Expr;
 
-Expr* createLiteralDouble(double value);
-Expr* createLiteralFloat (float value);
-Expr* createLiteralInt   (int value);
-Expr* createUnary        (char operator, Expr* right);
-Expr* createBinary       (Expr* left, Expr* right, const char* operator);
-Expr* createGrouping     (Expr* expr);
+Expr* createLiteralDouble(double value, int line);
+Expr* createLiteralFloat (float value, int line);
+Expr* createLiteralInt   (int value, int line);
+Expr* createUnary        (char operator, Expr* right, int line);
+Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
+Expr* createGrouping     (Expr* expr, int line);
 
 void freeExpr(Expr* expr);
 
