@@ -42,7 +42,7 @@ typedef struct
 {
     struct Expr* left;
     struct Expr* right;
-    char operator;
+    const char* operator;
 } Binary;
 
 typedef struct
@@ -71,7 +71,7 @@ Expr* createLiteralDouble(double value);
 Expr* createLiteralFloat (float value);
 Expr* createLiteralInt   (int value);
 Expr* createUnary        (char operator, Expr* right);
-Expr* createBinary       (Expr* left, Expr* right, char operator);
+Expr* createBinary       (Expr* left, Expr* right, const char* operator);
 Expr* createGrouping     (Expr* expr);
 
 void freeExpr(Expr* expr);

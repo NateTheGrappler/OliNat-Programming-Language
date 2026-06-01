@@ -8,6 +8,7 @@
 #define STACK_MAX 255
 
 #include "common.h"
+#include "ASTcompiler.h"
 
 typedef enum
 {

@@ -43,21 +43,7 @@ static void runFile(const char* filePath, Vm* vm)
 {
     //get a char array of the source
     const char* source = readFile(filePath);
-
-    //test out if expressions and printing are working
-    //(5+3)+2
-
-    Expr* five = createLiteralInt(5);
-    Expr* three = createLiteralDouble(3);
-    Expr* two = createLiteralFloat(2.2);
-    Expr* add = createBinary(five, three, '+');
-    Expr* group = createGrouping(add);
-    Expr* multiply = createBinary(group, two, '*');
-
-    printExpression(multiply);
-
-    // Expr* add = createBinary(createLiteralInt(1), createLiteralInt(2), '+');
-    // printExpression(add);
+    interpret(source, vm);
 }
 
 

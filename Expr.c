@@ -49,7 +49,7 @@ Expr* createUnary(char operator, Expr* right)
     expr->unary.right = right;
     return expr;
 }
-Expr* createBinary(Expr* left, Expr* right, char operator)
+Expr* createBinary(Expr* left, Expr* right, const char* operator)
 {
     //allocate the expr in memory and set it's type
     Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));

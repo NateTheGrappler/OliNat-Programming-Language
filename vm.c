@@ -37,4 +37,11 @@ double peek(Vm* vm, int distance)
 }
 
 
+//-----------------------------Actual VM Functionality-----------------------//
+vmResult interpret(const char* source, Vm* vm)
+{
+    compile(source);
+
+    return INTERPRET_OK;
+}
 

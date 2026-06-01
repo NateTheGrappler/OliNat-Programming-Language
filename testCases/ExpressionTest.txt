@@ -1,0 +1,156 @@
+// test_expressions.txt
+// Comprehensive test suite for Pratt parser and AST generation
+
+// ===== BASIC LITERALS =====
+42
+3.14159
+2.71828f
+123.456
+
+// ===== SIMPLE ARITHMETIC =====
+1 + 2
+5 - 3
+4 * 6
+10 / 2
+1 + 2 + 3
+10 - 5 - 2
+4 * 5 * 2
+100 / 10 / 2
+
+// ===== MIXED OPERATORS (Tests precedence) =====
+1 + 2 * 3          // Should be (1 + (2 * 3))
+4 * 5 + 6          // Should be ((4 * 5) + 6)
+10 - 3 * 2         // Should be (10 - (3 * 2))
+20 / 4 + 3 * 2     // Should be ((20 / 4) + (3 * 2))
+1 + 2 + 3 * 4      // Should be ((1 + 2) + (3 * 4))
+
+// ===== PARENTHESES (Tests grouping) =====
+(1 + 2) * 3        // Should be ((1 + 2) * 3)
+4 * (5 + 6)        // Should be (4 * (5 + 6))
+(10 - 3) * (2 + 4) // Should be ((10 - 3) * (2 + 4))
+((1 + 2) * (3 + 4))
+(42)
+
+// ===== UNARY OPERATORS =====
+-5
+-10
+- (1 + 2)
+- -5               // Double negation
+- (3 * 4)
+-1 + 2             // Should be ((-1) + 2)
+
+// ===== COMPARISON OPERATORS =====
+1 < 2
+5 > 3
+10 <= 20
+25 >= 15
+1 == 1
+2 != 3
+1 < 2 < 3          // Chained comparisons (tests left associativity)
+
+// ===== EQUALITY AND COMPARISON MIXED =====
+1 + 2 == 3
+4 * 5 > 10 + 5
+(1 + 2) * 3 == 9
+10 - 5 != 4 + 1
+
+// ===== COMPLEX EXPRESSIONS =====
+(1 + 2) * (3 + 4) / 2
+- (5 + 3) * 2
+1 + 2 * 3 - 4 / 2
+((1 + 2) * (3 - 1)) / (4 + 2)
+- (10 - 5) * (2 + 3)
+
+// ===== NEGATIVE NUMBERS =====
+-42
+-3.14
+- ( -5 )
+-1 + -2
+- (2 + -3)
+
+// ===== FLOATING POINT MIXED =====
+1.5 + 2.5
+3.14 * 2.0
+10.0 / 3.0
+1.0 + 2 * 3.5
+
+// ===== INTEGER AND FLOAT MIX =====
+1 + 2.5
+3 * 4.2
+10 / 3.0
+5.5 - 2
+
+// ===== NESTED PARENTHESES =====
+(1 + (2 + 3))
+((1 + 2) + (3 + 4))
+(1 + (2 * (3 + 4)))
+((1 + 2) * (3 + (4 * 5)))
+
+// ===== OPERATOR PRECEDENCE EDGE CASES =====
+1 + 2 + 3 + 4
+1 * 2 * 3 * 4
+1 + 2 * 3 + 4
+1 * 2 + 3 * 4
+10 - 5 - 2 - 1
+100 / 10 / 2 / 5
+
+// ===== COMPARISON CHAINS =====
+1 < 2 < 3
+5 > 4 > 3
+1 == 1 == 1
+2 != 3 != 4
+
+// ===== MIXED BOOLEAN/NUMERIC (Once you add bools) =====
+// true
+// false
+// 1 == 1 && 2 == 2
+// true && false
+// !true
+// !!true
+
+// ===== ERROR CASES (Test error handling) =====
+// 1 +           (Missing operand)
+// (1 + 2        (Missing closing paren)
+// 1 + * 2       (Invalid operator sequence)
+// * 5           (Missing left operand)
+// 1 2 3         (Missing operators)
+
+// ===== VERY LONG EXPRESSIONS (Stress test) =====
+1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10
+1 * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10
+((((((((((1))))))))))
+((1+2)*((3+4)/(5-6))-(7+8))
+
+// ===== SAME EXPRESSION DIFFERENT FORMS =====
+(1 + 2) * 3
+(1+2)*3
+((1)+(2))*(3)
+
+// ===== DECIMAL PRECISION TESTS =====
+0.1 + 0.2
+1.0 / 3.0
+2.5 * 2.5
+3.14159265359 * 2.0
+
+// ===== BINARY OPERATOR ASSOCIATIVITY TESTS =====
+// Left-associative: (1 - 2) - 3
+1 - 2 - 3
+// Left-associative: (1 / 2) / 3
+1 / 2 / 3
+// Left-associative: ((1 + 2) + 3) + 4
+1 + 2 + 3 + 4
+
+// ===== COMPLEX WITH ALL OPERATORS =====
+-1 + 2 * 3 - 4 / 2 == 5
+(10 - 5) * (2 + 3) > 20
+- ( (1 + 2) * (3 - 1) ) / 4
+5 * - (3 + 2)
+1 + -2 * 3
+
+// ===== EXPECTED AST STRUCTURES (For verification) =====
+// Simple binary: (+) 1 2
+// Binary chain: (+ (+ 1 2) 3)
+// Precedence: (+ 1 (* 2 3))
+// Mixed: (+ (* 4 5) (/ 20 4))
+
+// EOF marker (optional)

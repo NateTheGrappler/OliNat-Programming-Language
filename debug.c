@@ -72,7 +72,7 @@ void printExpression(Expr* expr)
         }
         case EXPR_BINARY:
         {
-            printf("(%c ",  expr->binary.operator);
+            printf("(%s ",  expr->binary.operator);
             printExpression(expr->binary.left);
             printf(" ");
             printExpression(expr->binary.right);
