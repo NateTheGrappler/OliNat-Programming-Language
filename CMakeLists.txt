@@ -21,4 +21,6 @@ add_executable(Oli_Nat main.c
         memory.h
         typeChecker.c
         typeChecker.h
+        chunk.c
+        chunk.h
 )
