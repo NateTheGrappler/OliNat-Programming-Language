@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "ASTcompiler.h"
+#include "chunk.h"
 
 typedef enum
 {
@@ -20,8 +21,8 @@ typedef enum
 typedef struct
 {
     //the stack
-    double  stack[STACK_MAX];
-    double* stackTop;
+    Value  stack[STACK_MAX];
+    Value* stackTop;
 } Vm;
 
 
@@ -33,9 +34,9 @@ void freeVM(Vm* vm);
 vmResult interpret(const char* source, Vm* vm);
 
 //stack control
-void push(Vm* vm, double value);
-double pop(Vm* vm);
-double peek(Vm* vm, int distance);
+void push(Vm* vm, Value value);
+Value pop(Vm* vm);
+Value peek(Vm* vm, int distance);
 
 
 

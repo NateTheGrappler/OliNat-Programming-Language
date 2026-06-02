@@ -23,7 +23,7 @@ typedef enum {
     VALUE_FLOAT,
     VALUE_EMPTY,
     VALUE_ERROR,
-} ValueType;
+} ValueTypeExpr;
 
 struct Expr;
 
@@ -37,7 +37,7 @@ typedef struct
         //TODO: handle strings later
         //TODO: handle booleans later as well
     } value;
-    ValueType type;
+    ValueTypeExpr type;
 } Literal;
 
 typedef struct

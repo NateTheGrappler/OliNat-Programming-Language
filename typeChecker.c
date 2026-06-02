@@ -14,7 +14,7 @@ void initTypeChecker(TypeChecker* checker)
 
 
 //-----------------Helper Functions--------------//
-static bool isNumeric(ValueType type)
+static bool isNumeric(ValueTypeExpr type)
 {
     return type == VALUE_INT || type == VALUE_DOUBLE || type == VALUE_FLOAT;
 }
@@ -26,7 +26,7 @@ static void typeError(TypeChecker* checker, Expr* expr, const char* message)
     checker->errorCount++;
 }
 
-static ValueType checkBinaryReturnType(ValueType right, ValueType left)
+static ValueTypeExpr checkBinaryReturnType(ValueTypeExpr right, ValueTypeExpr left)
 {
     //return same types, then float piority, otherwise it has to be a double
     if (right == left) return right;
@@ -35,19 +35,19 @@ static ValueType checkBinaryReturnType(ValueType right, ValueType left)
 }
 
 //-------------------------------Functions for checking different expression types---------------------------//
-ValueType checkLiteral(Expr* expr)
+ValueTypeExpr checkLiteral(Expr* expr)
 {
     //just return the already determined type
     return expr->literal.type;
 }
-ValueType checkGrouping(TypeChecker* checker, Expr* expr)
+ValueTypeExpr checkGrouping(TypeChecker* checker, Expr* expr)
 {
     //just pass it forward
     return checkExpression(checker, expr->grouping.expr);
 }
-ValueType checkUnary(TypeChecker* checker, Expr* expr)
+ValueTypeExpr checkUnary(TypeChecker* checker, Expr* expr)
 {
-    ValueType typeRight = checkExpression(checker, expr->binary.right);
+    ValueTypeExpr typeRight = checkExpression(checker, expr->binary.right);
 
     //handle unary cases based on their operator
     switch (expr->unary.operator)
@@ -72,10 +72,10 @@ ValueType checkUnary(TypeChecker* checker, Expr* expr)
         }
     }
 }
-ValueType checkBinary(TypeChecker* checker, Expr* expr)
+ValueTypeExpr checkBinary(TypeChecker* checker, Expr* expr)
 {
-    ValueType rightType = checkExpression(checker, expr->binary.right);
-    ValueType leftType = checkExpression(checker, expr->binary.left);
+    ValueTypeExpr rightType = checkExpression(checker, expr->binary.right);
+    ValueTypeExpr leftType = checkExpression(checker, expr->binary.left);
     const char* operator = expr->binary.operator; //it's a 2 char array so it's 2 bytes
 
     //do the arithemtiatic expressions first
@@ -120,7 +120,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 
 //-------------------------------Main function for entry-----------------------------------------//
 
-ValueType checkExpression(TypeChecker* checker, Expr* expr)
+ValueTypeExpr checkExpression(TypeChecker* checker, Expr* expr)
 {
     //TODO: delete debug code
     printf(" \n Checking new expression: ");

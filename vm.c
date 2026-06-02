@@ -21,17 +21,17 @@ void freeVM(Vm* vm)
 
 //-----------------------------Non vm stuff-----------------------//
 
-void push(Vm* vm, double value)
+void push(Vm* vm, Value value)
 {
     *vm->stackTop = value;
     vm->stackTop = vm->stack;
 }
-double pop(Vm* vm)
+Value pop(Vm* vm)
 {
     vm->stackTop--;
     return *vm->stackTop;
 }
-double peek(Vm* vm, int distance)
+Value peek(Vm* vm, int distance)
 {
     return vm->stackTop[-1 - distance];
 }
