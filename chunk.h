@@ -20,8 +20,13 @@ typedef enum
     OP_RETURN,
     OP_NOT,
     OP_EQUAL,
+    OP_NOT_EQUAL,
     OP_GREATER,
-    OP_LESS
+    OP_LESS,
+    OP_GREATER_EQUAL,
+    OP_LESS_EQUAL,
+    OP_CONSTANT,
+    OP_INVERSE,
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

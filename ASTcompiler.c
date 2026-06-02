@@ -5,6 +5,7 @@
 #include "ASTcompiler.h"
 
 #include "Expr.h"
+#include "Bytecompiler.h"
 
 //-------DECLARATIONS------------//
 static void advance(ASTparser* parser);
@@ -119,7 +120,7 @@ void initParser(ASTparser* parser, const char* source)
 //------------------------------------------Error handling functions-----------------------------------------------------//
 
 //main error handling function for compile time
-static void errorAt(Token* token, const char* message, ASTparser* parser)
+void errorAt(Token* token, const char* message, ASTparser* parser)
 {
     if (parser->panicMode) return; //skip if error already detected
 
@@ -144,17 +145,17 @@ static void errorAt(Token* token, const char* message, ASTparser* parser)
     parser->panicMode = true;
 }
 //error at previous token
-static void error(const char* message, ASTparser* parser)
+void error(const char* message, ASTparser* parser)
 {
     errorAt(&parser->previous, message, parser);
 }
 //error at current looking at token
-static void errorAtCurrent(const char* message, ASTparser* parser)
+void errorAtCurrent(const char* message, ASTparser* parser)
 {
     errorAt(&parser->current, message, parser);
 }
 //my personal favorite function, check for necessary token
-static void consume(TokenType type, const char* message, ASTparser* parser)
+void consume(TokenType type, const char* message, ASTparser* parser)
 {
     if (parser->current.type == type)
     {
@@ -306,7 +307,7 @@ static Expr* astExpression(ASTparser* parser)
 
 
 //------------------------------------------Compile function-----------------------------------------------------//
-bool compile(const char* source)
+bool compile(const char* source, Vm* vm)
 {
     //set up the parser and essentially the scanner
     ASTparser parser;
@@ -316,19 +317,17 @@ bool compile(const char* source)
     initTypeChecker(&checker);
 
     //print out each of the ASTs
-    while (!match(T_EOF, &parser) && !checker.hadError)
-   {
-        Expr* expr = astExpression(&parser);
-        ValueType type = checkExpression(&checker, expr);
-        printf("Expression Type: %d", type);
+    Expr* expr = astExpression(&parser);
+    ValueType type = checkExpression(&checker, expr);
+    if (type == VALUE_ERROR)
+    {
+        return true; //TODO: add in some type checking error messages or something
     }
-
+    compileBytecode(expr, &parser, &vm->chunk, vm);
 
     //set up compiler
-    AstCompiler compiler;
-    initAstCompiler(&compiler);
-
-    //TODO: implement code that uses prat parsing to compile expressions
+    //AstCompiler compiler;
+    //initAstCompiler(&compiler);
 
     return parser.hadError;
 }

@@ -123,9 +123,9 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 ValueType checkExpression(TypeChecker* checker, Expr* expr)
 {
     //TODO: delete debug code
-    printf(" \n Checking new expression: ");
+    printf("Checking new expression: ");
     printExpression(expr);
-    //printf(" \n ");
+    printf("\n");
 
 
     switch (expr->type)

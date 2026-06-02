@@ -13,13 +13,17 @@ static void resetStack(Vm* vm)
 void initVM(Vm* vm)
 {
     resetStack(vm);
+    initChunk(&vm->chunk);
+    vm->ip = vm->chunk.byteCode;
+
 }
 void freeVM(Vm* vm)
 {
-
+    freeChunk(&vm->chunk);
+    resetStack(vm);
 }
 
-//-----------------------------Non vm stuff-----------------------//
+//-----------------------------------------------Stack stuff-------------------------------------------------------//
 
 void push(Vm* vm, Value value)
 {
@@ -29,7 +33,7 @@ void push(Vm* vm, Value value)
         return;
     }
     *vm->stackTop = value;
-    vm->stackTop = vm->stackTop++;
+    vm->stackTop++;
 }
 Value pop(Vm* vm)
 {
@@ -41,9 +45,14 @@ Value peek(Vm* vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
+//----------------------------------------------VM HELPERS-------------------------------------------------//
+
+//-------------------------------------------Main meat of the vm-------------------------------------------//
+
 static vmResult run(Vm* vm)
 {
 #define READ_BYTE() (*vm->ip++)
+#define READ_CONSTANT() (vm->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
 
     //the main meat of it all baby
     for (;;)
@@ -52,9 +61,25 @@ static vmResult run(Vm* vm)
         switch (instruction = READ_BYTE())
         {
             case OP_RETURN:
+                printf("ran inside of return\n");
                 return INTERPRET_OK;
+
+            //basic math operators + - * /
             case OP_ADD:
                 //TODO: implement later
+                printf("ran inside of add\n");
+                break;
+            case OP_SUBTRACT:
+                //TODO: implement later
+                break;
+            case OP_MULTIPLY:
+                //TODO: implement later
+                break;
+            case OP_DIVIDE:
+                //TODO: implement later
+                break;
+            case OP_CONSTANT:
+                printf("adding constant\n");
                 break;
         }
     }
@@ -66,7 +91,7 @@ static vmResult run(Vm* vm)
 //-----------------------------Actual VM Functionality-----------------------//
 vmResult interpret(const char* source, Vm* vm)
 {
-    bool hadErrors = compile(source); //compiles into asts and then also sets up the type checker
+    bool hadErrors = compile(source, vm); //compiles into asts and then also sets up the type checker
 
     //error checking
     if (hadErrors)
@@ -74,6 +99,9 @@ vmResult interpret(const char* source, Vm* vm)
         return INTERPRET_COMPILE_ERROR;
     }
 
+
+    //after compiling the bytecode, set up the place where its going to be read from
+    vm->ip = vm->chunk.byteCode;
 
     //run the code that the compiler wrote to the vms chunk
     vmResult result = run(vm);

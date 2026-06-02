@@ -11,6 +11,8 @@
 #include "debug.h"
 #include "typeChecker.h"
 
+struct Vm;
+
 //Parser struct for making ASTs
 typedef struct
 {
@@ -28,6 +30,13 @@ typedef struct
 
 
 
-bool compile(const char* source);
+bool compile(const char* source, struct Vm* vm);
+
+
+//shit forwarded to the bytecode compiler
+void error(const char* message, ASTparser* parser);
+void errorAtCurrent(const char* message, ASTparser* parser);
+void errorAt(Token* token, const char* message, ASTparser* parser);
+void consume(TokenType type, const char* message, ASTparser* parser);
 
 #endif //OLI_NAT_ASTCOMPILER_H
