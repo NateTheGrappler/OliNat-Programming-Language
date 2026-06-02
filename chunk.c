@@ -2,7 +2,7 @@
 // Created by natang on 6/1/26.
 //
 #include "chunk.h"
-
+#include "vm.h"
 
 void initChunk(Chunk* chunk)
 {
@@ -34,9 +34,10 @@ void freeChunk(Chunk* chunk)
     initChunk(chunk);
 }
 
-int addConstant(Chunk* chunk, Value value, struct Vm* vm)
+int addConstant(Chunk* chunk, Value value, Vm* vm)
 {
-    // push(vm, value); //for gc sake
-    // writeValueArray(&chunk->constants, value);
-    // pop(vm);
+    push(vm, value); //for gc sake
+    writeValueArray(&chunk->constants, value);
+    pop(vm);
+    return chunk->constants.count - 1;
 }

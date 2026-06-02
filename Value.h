@@ -5,23 +5,13 @@
 #ifndef OLI_NAT_VALUE_H
 #define OLI_NAT_VALUE_H
 #include "common.h"
-
-//types of values for safer runtime checking
-typedef enum
-{
-    VAL_BOOL,
-    VAL_INT,
-    VAL_FLOAT,
-    VAL_DOUBLE,
-    VAL_EMPTY,
-    VAL_OBJ, //eventually for strings and other objects
-} ValueTypeVM;
+#include "Expr.h"
 
 
 //value representation of whatever value
 typedef struct
 {
-    ValueTypeVM type;
+    ValueType type;
     union
     {
         bool boolean;
@@ -41,18 +31,18 @@ typedef struct {
 
 //TODO: add strings and empty to the macros
 //a bunch of macros for creating objects
-#define CREATE_BOOL_VAL(value)   ((Value){.type = VAL_BOOL,   .as.boolean    = value})
-#define CREATE_INT_VAL(value)    ((Value){.type = VAL_INT,    .as.int_val    = value})
-#define CREATE_FLOAT_VAL(value)  ((Value){.type = VAL_FLOAT,  .as.float_val  = value})
-#define CREATE_DOUBLE_VAL(value) ((Value){.type = VAL_DOUBLE, .as.double_val = value})
-#define CREATE_EMPTY_VAL()       ((Value){.type = VAL_EMPTY,  .as.int_val    = 0})
+#define CREATE_BOOL_VAL(value)   ((Value){.type = VALUE_BOOL,   .as.boolean    = value})
+#define CREATE_INT_VAL(value)    ((Value){.type = VALUE_INT,    .as.int_val    = value})
+#define CREATE_FLOAT_VAL(value)  ((Value){.type = VALUE_FLOAT,  .as.float_val  = value})
+#define CREATE_DOUBLE_VAL(value) ((Value){.type = VALUE_DOUBLE, .as.double_val = value})
+#define CREATE_EMPTY_VAL()       ((Value){.type = VALUE_EMPTY,  .as.int_val    = 0})
 
 //type checking macros for safety
-#define IS_BOOL(value)   ((value).type == VAL_BOOL)
-#define IS_INT(value)    ((value).type == VAL_INT)
-#define IS_FLOAT(value)  ((value).type == VAL_FLOAT)
-#define IS_DOUBLE(value) ((value).type == VAL_DOUBLE)
-#define IS_EMPTY(value)  ((value).type == VAL_EMPTY)
+#define IS_BOOL(value)   ((value).type == VALUE_BOOL)
+#define IS_INT(value)    ((value).type == VALUE_INT)
+#define IS_FLOAT(value)  ((value).type == VALUE_FLOAT)
+#define IS_DOUBLE(value) ((value).type == VALUE_DOUBLE)
+#define IS_EMPTY(value)  ((value).type == VALUE_EMPTY)
 
 //getting the raw c values from the struct
 #define GET_BOOL_VAL(value)   ((value).as.boolean)

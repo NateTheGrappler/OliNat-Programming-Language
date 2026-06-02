@@ -24,7 +24,7 @@ typedef enum
     OP_LESS
 } OpCode;
 
-
+//TODO: add in more stack space, or at least bytecode value space
 typedef struct
 {
     int count;

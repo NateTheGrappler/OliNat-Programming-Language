@@ -319,7 +319,7 @@ bool compile(const char* source)
     while (!match(T_EOF, &parser) && !checker.hadError)
    {
         Expr* expr = astExpression(&parser);
-        ValueTypeExpr type = checkExpression(&checker, expr);
+        ValueType type = checkExpression(&checker, expr);
         printf("Expression Type: %d", type);
     }
 

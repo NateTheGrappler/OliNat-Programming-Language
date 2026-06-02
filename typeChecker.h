@@ -19,12 +19,12 @@ typedef struct
 
 
 //function to do the checking
-ValueTypeExpr checkExpression(TypeChecker* checker, Expr* expr);
+ValueType checkExpression(TypeChecker* checker, Expr* expr);
 
-ValueTypeExpr checkLiteral(Expr* expr);
-ValueTypeExpr checkGrouping(TypeChecker* checker, Expr* expr);
-ValueTypeExpr checkUnary(TypeChecker* checker, Expr* expr);
-ValueTypeExpr checkBinary(TypeChecker* checker, Expr* expr);
+ValueType checkLiteral(Expr* expr);
+ValueType checkGrouping(TypeChecker* checker, Expr* expr);
+ValueType checkUnary(TypeChecker* checker, Expr* expr);
+ValueType checkBinary(TypeChecker* checker, Expr* expr);
 void initTypeChecker(TypeChecker* checker);
 
 

@@ -18,11 +18,13 @@ typedef enum
     INTERPRET_RUNTIME_ERROR,
 } vmResult;
 
-typedef struct
+typedef struct Vm
 {
     //the stack
     Value  stack[STACK_MAX];
     Value* stackTop;
+    Chunk chunk;
+    uint8_t* ip;
 } Vm;
 
 
