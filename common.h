@@ -13,4 +13,6 @@
 #include <stdint.h>
 
 
+#define DEBUG_TRACE_EXECUTION
+
 #endif //OLI_NAT_COMMON_H

@@ -2,7 +2,7 @@
 // Created by natang on 5/30/26.
 //
 #include "vm.h"
-
+#include "debug.h"
 
 static void resetStack(Vm* vm)
 {
@@ -13,8 +13,10 @@ static void resetStack(Vm* vm)
 void initVM(Vm* vm)
 {
     resetStack(vm);
+
     initChunk(&vm->chunk);
     vm->ip = vm->chunk.byteCode;
+    printf("Size of chunk rn %d \n", sizeof(vm->chunk));
 
 }
 void freeVM(Vm* vm)
@@ -53,10 +55,21 @@ static vmResult run(Vm* vm)
 {
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
-
     //the main meat of it all baby
     for (;;)
     {
+        #ifdef DEBUG_TRACE_EXECUTION
+                //print the stack info for the current byte that youre on, starting from bottom of the stack to the top
+                printf("Stack Info:     ");
+                for (Value* slot = vm->stack; slot < vm->stackTop; slot++) {
+                    printf("[ ");
+                    printValue(*slot);
+                    printf(" ]");
+                }
+                printf("\n");
+                disassembleInstruction(&vm->chunk, (int)(vm->ip - vm->chunk.byteCode));
+        #endif
+
         uint8_t instruction;
         switch (instruction = READ_BYTE())
         {
@@ -66,21 +79,124 @@ static vmResult run(Vm* vm)
 
             //basic math operators + - * /
             case OP_ADD:
-                //TODO: implement later
-                printf("ran inside of add\n");
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_INT_VAL(GET_INT_VAL(a) + GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(da + db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(fa + fb));
+                }
                 break;
+            }
             case OP_SUBTRACT:
-                //TODO: implement later
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_INT_VAL(GET_INT_VAL(a) - GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(da - db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(fa - fb));
+                }
                 break;
+            }
             case OP_MULTIPLY:
-                //TODO: implement later
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_INT_VAL(GET_INT_VAL(a) * GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(da * db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(fa * fb));
+                }
                 break;
+            }
             case OP_DIVIDE:
-                //TODO: implement later
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_INT_VAL(GET_INT_VAL(a) / GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(da / db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_DOUBLE_VAL(fa / fb));
+                }
                 break;
+            }
+            case OP_NEGATE:
+            {
+                Value constant = pop(vm);
+                if (IS_FLOAT(constant))
+                {
+                    push(vm, CREATE_FLOAT_VAL(-GET_FLOAT_VAL(constant)));
+                }
+                else if (IS_DOUBLE(constant))
+                {
+                    push(vm, CREATE_DOUBLE_VAL(-GET_DOUBLE_VAL(constant)));
+                }
+                else if (IS_INT(constant))
+                {
+                    push(vm, CREATE_INT_VAL(-GET_INT_VAL(constant)));
+                }
+                break;
+            }
             case OP_CONSTANT:
-                printf("adding constant\n");
+            {
+                Value constant = READ_CONSTANT();
+                push(vm, constant);
                 break;
+            }
+
+            default:
+                printf("Unknown opcode: %d\n", instruction);
+                return INTERPRET_RUNTIME_ERROR;
         }
     }
 

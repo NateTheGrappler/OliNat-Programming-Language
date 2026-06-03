@@ -47,7 +47,7 @@ ValueType checkGrouping(TypeChecker* checker, Expr* expr)
 }
 ValueType checkUnary(TypeChecker* checker, Expr* expr)
 {
-    ValueType typeRight = checkExpression(checker, expr->binary.right);
+    ValueType typeRight = checkExpression(checker, expr->unary.right);
 
     //handle unary cases based on their operator
     switch (expr->unary.operator)
@@ -57,6 +57,7 @@ ValueType checkUnary(TypeChecker* checker, Expr* expr)
             //check for right operand and then return an error if it's wrong
             if (isNumeric(typeRight)) { return typeRight; }
             typeError(checker, expr, "When trying to negate a value, please use a number."); //toss error if not number
+
             return VALUE_ERROR;
         }
         case '!':
@@ -122,31 +123,48 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 
 ValueType checkExpression(TypeChecker* checker, Expr* expr)
 {
-    //TODO: delete debug code
-    printf("Checking new expression: ");
+#ifdef DEBUG_TRACE_EXECUTION
+    printf("Checking new expression: | ");
     printExpression(expr);
+    printf(" | expression type: %d", expr->type);
     printf("\n");
+#endif
 
-
+    ValueType result;
     switch (expr->type)
     {
         case EXPR_BINARY:
         {
-            return checkBinary(checker, expr);
+            result = checkBinary(checker, expr);
+            break;
         }
         case EXPR_LITERAL:
         {
-            return checkLiteral(expr);
+            result = checkLiteral(expr);
+            break;
         }
         case EXPR_UNARY:
         {
-            return checkUnary(checker, expr);
+            if (expr->unary.right == NULL)
+            {
+                return VALUE_ERROR;
+            }
+            result = checkUnary(checker, expr);
+            break;
         }
         case EXPR_GROUPING:
         {
-            return checkGrouping(checker, expr);
+            result = checkGrouping(checker, expr);
+            break;
         }
-            default:
-            return VALUE_ERROR;
+        default:
+            result =  VALUE_ERROR;
+            break;
     }
+    // #ifdef DEBUG_TRACE_EXECUTION
+    //     printf("----------------------EXPRESSION ENDED----------------------");
+    //     printf("\n");
+    // #endif
+
+    return result;
 }

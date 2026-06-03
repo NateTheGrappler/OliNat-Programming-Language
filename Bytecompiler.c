@@ -51,9 +51,13 @@ static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser)
     {
         case '-': emitByte(OP_NEGATE,  chunk, parser); break;
         case '!': emitByte(OP_INVERSE, chunk, parser); break;
+        default:
+        {
+            error("Invalid unary operator found in expressions, please double check what you are doing.", parser);
+            return;
+        }
     }
-    //hopefully unreachablee
-    error("Invalid unary operator found in expressions, please double check what you are doing.", parser);
+    //hopefully unreachable
 }
 
 
@@ -74,6 +78,19 @@ static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser
 
 void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm)
 {
+
+    #ifdef DEBUG_TRACE_EXECUTION
+        printf("Ran inside of compile expression byte for expression: ");
+        printExpression(expr);
+        printf("\n");
+    #endif
+
+    if (expr == NULL)
+    {
+        error("NULL expression reached in compiler", parser);
+        return;
+    }
+
     switch (expr->type)
     {
         case EXPR_BINARY:
@@ -107,8 +124,6 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
             break;
         }
     }
-
-    //just do it runs without error / looping
 }
 
 
