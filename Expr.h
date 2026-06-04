@@ -6,6 +6,7 @@
 #define OLI_NAT_EXPR_H
 
 #include "memory.h"
+#include "common.h"
 
 typedef enum {
     EXPR_LITERAL,
@@ -34,8 +35,8 @@ typedef struct
         int integer_val;
         double double_val;
         float float_val;
+        bool boolean_val;
         //TODO: handle strings later
-        //TODO: handle booleans later as well
     } value;
     ValueType type;
 } Literal;
@@ -73,6 +74,7 @@ typedef struct Expr {
 Expr* createLiteralDouble(double value, int line);
 Expr* createLiteralFloat (float value, int line);
 Expr* createLiteralInt   (int value, int line);
+Expr* createLiteralBool  (bool value, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
 Expr* createGrouping     (Expr* expr, int line);

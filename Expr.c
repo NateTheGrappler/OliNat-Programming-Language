@@ -18,6 +18,18 @@ Expr* createLiteralDouble(double value, int line)
     expr->literal.type = VALUE_DOUBLE;
     return expr;
 }
+Expr* createLiteralBool(bool value, int line)
+{
+    //allocate the expr in memory and set it's type
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_LITERAL;
+    expr->line = line;
+
+    //call the anyonmous union that holds all the different possible expressions
+    expr->literal.value.boolean_val = value;
+    expr->literal.type = VALUE_BOOL;
+    return expr;
+}
 Expr* createLiteralFloat(float value, int line)
 {
     //allocate the expr in memory and set it's type

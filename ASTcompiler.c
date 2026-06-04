@@ -11,6 +11,7 @@
 static void advance(ASTparser* parser);
 static Expr* astExpression(ASTparser* parser);
 static Expr* number(bool canAssign, ASTparser* parser);
+static Expr* boolean(bool canAssign, ASTparser* parser);
 static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
@@ -73,23 +74,23 @@ ParseRule rules[] = {
   [T_INTEGER]       = {NULL,     NULL,   PREC_NONE},
   [T_BOOL]          = {NULL,     NULL,   PREC_NONE},
   [T_STRING_VAL]    = {NULL,     NULL,   PREC_NONE},
-  [T_FLOAT_VAL]     = {number,     NULL,   PREC_NONE},
-  [T_DOUBLE_VAL]    = {number,     NULL,   PREC_NONE},
-  [T_INTEGER_VAL]   = {number,     NULL,   PREC_NONE},
+  [T_FLOAT_VAL]     = {number,   NULL,   PREC_NONE},
+  [T_DOUBLE_VAL]    = {number,   NULL,   PREC_NONE},
+  [T_INTEGER_VAL]   = {number,   NULL,   PREC_NONE},
 
   [T_AND]           = {NULL,     NULL,   PREC_AND},
   [T_CLASS]         = {NULL,     NULL,   PREC_NONE},
   [T_ELSE]          = {NULL,     NULL,   PREC_NONE},
-  [T_FALSE]         = {NULL,     NULL,   PREC_NONE},
+  [T_FALSE]         = {boolean,  NULL,   PREC_NONE},
   [T_FOR]           = {NULL,     NULL,   PREC_NONE},
   [T_FUN]           = {NULL,     NULL,   PREC_NONE},
   [T_IF]            = {NULL,     NULL,   PREC_NONE},
   [T_EMPTY]         = {NULL,     NULL,   PREC_NONE},
-  [T_OR]            = {NULL,     NULL,    PREC_OR},
+  [T_OR]            = {NULL,     NULL,   PREC_OR},
   [T_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [T_PULLF]         = {NULL,     NULL,   PREC_NONE},
   [T_THIS]          = {NULL,     NULL,   PREC_NONE},
-  [T_TRUE]          = {NULL,     NULL,   PREC_NONE},
+  [T_TRUE]          = {boolean,  NULL,   PREC_NONE},
   [T_MAKE]          = {NULL,     NULL,   PREC_NONE},
   [T_WHILE]         = {NULL,     NULL,   PREC_NONE},
   [T_ERROR]         = {NULL,     NULL,   PREC_NONE},
@@ -191,7 +192,15 @@ static bool match(TokenType type, ASTparser* parser)
     return true;
 }
 
-
+static Expr* boolean(bool canAssign, ASTparser* parser)
+{
+    switch (parser->previous.type)
+    {
+        case T_TRUE: createLiteralBool(true, parser->previous.line); break;
+        case T_FALSE: createLiteralBool(false, parser->previous.line); break;
+        default: return NULL; //unreachable (hopefully)
+    }
+}
 //literal expression parsing
 static Expr* number(bool canAssign, ASTparser* parser)
 {
@@ -303,7 +312,6 @@ static Expr* astExpression(ASTparser* parser)
 {
     return parserPrecedence(PREC_ASSIGNMENT, parser);
 }
-
 
 
 //------------------------------------------Compile function-----------------------------------------------------//

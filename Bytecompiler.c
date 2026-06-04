@@ -104,7 +104,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
         {
             switch (expr->literal.type)
             {
-                case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.integer_val), vmChunk, parser, vm);   break;
+                case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.boolean_val), vmChunk, parser, vm);   break;
                 case VALUE_INT:    emitConstant(CREATE_INT_VAL(expr->literal.value.integer_val), vmChunk, parser, vm);    break;
                 case VALUE_FLOAT:  emitConstant(CREATE_FLOAT_VAL(expr->literal.value.float_val), vmChunk, parser, vm);  break;
                 case VALUE_DOUBLE: emitConstant(CREATE_DOUBLE_VAL(expr->literal.value.double_val), vmChunk, parser, vm); break;
