@@ -5,6 +5,11 @@
 #ifndef OLI_NAT_OBJECT_H
 #define OLI_NAT_OBJECT_H
 
+#include "memory.h"
+#include "common.h"
+#include "Value.h"
+
+typedef struct Vm vm;
 
 typedef enum
 {
@@ -25,8 +30,17 @@ typedef struct ObjString
     Obj obj;
     int length;
     char* chars;
-};
+} ObjString;
 
+static inline bool IsObjType(Value value, ObjType type)
+{
+    return IS_OBJECT(value) && GET_OBJECT_VAL(value)->type == type;
+}
 
+#define IS_STRING(value)       IsObjType(value, OBJ_STRING)
+#define AS_STRING(value)       ((ObjString*)GET_OBJECT_VAL(value))
+#define AS_CSTRING(value)      (((ObjString*)GET_OBJECT_VAL(value))->chars)
+
+ObjString* copyString(const char* chars, int length, struct Vm* vm);
 
 #endif //OLI_NAT_OBJECT_H

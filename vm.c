@@ -26,7 +26,6 @@ void freeVM(Vm* vm)
 }
 
 //-----------------------------------------------Stack stuff-------------------------------------------------------//
-
 void push(Vm* vm, Value value)
 {
     //check for stack overflow
@@ -50,7 +49,6 @@ Value peek(Vm* vm, int distance)
 //----------------------------------------------VM HELPERS-------------------------------------------------//
 
 //-------------------------------------------Main meat of the vm-------------------------------------------//
-
 static vmResult run(Vm* vm)
 {
 #define READ_BYTE() (*vm->ip++)
@@ -364,7 +362,6 @@ static vmResult run(Vm* vm)
 
 #undef READ_BYTE
 }
-
 
 //-----------------------------Actual VM Functionality-----------------------//
 vmResult interpret(const char* source, Vm* vm)

@@ -25,6 +25,7 @@ typedef struct Vm
     Value* stackTop;
     Chunk chunk;
     uint8_t* ip;
+    Obj* objects;
 } Vm;
 
 

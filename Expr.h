@@ -7,7 +7,6 @@
 
 #include "memory.h"
 #include "common.h"
-#include "object.h"
 
 typedef enum {
     EXPR_LITERAL,
@@ -16,16 +15,6 @@ typedef enum {
     EXPR_GROUPING,
     EXPR_VARIABLE, //TODO: add the implementation for this
 } ExprType;
-
-typedef enum {
-    VALUE_BOOL,
-    VALUE_INT,
-    VALUE_STRING,
-    VALUE_DOUBLE,
-    VALUE_FLOAT,
-    VALUE_EMPTY,
-    VALUE_ERROR,
-} ValueType;
 
 struct Expr;
 

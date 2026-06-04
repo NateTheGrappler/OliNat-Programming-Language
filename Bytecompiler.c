@@ -3,6 +3,7 @@
 //
 #include "Bytecompiler.h"
 #include "common.h"
+#include "object.h"
 
 //--------Declarations------------//
 static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser);
@@ -104,10 +105,18 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
         {
             switch (expr->literal.type)
             {
-                case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.boolean_val), vmChunk, parser, vm);   break;
-                case VALUE_INT:    emitConstant(CREATE_INT_VAL(expr->literal.value.integer_val), vmChunk, parser, vm);    break;
-                case VALUE_FLOAT:  emitConstant(CREATE_FLOAT_VAL(expr->literal.value.float_val), vmChunk, parser, vm);  break;
+                case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.boolean_val), vmChunk, parser, vm);  break;
+                case VALUE_INT:    emitConstant(CREATE_INT_VAL(expr->literal.value.integer_val), vmChunk, parser, vm);   break;
+                case VALUE_FLOAT:  emitConstant(CREATE_FLOAT_VAL(expr->literal.value.float_val), vmChunk, parser, vm);   break;
                 case VALUE_DOUBLE: emitConstant(CREATE_DOUBLE_VAL(expr->literal.value.double_val), vmChunk, parser, vm); break;
+                case VALUE_STRING:
+                {
+                    //copy the copied string in the expression object, then basically get the length of it (a bit inefficent but whatever)
+                    //and then toss the vm in there, basically getting that raw c char* to an ObjString struct to a Value struct
+                    emitConstant(CREATE_OBJECT_VAL((Obj*)copyString(expr->literal.value.string_val,
+              strlen(expr->literal.value.string_val), vm)), vmChunk, parser, vm);
+                    break;
+                }
             }
             break;
         }

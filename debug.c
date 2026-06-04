@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "common.h"
 #include "Expr.h"
+#include "object.h"
 
 void printToken(Token token, Scanner* scanner)
 {
@@ -93,6 +94,19 @@ void printExpression(Expr* expr) //a recursive function for printing out express
     }
     //printf("\n");
 }
+
+void printObject(Value value)
+{
+    switch (value.as.object_val->type)
+    {
+        case OBJ_STRING:
+        {
+            printf("%s", AS_CSTRING(value));
+            break;
+        }
+    }
+}
+
 void printValue(Value value)
 {
     switch (value.type)
@@ -101,6 +115,7 @@ void printValue(Value value)
         case VALUE_DOUBLE: printf("%d", GET_DOUBLE_VAL(value)); break;
         case VALUE_INT:    printf("%d", GET_INT_VAL(value)); break;
         case VALUE_FLOAT:  printf("%f", GET_FLOAT_VAL(value)); break;
+        case VALUE_OBJECT: printObject(value); break;
         case VALUE_EMPTY: break;
     }
 }
