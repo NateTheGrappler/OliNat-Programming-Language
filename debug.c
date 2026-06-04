@@ -29,9 +29,11 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             const char* type;
             switch (expr->literal.type)
             {
-                case VALUE_INT:    type= "INT"; break;
-                case VALUE_DOUBLE: type= "DOUBLE"; break;
-                case VALUE_FLOAT:  type= "FLOAT"; break;
+                case VALUE_INT:     type= "INT"; break;
+                case VALUE_DOUBLE:  type= "DOUBLE"; break;
+                case VALUE_FLOAT:   type= "FLOAT"; break;
+                case VALUE_BOOL:    type= "BOOL"; break;
+                case VALUE_STRING:  type= "STR"; break;
             }
 
             switch (expr->literal.type)
@@ -50,6 +52,16 @@ void printExpression(Expr* expr) //a recursive function for printing out express
                 case VALUE_DOUBLE:
                 {
                     printf("%s-%lf", type, expr->literal.value.double_val);
+                    break;
+                }
+                case VALUE_STRING:
+                {
+                    printf("%s-%s", type, expr->literal.value.string_val);
+                    break;
+                }
+                case VALUE_BOOL:
+                {
+                    printf("%s-%s", type, expr->literal.value.boolean_val ? "true" : "false");
                     break;
                 }
             }
@@ -102,7 +114,6 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset) {
     printf("'\n");
     return offset + 2; //since the constants hold both an index and a value, you go over two spots in the memory
 }
-
 static int simpleInstruction(const char* name, int offset)
 {
     printf("%s\n", name);

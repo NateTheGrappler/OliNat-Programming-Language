@@ -25,4 +25,6 @@ add_executable(Oli_Nat main.c
         chunk.h
         Value.c
         Value.h
+        object.c
+        object.h
 )

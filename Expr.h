@@ -7,6 +7,7 @@
 
 #include "memory.h"
 #include "common.h"
+#include "object.h"
 
 typedef enum {
     EXPR_LITERAL,
@@ -36,7 +37,7 @@ typedef struct
         double double_val;
         float float_val;
         bool boolean_val;
-        //TODO: handle strings later
+        char* string_val;
     } value;
     ValueType type;
 } Literal;
@@ -75,6 +76,7 @@ Expr* createLiteralDouble(double value, int line);
 Expr* createLiteralFloat (float value, int line);
 Expr* createLiteralInt   (int value, int line);
 Expr* createLiteralBool  (bool value, int line);
+Expr* createLiteralString(char* value, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
 Expr* createGrouping     (Expr* expr, int line);

@@ -12,6 +12,7 @@ static void advance(ASTparser* parser);
 static Expr* astExpression(ASTparser* parser);
 static Expr* number(bool canAssign, ASTparser* parser);
 static Expr* boolean(bool canAssign, ASTparser* parser);
+static Expr* string(bool canAssign, ASTparser* parser);
 static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
@@ -73,7 +74,7 @@ ParseRule rules[] = {
   [T_DOUBLE]        = {NULL,     NULL,   PREC_NONE},
   [T_INTEGER]       = {NULL,     NULL,   PREC_NONE},
   [T_BOOL]          = {NULL,     NULL,   PREC_NONE},
-  [T_STRING_VAL]    = {NULL,     NULL,   PREC_NONE},
+  [T_STRING_VAL]    = {string,   NULL,   PREC_NONE},
   [T_FLOAT_VAL]     = {number,   NULL,   PREC_NONE},
   [T_DOUBLE_VAL]    = {number,   NULL,   PREC_NONE},
   [T_INTEGER_VAL]   = {number,   NULL,   PREC_NONE},
@@ -192,6 +193,17 @@ static bool match(TokenType type, ASTparser* parser)
     return true;
 }
 
+
+//literal expression parsing
+static Expr* string(bool canAssign, ASTparser* parser)
+{
+    //copy the string because the source code representation might still be needed
+    int length = parser->previous.length - 2;
+    char* chars = ALLOCATE(char, length+1);
+    memcpy(chars, parser->previous.lexemeStart + 1, length);
+    chars[length] = '\0';
+    return createLiteralString(chars, parser->previous.line);
+}
 static Expr* boolean(bool canAssign, ASTparser* parser)
 {
     switch (parser->previous.type)
@@ -201,7 +213,6 @@ static Expr* boolean(bool canAssign, ASTparser* parser)
         default: return NULL; //unreachable (hopefully)
     }
 }
-//literal expression parsing
 static Expr* number(bool canAssign, ASTparser* parser)
 {
     //handle all three possible numbers you can have
@@ -249,7 +260,7 @@ static Expr* unary(bool canAssign, ASTparser* parser)
         default: return NULL; //unreachable
     }
 }
-static Expr*  grouping(bool canAssign, ASTparser* parser)
+static Expr* grouping(bool canAssign, ASTparser* parser)
 {
     Expr* expr = astExpression(parser);
     consume(T_RIGHT_PAREN, "Please finish all parentheses with a ')'.", parser);
