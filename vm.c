@@ -55,6 +55,8 @@ static vmResult run(Vm* vm)
 {
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
+
+
     //the main meat of it all baby
     for (;;)
     {
@@ -95,9 +97,9 @@ static vmResult run(Vm* vm)
                 }
                 else if (IS_FLOAT(a) || IS_FLOAT(b))
                 {
-                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
-                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
-                    push(vm,  CREATE_DOUBLE_VAL(fa + fb));
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_FLOAT_VAL(fa + fb));
                 }
                 break;
             }
@@ -118,9 +120,9 @@ static vmResult run(Vm* vm)
                 }
                 else if (IS_FLOAT(a) || IS_FLOAT(b))
                 {
-                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
-                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
-                    push(vm,  CREATE_DOUBLE_VAL(fa - fb));
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_FLOAT_VAL(fa - fb));
                 }
                 break;
             }
@@ -141,9 +143,9 @@ static vmResult run(Vm* vm)
                 }
                 else if (IS_FLOAT(a) || IS_FLOAT(b))
                 {
-                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
-                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
-                    push(vm,  CREATE_DOUBLE_VAL(fa * fb));
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_FLOAT_VAL(fa * fb));
                 }
                 break;
             }
@@ -164,9 +166,9 @@ static vmResult run(Vm* vm)
                 }
                 else if (IS_FLOAT(a) || IS_FLOAT(b))
                 {
-                    double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
-                    double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
-                    push(vm,  CREATE_DOUBLE_VAL(fa / fb));
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,  CREATE_FLOAT_VAL(fa / fb));
                 }
                 break;
             }
@@ -191,6 +193,166 @@ static vmResult run(Vm* vm)
             {
                 Value constant = READ_CONSTANT();
                 push(vm, constant);
+                break;
+            }
+
+            //boolean comparisions
+            case OP_EQUAL:
+            {
+                Value a = pop(vm);
+                Value b = pop(vm);
+
+                if (IS_BOOL(a) && IS_BOOL(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_BOOL_VAL(a) == GET_BOOL_VAL(b)));
+                }
+                else if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) == GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da == db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa == fb));
+                }
+                else
+                {
+                    printf("Runtime Error: cannot compare values of different types you goob\n");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+                //TODO: later add strings
+            }
+            case OP_NOT_EQUAL:
+            {
+                Value a = pop(vm);
+                Value b = pop(vm);
+
+                if (IS_BOOL(a) && IS_BOOL(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_BOOL_VAL(a) != GET_BOOL_VAL(b)));
+                }
+                else if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) != GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da != db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa != fb));
+                }
+                else
+                {
+                    printf("Runtime Error: cannot compare values of different types you goob\n");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+                //TODO: later add strings
+            }
+            case OP_GREATER:
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) > GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da > db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa > fb));
+                }
+                break;
+            }
+            case OP_LESS:
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) < GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da < db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa < fb));
+                }
+                break;
+            }
+            case OP_GREATER_EQUAL:
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) >= GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da >= db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa >= fb));
+                }
+                break;
+            }
+            case OP_LESS_EQUAL:
+            {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_INT_VAL(a) <= GET_INT_VAL(b)));
+                }
+                else if (IS_DOUBLE(a) || IS_DOUBLE(b))
+                {
+                    double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+                    double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+                    push(vm,  CREATE_BOOL_VAL(da <= db));
+                }
+                else if (IS_FLOAT(a) || IS_FLOAT(b))
+                {
+                    float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
+                    float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
+                    push(vm,   CREATE_BOOL_VAL(fa <= fb));
+                }
                 break;
             }
 

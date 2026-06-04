@@ -158,5 +158,17 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
             return simpleInstruction("OP_DIVIDE", offset);
+        case OP_EQUAL:
+            return simpleInstruction("OP_EQUAL", offset);
+        case OP_NOT_EQUAL:
+            return simpleInstruction("OP_NOT_EQUAL", offset);
+        case OP_LESS:
+            return simpleInstruction("OP_LESS", offset);
+        case OP_GREATER:
+            return simpleInstruction("OP_GREATER", offset);
+        case OP_GREATER_EQUAL:
+            return simpleInstruction("OP_GREATER_EQUAL", offset);
+        case OP_LESS_EQUAL:
+            return simpleInstruction("OP_LESS_EQUAL", offset);
     }
 }

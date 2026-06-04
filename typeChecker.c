@@ -106,7 +106,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
     {
         if (leftType == rightType) return VALUE_BOOL;
         if (isNumeric(leftType) && isNumeric(rightType)) return VALUE_BOOL;
-        typeError(checker, expr, "Operators comparing value must compare numbers only."); //TODO: maybe add checking strings too idk
+        typeError(checker, expr, "Operators comparing value must compare numbers, booleans, or strings, you cannot mix types (sorry)."); //TODO: maybe add checking strings too idk
         return VALUE_ERROR;
     }
 
