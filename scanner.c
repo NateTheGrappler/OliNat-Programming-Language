@@ -155,9 +155,9 @@ static TokenType identifierType(Scanner* scanner)
                 {
                     case 'l': return checkKeyword(2, 2, "se", T_ELSE, scanner);
                     case 'm': return checkKeyword(2, 3, "pty", T_EMPTY, scanner);
-
                 }
             }
+            return T_IDENTIFIER;
         }
         case 'i':
         {
@@ -166,17 +166,21 @@ static TokenType identifierType(Scanner* scanner)
                 switch (scanner->start[1])
                 {
                     case 'f': return checkKeyword(2, 0, "", T_IF, scanner);
-                }
-                //holy nested doom
-                if (scanner->current - scanner->start > 2)
-                {
-                    switch (scanner->start[2])
+                    case 'n':
                     {
-                        case 'h': return checkKeyword(3, 4, "erit", T_INHERIT, scanner);
-                        case 't': return checkKeyword(3, 0, "", T_INTEGER, scanner); //int keyword
+                        //holy nested doom
+                        if (scanner->current - scanner->start > 2)
+                        {
+                            switch (scanner->start[2])
+                            {
+                                case 'h': return checkKeyword(3, 4, "erit", T_INHERIT, scanner);
+                                case 't': return checkKeyword(3, 0, "", T_INTEGER, scanner); //int keyword
+                            }
+                        }
                     }
                 }
             }
+            return T_IDENTIFIER;
         }
         case 't':
         {
@@ -189,6 +193,7 @@ static TokenType identifierType(Scanner* scanner)
 
                 }
             }
+            return T_IDENTIFIER;
         }
         case 'f':
         {
@@ -202,7 +207,10 @@ static TokenType identifierType(Scanner* scanner)
                     case 'l': return checkKeyword(2, 3, "oat", T_FLOAT, scanner);
                 }
             }
+            return T_IDENTIFIER;
         }
+        default:
+            return T_IDENTIFIER;
 
     }
 }

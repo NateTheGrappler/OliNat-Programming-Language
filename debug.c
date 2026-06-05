@@ -91,6 +91,11 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf(")");
             break;
         }
+        case EXPR_VARIABLE:
+        {
+            printf("IDENTIFIER-%.*s", expr->variable.length, expr->variable.name);
+            break;
+        }
     }
     //printf("\n");
 }

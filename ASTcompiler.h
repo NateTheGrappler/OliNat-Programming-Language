@@ -14,7 +14,7 @@
 struct Vm;
 
 //Parser struct for making ASTs
-typedef struct
+typedef struct ASTparser
 {
     Scanner scanner;
     Token current;
@@ -38,5 +38,6 @@ void error(const char* message, ASTparser* parser);
 void errorAtCurrent(const char* message, ASTparser* parser);
 void errorAt(Token* token, const char* message, ASTparser* parser);
 void consume(TokenType type, const char* message, ASTparser* parser);
+void emitReturn(Chunk* chunk, ASTparser* parser);
 
 #endif //OLI_NAT_ASTCOMPILER_H

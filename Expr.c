@@ -68,6 +68,18 @@ Expr* createLiteralInt(int value, int line)
     expr->literal.type = VALUE_INT;
     return expr;
 }
+Expr* createVariable(const char* name, int length, int line)
+{
+    //allocate the expr in memory and set it's type
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_VARIABLE;
+    expr->line = line;
+
+    //call the anyonmous union that holds all the different possible expressions
+    expr->variable.length = length;
+    expr->variable.name = name;
+    return expr;
+}
 Expr* createUnary(char operator, Expr* right, int line)
 {
     //allocate the expr in memory and set it's type

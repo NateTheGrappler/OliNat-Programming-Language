@@ -14,10 +14,16 @@ typedef enum {
     EXPR_UNARY,
     EXPR_GROUPING,
     EXPR_VARIABLE, //TODO: add the implementation for this
+    STMT_VAR_DECL,
+    STMT_ASSIGN,
 } ExprType;
 
 struct Expr;
-
+typedef struct
+{
+    const char* name;
+    int length;
+} Variable;
 typedef struct
 {
     union
@@ -57,6 +63,7 @@ typedef struct Expr {
         Literal literal;
         Binary binary;
         Unary unary;
+        Variable variable;
         Grouping grouping;
     };
 } Expr;
@@ -69,6 +76,7 @@ Expr* createLiteralString(char* value, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
 Expr* createGrouping     (Expr* expr, int line);
+Expr* createVariable(const char* name, int length, int line);
 
 void freeExpr(Expr* expr);
 

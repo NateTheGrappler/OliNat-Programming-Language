@@ -16,6 +16,7 @@ static Expr* string(bool canAssign, ASTparser* parser);
 static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
+static Expr* variable(bool canAssign, ASTparser* parser);
 
 //------------------------------------------Structs holding all fun data-----------------------------------------------------//
 //defines language grammer for expressions
@@ -66,7 +67,7 @@ ParseRule rules[] = {
   [T_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISION},
   [T_LESS]          = {NULL,     binary, PREC_COMPARISION},
   [T_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISION},
-  [T_IDENTIFIER]    = {NULL,     NULL,   PREC_NONE},
+  [T_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
 
     //TODO: check types
   [T_STRING]        = {NULL,     NULL,   PREC_NONE},
@@ -178,6 +179,7 @@ static void advance(ASTparser* parser)
     for (;;)
     {
         parser->current = scanToken(&parser->scanner);
+        //printToken(parser->current, &parser->scanner);
         if (parser->current.type != T_ERROR) break;
         errorAtCurrent(parser->current.lexemeStart, parser);
     }
@@ -195,6 +197,10 @@ static bool match(TokenType type, ASTparser* parser)
 
 
 //literal expression parsing
+static Expr* variable(bool canAssign, ASTparser* parser)
+{
+    return createVariable(parser->previous.lexemeStart, parser->previous.length, parser->previous.line);
+}
 static Expr* string(bool canAssign, ASTparser* parser)
 {
     //copy the string because the source code representation might still be needed
@@ -325,6 +331,103 @@ static Expr* astExpression(ASTparser* parser)
 }
 
 
+//------Variable Items-------//
+static ValueType getVarDeclarationType(ASTparser* parser)
+{
+    switch (parser->current.type)
+    {
+        case T_INTEGER:
+        {
+            consume(T_INTEGER, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            return VALUE_INT;
+        }
+        case T_FLOAT:
+        {
+            consume(T_FLOAT, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            return VALUE_FLOAT;
+        }
+        case T_DOUBLE:
+        {
+            consume(T_DOUBLE, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            return VALUE_DOUBLE;
+        }
+        case T_STRING:
+        {
+            consume(T_STRING, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            return VALUE_OBJECT;
+        }
+        case T_BOOL:
+        {
+            consume(T_BOOL, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            return VALUE_BOOL;
+        }
+        default:
+            error("Expected a type after 'make'", parser);
+            return VALUE_ERROR;
+    }
+}
+static void varDeclaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
+{
+
+    //get / consume the declaraed type
+    ValueType type = getVarDeclarationType(parser);
+
+    //get the var name
+    consume(T_IDENTIFIER, "You must name your variable, they get sad if you dont.", parser);
+    const char* name = parser->previous.lexemeStart;
+    int nameLength = parser->previous.length;
+
+    consume(T_EQUAL, "Expected a '=' after you declare a new variable.", parser);
+    Expr* varInitializer = astExpression(parser);
+    consume(T_SEMICOLON, "Expected ';' after you declare a new variable", parser);
+
+    //check the type of the expression vs the declared type
+    ValueType realType = checkExpression(checker, varInitializer);
+    if (realType != type)
+    {
+        error("A variable expression's type must be the same as it's declared type.", parser);
+    }
+
+    addSymbol(checker, name, nameLength, type, parser);
+
+    compileBytecode(varInitializer, parser, &vm->chunk, vm);
+}
+
+//Basic statements
+static void expressionStatement(ASTparser* parser, TypeChecker* checker, Vm* vm)
+{
+    //compile and check expression, then compile again to bytecode
+    Expr* expr = astExpression(parser);
+    ValueType type = checkExpression(checker, expr);
+
+    if (type != VALUE_ERROR)
+    {
+        compileBytecode(expr, parser, &vm->chunk, vm);
+    }
+
+    //consume the ; and free memory
+    consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", parser);
+    freeExpr(expr);
+}
+static void statement(ASTparser* parser, TypeChecker* checker, Vm* vm)
+{
+    expressionStatement(parser, checker, vm);
+}
+
+//newer stuff for the statements and variables
+static void declaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
+{
+    if (match(T_MAKE, parser))
+    {
+        varDeclaration(parser, checker, vm);
+    }
+    else
+    {
+        statement(parser, checker, vm);
+    }
+}
+
+
 //------------------------------------------Compile function-----------------------------------------------------//
 bool compile(const char* source, Vm* vm)
 {
@@ -335,18 +438,16 @@ bool compile(const char* source, Vm* vm)
     TypeChecker checker;
     initTypeChecker(&checker);
 
-    //print out each of the ASTs
-    Expr* expr = astExpression(&parser);
-    ValueType type = checkExpression(&checker, expr);
-    if (type == VALUE_ERROR)
+
+    while (!check(T_EOF, &parser))
     {
-        return true; //TODO: add in some type checking error messages or something
+        declaration(&parser, &checker, vm );
     }
-    compileBytecode(expr, &parser, &vm->chunk, vm);
 
     //set up compiler
     //AstCompiler compiler;
     //initAstCompiler(&compiler);
 
+    emitReturn(&vm->chunk, &parser);
     return parser.hadError;
 }

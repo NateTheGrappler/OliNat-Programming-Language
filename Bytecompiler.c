@@ -18,7 +18,7 @@ static void emitBytes(uint8_t byteOne, uint8_t byteTwo, Chunk* chunk, ASTparser*
     emitByte(byteOne, chunk, parser);
     emitByte(byteTwo, chunk, parser);
 }
-static void emitReturn(Chunk* chunk, ASTparser* parser)
+void emitReturn(Chunk* chunk, ASTparser* parser)
 {
     emitByte(OP_RETURN, chunk, parser);
 }
@@ -140,5 +140,4 @@ void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm)
 {
     //TODO: add in a way to seperate consequtive expressions from return call
     compileExpressionByte(expr, parser, vmChunk, vm);
-    emitReturn(vmChunk, parser);
 }

@@ -3,12 +3,14 @@
 //
 #include "typeChecker.h"
 
+#include "ASTcompiler.h"
+
 
 void initTypeChecker(TypeChecker* checker)
 {
     checker->hadError = false;
     checker->errorCount = 0;
-    //TODO: add in symbol table alter
+    checker->varCount = 0;
 }
 
 
@@ -40,6 +42,7 @@ ValueType checkLiteral(Expr* expr)
     //just return the already determined type
     return expr->literal.type;
 }
+
 ValueType checkGrouping(TypeChecker* checker, Expr* expr)
 {
     //just pass it forward
@@ -116,9 +119,40 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 
 }
 
-
-
-
+Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
+{
+    //traverse the array for now
+    for (int i = 0; i < checker->varCount; i++)
+    {
+        if (checker->symbols[i].length == length &&
+            memcmp(checker->symbols[i].name, name, length) == 0)
+            return &checker->symbols[i];
+    }
+    return NULL;
+}
+void addSymbol(TypeChecker* checker, const char* name, int length, ValueType type, ASTparser* parser)
+{
+    if (checker->varCount >= 256)
+    {
+        //TODO: have it so you can store more vars but also have a seperate error system for types
+        error("Too many variables have been declared.", parser);
+        return;
+    }
+    int index = checker->varCount++;
+    checker->symbols[index].type = type;
+    checker->symbols[index].name = name;
+    checker->symbols[index].length = length;
+}
+ValueType checkVariable(TypeChecker* checker, Expr* expr)
+{
+    Symbol* symbol = lookUpSymbol(checker, expr->variable.name, expr->variable.length);
+    if (symbol != NULL)
+    {
+        return symbol->type;
+    }
+    typeError(checker, expr, "Undefined variable.");
+    return VALUE_ERROR;
+}
 //-------------------------------Main function for entry-----------------------------------------//
 
 ValueType checkExpression(TypeChecker* checker, Expr* expr)
@@ -130,6 +164,9 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
     printf("\n");
 #endif
 
+    if (expr == NULL) return VALUE_ERROR;
+
+    
     ValueType result;
     switch (expr->type)
     {
@@ -155,6 +192,11 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
         case EXPR_GROUPING:
         {
             result = checkGrouping(checker, expr);
+            break;
+        }
+        case EXPR_VARIABLE:
+        {
+            result = checkVariable(checker, expr);
             break;
         }
         default:

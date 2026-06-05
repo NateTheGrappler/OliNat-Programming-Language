@@ -9,12 +9,23 @@
 #include "common.h"
 #include "debug.h"
 
+typedef struct ASTparser;
+
+typedef struct
+{
+    const char* name;
+    int length;
+    ValueType   type;
+} Symbol;
+
+
 //main struct to keep track of errors and eventually vars
 typedef struct
 {
     bool hadError;
     int errorCount;
-    //TODO: add in a symbol table later on for variables
+    Symbol symbols[256];
+    int varCount;
 } TypeChecker;
 
 
@@ -26,6 +37,10 @@ ValueType checkGrouping(TypeChecker* checker, Expr* expr);
 ValueType checkUnary(TypeChecker* checker, Expr* expr);
 ValueType checkBinary(TypeChecker* checker, Expr* expr);
 void initTypeChecker(TypeChecker* checker);
+
+Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length);
+void addSymbol(TypeChecker* checker, const char* name, int length, ValueType type, struct ASTparser* parser);
+
 
 
 #endif //OLI_NAT_TYPECHECKER_H
