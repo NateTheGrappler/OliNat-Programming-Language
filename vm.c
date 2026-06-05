@@ -16,13 +16,21 @@ void initVM(Vm* vm)
 
     initChunk(&vm->chunk);
     vm->ip = vm->chunk.byteCode;
-    printf("Size of chunk rn %d \n", sizeof(vm->chunk));
+
+    vm->objects = NULL;
+
+    initMap(&vm->strings);
+    initMap(&vm->globals);
 
 }
 void freeVM(Vm* vm)
 {
     freeChunk(&vm->chunk);
     resetStack(vm);
+
+    freeMap(&vm->strings);
+    freeMap(&vm->globals);
+    freeObjects(vm); //free all vm held objects
 }
 
 //-----------------------------------------------Stack stuff-------------------------------------------------------//

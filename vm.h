@@ -10,6 +10,7 @@
 #include "common.h"
 #include "ASTcompiler.h"
 #include "chunk.h"
+#include "Hashmap.h"
 
 typedef enum
 {
@@ -26,6 +27,9 @@ typedef struct Vm
     Chunk chunk;
     uint8_t* ip;
     Obj* objects;
+
+    Hashmap strings;
+    Hashmap globals;
 } Vm;
 
 

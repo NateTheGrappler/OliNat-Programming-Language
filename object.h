@@ -30,6 +30,7 @@ typedef struct ObjString
     Obj obj;
     int length;
     char* chars;
+    uint32_t hash;
 } ObjString;
 
 static inline bool IsObjType(Value value, ObjType type)

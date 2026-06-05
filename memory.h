@@ -8,6 +8,8 @@
 #endif //OLI_NAT_MEMORY_H
 #include <stddef.h>
 
+typedef struct Vm;
+
 #define GROW_CAPACITY(capacity) \
 ((capacity)) < 8 ? 8 : (capacity) * 2
 
@@ -27,3 +29,4 @@
 //because it gives a central point for any allocation or reallocation
 //of memory in the vm for the garbage collector
 void* reallocate(void* pointer, size_t oldSize, size_t newSize);
+void freeObjects(struct Vm* vm);

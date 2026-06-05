@@ -27,4 +27,6 @@ add_executable(Oli_Nat main.c
         Value.h
         object.c
         object.h
+        Hashmap.h
+        Hashmap.c
 )
