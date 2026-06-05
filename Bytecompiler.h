@@ -12,5 +12,6 @@
 
 void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm);
 void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm);
+void emitDefineGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm);
 
 #endif //OLI_NAT_BYTECOMPILER_H

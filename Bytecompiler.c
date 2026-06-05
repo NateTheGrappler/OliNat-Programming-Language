@@ -61,6 +61,19 @@ static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser)
     //hopefully unreachable
 }
 
+//variables
+void emitDefineGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm)
+{
+    ObjString* varName = copyString(name, length, vm);
+    uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
+    emitBytes(OP_DEFINE_GLOBAL, index, chunk, parser);
+}
+void emitGetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm)
+{
+    ObjString* varName = copyString(name, length, vm);
+    uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
+    emitBytes(OP_GET_GLOBAL, index, chunk, parser);
+}
 
 //-----------------------------------------__HELPER FUNCITONS-----------------------------------------------///
 
@@ -130,6 +143,11 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
         {
             //just pass it on
             compileExpressionByte(expr->grouping.expr, parser, vmChunk, vm);
+            break;
+        }
+        case EXPR_VARIABLE:
+        {
+            emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm);
             break;
         }
     }

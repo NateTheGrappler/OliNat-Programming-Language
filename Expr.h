@@ -14,8 +14,6 @@ typedef enum {
     EXPR_UNARY,
     EXPR_GROUPING,
     EXPR_VARIABLE, //TODO: add the implementation for this
-    STMT_VAR_DECL,
-    STMT_ASSIGN,
 } ExprType;
 
 struct Expr;

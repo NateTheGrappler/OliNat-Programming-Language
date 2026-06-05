@@ -195,6 +195,15 @@ static vmResult run(Vm* vm)
                 }
                 break;
             }
+            case OP_INVERSE:
+            {
+                Value constant = pop(vm);
+                if (IS_BOOL(constant))
+                {
+                    push(vm, CREATE_BOOL_VAL(!GET_BOOL_VAL(constant)));
+                }
+                break;
+            }
             case OP_CONSTANT:
             {
                 Value constant = READ_CONSTANT();
@@ -359,6 +368,29 @@ static vmResult run(Vm* vm)
                     float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
                     push(vm,   CREATE_BOOL_VAL(fa <= fb));
                 }
+                break;
+            }
+
+            case OP_DEFINE_GLOBAL:
+            {
+                //just change the top val on the stack in map then pop it off
+                Value constant = READ_CONSTANT();
+                ObjString* name = AS_STRING(constant);
+                MapSet(&vm->globals, name, peek(vm, 0));
+                pop(vm);
+                break;
+            }
+            case OP_GET_GLOBAL:
+            {
+                //get the global name and toss it into the global vars map
+                ObjString* name = AS_STRING(READ_CONSTANT());
+                Value value;
+                if (!MapGet(&vm->globals, name, &value))
+                {
+                    printf("Global not found: %.*s\n", name->length, name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                push(vm, value);
                 break;
             }
 

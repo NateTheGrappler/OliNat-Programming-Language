@@ -117,9 +117,9 @@ void printValue(Value value)
     switch (value.type)
     {
         case VALUE_BOOL:   printf(GET_BOOL_VAL(value) ? "true" : "false"); break;
-        case VALUE_DOUBLE: printf("%d", GET_DOUBLE_VAL(value)); break;
+        case VALUE_DOUBLE: printf("%g", GET_DOUBLE_VAL(value)); break;
         case VALUE_INT:    printf("%d", GET_INT_VAL(value)); break;
-        case VALUE_FLOAT:  printf("%f", GET_FLOAT_VAL(value)); break;
+        case VALUE_FLOAT:  printf("%gf", GET_FLOAT_VAL(value)); break;
         case VALUE_OBJECT: printObject(value); break;
         case VALUE_EMPTY: break;
     }
@@ -190,5 +190,9 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_GREATER_EQUAL", offset);
         case OP_LESS_EQUAL:
             return simpleInstruction("OP_LESS_EQUAL", offset);
+        case OP_DEFINE_GLOBAL:
+            return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+        case OP_GET_GLOBAL:
+            return constantInstruction("OP_GET_GLOBAL", chunk, offset);
     }
 }

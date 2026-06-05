@@ -27,6 +27,9 @@ typedef enum
     OP_LESS_EQUAL,
     OP_CONSTANT,
     OP_INVERSE,
+    OP_DEFINE_GLOBAL,
+    OP_SET_GLOBAL,
+    OP_GET_GLOBAL,
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

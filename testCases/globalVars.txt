@@ -1,0 +1,59 @@
+//basic declarations
+make int x = 5;
+make float y = 3.14f;
+make double z = 3.14;
+make bool flag = true;
+make string name = "hello";
+
+//basic math
+make int a = 10;
+make int b = 3;
+a + b;
+a - b;
+a * b;
+a / b;
+
+//promoting types
+make int a = 5;
+make float b = 2.5f;
+a + b;
+make double c = 1.5;
+a + c;
+
+//boolean comparisions
+make int a = 10;
+make int b = 20;
+a > b;
+a < b;
+a >= b;
+a <= b;
+a == b;
+a != b;
+
+//boolean expressions
+make bool a = true;
+make bool b = false;
+a == b;
+a != b;
+!a;
+
+//unary stuff
+make int x = 5;
+-x;
+make float y = 3.14f;
+-y;
+
+//grouping
+make int a = 2;
+make int b = 3;
+make int c = 4;
+(a + b) * c;
+a + (b * c);
+
+//should be errors
+make int x = 3.14;     // double assigned to int
+make bool y = 5;       // int assigned to bool
+make int z = true;     // bool assigned to int
+
+//no declaration (throws an error but still runs in vm)
+x + 1;                 // x never declared

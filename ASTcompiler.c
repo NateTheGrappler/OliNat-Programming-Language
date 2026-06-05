@@ -354,7 +354,7 @@ static ValueType getVarDeclarationType(ASTparser* parser)
         case T_STRING:
         {
             consume(T_STRING, "Please declare the type of the variable you wish to create after 'make'.", parser);
-            return VALUE_OBJECT;
+            return VALUE_STRING;
         }
         case T_BOOL:
         {
@@ -391,6 +391,9 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
     addSymbol(checker, name, nameLength, type, parser);
 
     compileBytecode(varInitializer, parser, &vm->chunk, vm);
+
+    //set the global to get defined here
+    emitDefineGlobal(name, nameLength, &vm->chunk, parser, vm);
 }
 
 //Basic statements
