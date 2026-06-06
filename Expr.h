@@ -13,6 +13,7 @@ typedef enum {
     EXPR_BINARY,
     EXPR_UNARY,
     EXPR_GROUPING,
+    EXPR_ASSIGN,
     EXPR_VARIABLE, //TODO: add the implementation for this
 } ExprType;
 
@@ -22,6 +23,12 @@ typedef struct
     const char* name;
     int length;
 } Variable;
+typedef struct
+{
+    const char* name;
+    int length;
+    struct Expr* value;
+} VarAssignment;
 typedef struct
 {
     union
@@ -63,6 +70,7 @@ typedef struct Expr {
         Unary unary;
         Variable variable;
         Grouping grouping;
+        VarAssignment var_assignment;
     };
 } Expr;
 
@@ -71,6 +79,7 @@ Expr* createLiteralFloat (float value, int line);
 Expr* createLiteralInt   (int value, int line);
 Expr* createLiteralBool  (bool value, int line);
 Expr* createLiteralString(char* value, int line);
+Expr* createVarAssignment(char* name, int length, Expr* value, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
 Expr* createGrouping     (Expr* expr, int line);

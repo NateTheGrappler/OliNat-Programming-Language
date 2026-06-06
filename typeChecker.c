@@ -121,8 +121,8 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
 {
-    //traverse the array for now
-    for (int i = 0; i < checker->varCount; i++)
+    //traverse the array (backwards for locals) for now
+    for (int i = checker->varCount - 1; i >= 0; i--)
     {
         if (checker->symbols[i].length == length &&
             memcmp(checker->symbols[i].name, name, length) == 0)
@@ -130,7 +130,7 @@ Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
     }
     return NULL;
 }
-void addSymbol(TypeChecker* checker, const char* name, int length, ValueType type, ASTparser* parser)
+void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ASTparser* parser)
 {
     if (checker->varCount >= 256)
     {
@@ -142,6 +142,7 @@ void addSymbol(TypeChecker* checker, const char* name, int length, ValueType typ
     checker->symbols[index].type = type;
     checker->symbols[index].name = name;
     checker->symbols[index].length = length;
+    checker->symbols[index].depth = depth;
 }
 ValueType checkVariable(TypeChecker* checker, Expr* expr)
 {
@@ -197,6 +198,23 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
         case EXPR_VARIABLE:
         {
             result = checkVariable(checker, expr);
+            break;
+        }
+        case EXPR_ASSIGN:
+        {
+            Symbol* symbol = lookUpSymbol(checker, expr->var_assignment.name, expr->var_assignment.length);
+            if (symbol == NULL)
+            {
+                typeError(checker,  expr, "You cannot try to reassign a var that does not exist, no having your cake and eating it.");
+                return VALUE_ERROR;
+            }
+            ValueType type = checkExpression(checker, expr->var_assignment.value);
+            if (type != symbol->type)
+            {
+                typeError(checker, expr, "You cannot try to give a different type to an existing variable!");
+                return VALUE_ERROR;
+            }
+            result = symbol->type;
             break;
         }
         default:

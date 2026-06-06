@@ -96,6 +96,12 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf("IDENTIFIER-%.*s", expr->variable.length, expr->variable.name);
             break;
         }
+        case EXPR_ASSIGN:
+        {
+
+            break;
+        }
+
     }
     //printf("\n");
 }
@@ -168,6 +174,8 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_RETURN", offset);
         case OP_CONSTANT:
             return constantInstruction("OP_CONSTANT", chunk, offset);
+        case OP_POP:
+            return simpleInstruction("OP_POP", offset);
         case OP_NEGATE:
             return simpleInstruction("OP_NEGATE", offset);
         case OP_ADD:
@@ -194,5 +202,11 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
         case OP_GET_GLOBAL:
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+        case OP_GET_LOCAL:
+            return constantInstruction("OP_GET_LOCAL", chunk, offset);
+        case OP_SET_GLOBAL:
+            return byteInstruction("OP_SET_GLOBAL", chunk, offset);
+        case OP_SET_LOCAL:
+            return byteInstruction("OP_SET_LOCAL", chunk, offset);
     }
 }

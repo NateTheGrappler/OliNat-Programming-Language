@@ -4,7 +4,7 @@
 
 #ifndef OLI_NAT_ASTCOMPILER_H
 #define OLI_NAT_ASTCOMPILER_H
-
+#define UINT8_COUNT (UINT8_MAX + 1)
 #include "scanner.h"
 #include "common.h"
 #include "Expr.h"
@@ -23,15 +23,23 @@ typedef struct ASTparser
     bool panicMode;
 } ASTparser;
 
+typedef struct {
+    const char* name;
+    int length;
+    int depth;
+} Local;
+
 typedef struct
 {
-    //for local vars?
+    Local locals[UINT8_COUNT];
+    int localCount;
+    int scopeDepth;
 } AstCompiler;
 
 
 
 bool compile(const char* source, struct Vm* vm);
-
+void initAstCompiler(AstCompiler* compiler);
 
 //shit forwarded to the bytecode compiler
 void error(const char* message, ASTparser* parser);

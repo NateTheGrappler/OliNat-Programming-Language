@@ -26,10 +26,13 @@ typedef enum
     OP_GREATER_EQUAL,
     OP_LESS_EQUAL,
     OP_CONSTANT,
+    OP_POP,
     OP_INVERSE,
     OP_DEFINE_GLOBAL,
     OP_SET_GLOBAL,
     OP_GET_GLOBAL,
+    OP_GET_LOCAL,
+    OP_SET_LOCAL,
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

@@ -80,6 +80,19 @@ Expr* createVariable(const char* name, int length, int line)
     expr->variable.name = name;
     return expr;
 }
+Expr* createVarAssignment(char* name, int length, Expr* value, int line)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_ASSIGN;
+    expr->line = line;
+
+    //call the anyonmous union that holds all the different possible expressions
+    expr->var_assignment.length = length;
+    expr->var_assignment.name = name;
+    expr->var_assignment.value = value;
+    return expr;
+}
+
 Expr* createUnary(char operator, Expr* right, int line)
 {
     //allocate the expr in memory and set it's type
@@ -112,6 +125,7 @@ Expr* createGrouping(Expr* expr, int line)
     exprG->grouping.expr = expr;
     return exprG;
 }
+
 
 void freeExpr(Expr* expr)
 {

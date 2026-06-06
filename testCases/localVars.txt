@@ -1,0 +1,56 @@
+//declarations
+{
+    make int x = 10;
+    make float y = 3.14f;
+    make double z = 2.71;
+    make bool flag = true;
+}
+
+//assignments
+{
+    make int x = 5;
+    x = 10;
+    x;
+}
+
+//shadowing
+make int x = 100;
+{
+    make int x = 200;
+    x;
+}
+x;
+
+//reading globals in scope
+make int a = 42;
+{
+    make int b = 10;
+    a + b;
+}
+
+//assignments
+make int a = 1;
+a = 2;
+a = 3;
+a = 4;
+a;
+
+//local assignments read
+{
+    make float x = 1.5f;
+    x = 9.9f;
+    x;
+}
+
+//ERRORS
+{
+    make int x = 5;
+    x = 3.14f;
+}
+
+{
+    make int x = 5;
+}
+x;
+
+x = 10;

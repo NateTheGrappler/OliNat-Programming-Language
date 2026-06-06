@@ -210,6 +210,12 @@ static vmResult run(Vm* vm)
                 push(vm, constant);
                 break;
             }
+            case OP_POP:
+            {
+                pop(vm);
+                break;
+            }
+
 
             //boolean comparisions
             case OP_EQUAL:
@@ -391,6 +397,29 @@ static vmResult run(Vm* vm)
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push(vm, value);
+                break;
+            }
+            case OP_SET_GLOBAL:
+            {
+                Value constant = READ_CONSTANT();
+                ObjString* name = AS_STRING(constant);
+                if (MapSet(&vm->globals, name, peek(vm, 0)))
+                {
+                    printf("Undefined variable '%s'\n", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
+            case OP_SET_LOCAL:
+            {
+                uint8_t slot = READ_BYTE();
+                vm->stack[slot] = peek(vm, 0);
+                break;
+            }
+            case OP_GET_LOCAL:
+            {
+                uint8_t slot = READ_BYTE();
+                push(vm, vm->stack[slot]);
                 break;
             }
 

@@ -17,6 +17,7 @@ static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
 static Expr* variable(bool canAssign, ASTparser* parser);
+static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 
 //------------------------------------------Structs holding all fun data-----------------------------------------------------//
 //defines language grammer for expressions
@@ -105,9 +106,10 @@ static Expr* parserPrecedence(Precedence precedence, ASTparser* parser);
 static ParseRule* getRule(TokenType type);
 
 //------------------------------------------Init functions-----------------------------------------------------//
-void initAstCompiler(AstCompiler* comlpiler)
+void initAstCompiler(AstCompiler* compiler)
 {
-
+    compiler->localCount = 0;
+    compiler->scopeDepth = 0;
 }
 void initParser(ASTparser* parser, const char* source)
 {
@@ -199,7 +201,17 @@ static bool match(TokenType type, ASTparser* parser)
 //literal expression parsing
 static Expr* variable(bool canAssign, ASTparser* parser)
 {
-    return createVariable(parser->previous.lexemeStart, parser->previous.length, parser->previous.line);
+    //save the name of the var
+    const char* name = parser->previous.lexemeStart;
+    int length = parser->previous.length;
+    int line = parser->previous.line;
+
+    if (match(T_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        return createVarAssignment(name, length, value, line);
+    }
+    return createVariable(name, length, line);
 }
 static Expr* string(bool canAssign, ASTparser* parser)
 {
@@ -366,7 +378,7 @@ static ValueType getVarDeclarationType(ASTparser* parser)
             return VALUE_ERROR;
     }
 }
-static void varDeclaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
+static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
 
     //get / consume the declaraed type
@@ -388,16 +400,31 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
         error("A variable expression's type must be the same as it's declared type.", parser);
     }
 
-    addSymbol(checker, name, nameLength, type, parser);
 
-    compileBytecode(varInitializer, parser, &vm->chunk, vm);
+    if (compiler->scopeDepth == 0)
+    {
+        //set the global to get defined here
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);;
+        compileBytecode(varInitializer, parser, &vm->chunk, compiler, vm);
+        emitDefineGlobal(name, nameLength, &vm->chunk, parser, vm);
+    }
+    else
+    {
+        //declare a new local and then actually parse the value
+        Local* local = &compiler->locals[compiler->localCount++];
+        local->name = name;
+        local->length = nameLength;
+        local->depth = compiler->scopeDepth;
 
-    //set the global to get defined here
-    emitDefineGlobal(name, nameLength, &vm->chunk, parser, vm);
+        //the compiled value ends up on the stack and IS the local
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);
+        compileBytecode(varInitializer, parser, &vm->chunk, compiler, vm);
+    }
+
 }
 
 //Basic statements
-static void expressionStatement(ASTparser* parser, TypeChecker* checker, Vm* vm)
+static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     //compile and check expression, then compile again to bytecode
     Expr* expr = astExpression(parser);
@@ -405,28 +432,67 @@ static void expressionStatement(ASTparser* parser, TypeChecker* checker, Vm* vm)
 
     if (type != VALUE_ERROR)
     {
-        compileBytecode(expr, parser, &vm->chunk, vm);
+        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
+        emitByte(OP_POP, &vm->chunk, parser);
     }
 
     //consume the ; and free memory
     consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", parser);
     freeExpr(expr);
 }
-static void statement(ASTparser* parser, TypeChecker* checker, Vm* vm)
+static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
-    expressionStatement(parser, checker, vm);
+    expressionStatement(parser, checker, compiler, vm);
+}
+
+static void beginScope(AstCompiler* compiler)
+{
+    compiler->scopeDepth++;
+}
+static void endScope(AstCompiler* compiler, TypeChecker* checker, Vm* vm, ASTparser* parser)
+{
+    compiler->scopeDepth--;
+
+    //pop locals
+    while (compiler->localCount > 0 && compiler->locals[compiler->localCount-1].depth > compiler->scopeDepth)
+    {
+        emitByte(OP_POP, &vm->chunk, parser);
+        compiler->localCount--;
+    }
+
+    //pop in tandem with symbol table
+    while (checker->varCount > 0 &&
+       checker->symbols[checker->varCount - 1].depth > compiler->scopeDepth)
+    {
+        checker->varCount--;
+    }
+}
+static void block(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    while (!check(T_RIGHT_BRACE, parser) && !check(T_EOF, parser))
+    {
+        declaration(parser, checker, compiler, vm);
+    }
+
+    consume(T_RIGHT_BRACE, "Each of your '{' must inturn have a matching '}', please.", parser);
 }
 
 //newer stuff for the statements and variables
-static void declaration(ASTparser* parser, TypeChecker* checker, Vm* vm)
+static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     if (match(T_MAKE, parser))
     {
-        varDeclaration(parser, checker, vm);
+        varDeclaration(parser, checker, compiler, vm);
+    }
+    else if (match(T_LEFT_BRACE, parser))
+    {
+        beginScope(compiler);
+        block(parser, checker, compiler, vm);
+        endScope(compiler, checker, vm, parser);
     }
     else
     {
-        statement(parser, checker, vm);
+        statement(parser, checker, compiler, vm);
     }
 }
 
@@ -441,15 +507,15 @@ bool compile(const char* source, Vm* vm)
     TypeChecker checker;
     initTypeChecker(&checker);
 
+    AstCompiler compiler;
+    initAstCompiler(&compiler);
 
     while (!check(T_EOF, &parser))
     {
-        declaration(&parser, &checker, vm );
+        declaration(&parser, &checker, &compiler, vm );
     }
 
-    //set up compiler
-    //AstCompiler compiler;
-    //initAstCompiler(&compiler);
+
 
     emitReturn(&vm->chunk, &parser);
     return parser.hadError;

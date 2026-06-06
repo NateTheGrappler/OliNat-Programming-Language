@@ -9,7 +9,7 @@
 static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser);
 
 //-------------------------------------Writting to the chunk functions------------------------------------------//
-static void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser)
+void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser)
 {
     writeToChunk(chunk, byte, parser->previous.line);
 }
@@ -74,6 +74,26 @@ void emitGetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser
     uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
     emitBytes(OP_GET_GLOBAL, index, chunk, parser);
 }
+void emitSetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm)
+{
+    ObjString* varName = copyString(name, length, vm);
+    uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
+    emitBytes(OP_SET_GLOBAL, index, chunk, parser);
+}
+int resolveLocal(AstCompiler* compiler, const char* name, int length)
+{
+    for (int i = compiler->localCount - 1; i >= 0; i--)
+    {
+        Local* local = &compiler->locals[i];
+        if (local->length == length && memcmp(local->name, name, length) == 0) return i; //found right local
+    }
+    return -1; //no local found, must be global
+}
+void emitGetLocal(int position, Chunk* chunk, ASTparser* parser)
+{
+    emitBytes(OP_GET_LOCAL, (uint8_t)position, chunk, parser);
+}
+
 
 //-----------------------------------------__HELPER FUNCITONS-----------------------------------------------///
 
@@ -90,7 +110,7 @@ static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser
 
 //----------------------------------------Actual compiler stuff-------------------------------------------------//
 
-void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm)
+void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCompiler* compiler, Vm* vm)
 {
 
     #ifdef DEBUG_TRACE_EXECUTION
@@ -109,8 +129,8 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
     {
         case EXPR_BINARY:
         {
-            compileExpressionByte(expr->binary.left, parser, vmChunk, vm);
-            compileExpressionByte(expr->binary.right, parser, vmChunk, vm);
+            compileExpressionByte(expr->binary.left, parser, vmChunk, compiler, vm);
+            compileExpressionByte(expr->binary.right, parser, vmChunk,compiler, vm);
             emitBinaryOperator(expr->binary.operator, vmChunk, parser);
             break;
         }
@@ -135,27 +155,45 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm
         }
         case EXPR_UNARY:
         {
-            compileExpressionByte(expr->unary.right, parser, vmChunk, vm);
+            compileExpressionByte(expr->unary.right, parser, vmChunk, compiler, vm);
             emitUnaryOperator(expr->unary.operator, vmChunk, parser);
             break;
         }
         case EXPR_GROUPING:
         {
             //just pass it on
-            compileExpressionByte(expr->grouping.expr, parser, vmChunk, vm);
+            compileExpressionByte(expr->grouping.expr, parser, vmChunk, compiler, vm);
             break;
         }
         case EXPR_VARIABLE:
         {
-            emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm);
+            int scan = resolveLocal(compiler, expr->variable.name, expr->variable.length);
+            if (scan == -1)
+            {
+                emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm);
+            }
+            else
+            {
+                emitGetLocal(scan, vmChunk, parser);
+            }
+            break;
+        }
+        case EXPR_ASSIGN:
+        {
+            compileExpressionByte(expr->var_assignment.value, parser, vmChunk, compiler, vm);
+            int slot = resolveLocal(compiler, expr->var_assignment.name, expr->var_assignment.length);
+            if (slot != -1)
+                emitBytes(OP_SET_LOCAL, (uint8_t)slot, vmChunk, parser);
+            else
+                emitSetGlobal(expr->var_assignment.name, expr->var_assignment.length, vmChunk, parser, vm);
             break;
         }
     }
 }
 
 
-void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, Vm* vm)
+void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCompiler* compiler, Vm* vm)
 {
     //TODO: add in a way to seperate consequtive expressions from return call
-    compileExpressionByte(expr, parser, vmChunk, vm);
+    compileExpressionByte(expr, parser, vmChunk, compiler, vm);
 }

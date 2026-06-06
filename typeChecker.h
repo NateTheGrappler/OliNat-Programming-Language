@@ -16,6 +16,7 @@ typedef struct
     const char* name;
     int length;
     ValueType   type;
+    int depth;
 } Symbol;
 
 
@@ -39,7 +40,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr);
 void initTypeChecker(TypeChecker* checker);
 
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length);
-void addSymbol(TypeChecker* checker, const char* name, int length, ValueType type, struct ASTparser* parser);
+void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, struct ASTparser* parser);
 
 
 
