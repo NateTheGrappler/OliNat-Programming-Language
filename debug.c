@@ -98,7 +98,10 @@ void printExpression(Expr* expr) //a recursive function for printing out express
         }
         case EXPR_ASSIGN:
         {
-
+            printf("(ASSIGNMENT %.*s ", expr->var_assignment.length, expr->var_assignment.name);
+            printExpression(expr->var_assignment.value);
+            printf(")");
+            break;
             break;
         }
 

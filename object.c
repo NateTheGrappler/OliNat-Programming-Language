@@ -58,3 +58,17 @@ ObjString* copyString(const char* chars, int length, struct Vm* vm)
     heapChars[length] = '\0';
     return allocateString(heapChars, length, hash, vm); //TODO: add hashing
 }
+
+
+ObjString* combineString(char* chars, int length, Vm* vm)
+{
+    uint32_t hash = hashString(chars, length); //rehash a new code for the concatenated string
+
+    ObjString* interned = hashmapFindString(&vm->strings, chars, length, hash);
+    if (interned != NULL)
+    {
+        FREE_ARRAY(char, chars, length+1);
+        return interned;
+    }
+    return allocateString(chars, length, hash, vm);
+}

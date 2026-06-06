@@ -55,7 +55,19 @@ Value peek(Vm* vm, int distance)
 }
 
 //----------------------------------------------VM HELPERS-------------------------------------------------//
+static void concatenate(Vm* vm, Value b, Value a)
+{
+    ObjString* c = AS_STRING(a);
+    ObjString* d = AS_STRING(b);
 
+    int length = c->length + d->length;
+    char* chars = ALLOCATE(char, length+1);
+    memcpy(chars, c->chars, c->length);
+    memcpy(chars + c->length, d->chars, d->length);
+    chars[length] = '\0';
+    ObjString* result = combineString(chars, length, vm);
+    push(vm, CREATE_OBJECT_VAL((Obj*)result));
+}
 //-------------------------------------------Main meat of the vm-------------------------------------------//
 static vmResult run(Vm* vm)
 {
@@ -106,6 +118,10 @@ static vmResult run(Vm* vm)
                     float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
                     float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
                     push(vm,  CREATE_FLOAT_VAL(fa + fb));
+                }
+                else if (IS_STRING(a) && IS_STRING(b))
+                {
+                    concatenate(vm, b, a);
                 }
                 break;
             }
@@ -243,6 +259,10 @@ static vmResult run(Vm* vm)
                     float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
                     push(vm,   CREATE_BOOL_VAL(fa == fb));
                 }
+                else if (IS_STRING(a) && IS_STRING(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_OBJECT_VAL(a) == GET_OBJECT_VAL(b)));
+                }
                 else
                 {
                     printf("Runtime Error: cannot compare values of different types you goob\n");
@@ -275,6 +295,10 @@ static vmResult run(Vm* vm)
                     float fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (float)GET_INT_VAL(a);
                     float fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (float)GET_INT_VAL(b);
                     push(vm,   CREATE_BOOL_VAL(fa != fb));
+                }
+                else if (IS_STRING(a) && IS_STRING(b))
+                {
+                    push(vm, CREATE_BOOL_VAL(GET_OBJECT_VAL(a) != GET_OBJECT_VAL(b)));
                 }
                 else
                 {

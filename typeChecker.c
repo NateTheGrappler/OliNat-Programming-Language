@@ -89,6 +89,8 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
         strcmp(operator, "*") == 0 )
     {
         if (isNumeric(leftType) && isNumeric(rightType)) return checkBinaryReturnType(rightType, leftType); //somehow handle different expression outputs
+        if (strcmp(operator, "+") == 0 && rightType == VALUE_STRING && leftType == VALUE_STRING) { return VALUE_STRING; }
+
         typeError(checker, expr, "If you want to do math, you have to use numbers (double, float, int), please.");
         return VALUE_ERROR;
     }

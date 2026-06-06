@@ -43,5 +43,6 @@ static inline bool IsObjType(Value value, ObjType type)
 #define AS_CSTRING(value)      (((ObjString*)GET_OBJECT_VAL(value))->chars)
 
 ObjString* copyString(const char* chars, int length, struct Vm* vm);
+ObjString* combineString(char* chars, int length, struct Vm* vm);
 
 #endif //OLI_NAT_OBJECT_H
