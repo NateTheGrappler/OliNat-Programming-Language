@@ -286,8 +286,6 @@ Token scanToken(Scanner* scanner)
 
         //possibly single or double tokens
         case '*': return makeToken(match('=', scanner) ? T_STAR_EQUAL    : T_STAR,    scanner);
-        case '+': return makeToken(match('=', scanner) ? T_PLUS_EQUAL    : T_PLUS,    scanner);
-        case '-': return makeToken(match('=', scanner) ? T_MINUS_EQUAL   : T_MINUS,   scanner); //TODO: add support for '->'
         case '/': return makeToken(match('=', scanner) ? T_SLASH_EQUAL   : T_SLASH,   scanner);
         case '=': return makeToken(match('=', scanner) ? T_EQUAL_EQUAL   : T_EQUAL,   scanner);
         case '!': return makeToken(match('=', scanner) ? T_BANG_EQUAL    : T_BANG,    scanner);
@@ -295,7 +293,18 @@ Token scanToken(Scanner* scanner)
         case '<': return makeToken(match('=', scanner) ? T_LESS_EQUAL    : T_LESS,    scanner);
         case '|': if (match('|', scanner)) return makeToken(T_OR, scanner);
         case '&': if (match('&', scanner)) return makeToken(T_AND, scanner);
-
+        case '+':
+        {
+            if (match('+', scanner)) return makeToken(T_PLUS_PLUS, scanner);
+            if (match('=', scanner)) return makeToken(T_PLUS_EQUAL, scanner);
+            return makeToken(T_PLUS, scanner);
+        }
+        case '-':
+        {
+            if (match('+', scanner)) return makeToken(T_MINUS_MINUS, scanner);
+            if (match('=', scanner)) return makeToken(T_MINUS_EQUAL, scanner);
+            return makeToken(T_MINUS, scanner);
+        }
         //handle strings
         case '"': return string(scanner); //TODO: see if you can add chars
     }

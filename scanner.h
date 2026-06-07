@@ -23,8 +23,8 @@ typedef enum
     T_OR, T_AND,
 
     //possibly add support for assignment changes
-    T_PLUS_EQUAL, T_MINUS_EQUAL,
-    T_STAR_EQUAL, T_SLASH_EQUAL,
+    T_PLUS_EQUAL, T_MINUS_EQUAL, T_PLUS_PLUS,
+    T_STAR_EQUAL, T_SLASH_EQUAL, T_MINUS_MINUS,
 
     //literals
     T_IDENTIFIER, T_STRING_VAL, T_DOUBLE_VAL,

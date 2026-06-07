@@ -213,7 +213,33 @@ static Expr* variable(bool canAssign, ASTparser* parser)
         Expr* value = astExpression(parser);
         return createVarAssignment(name, length, value, line);
     }
-    return createVariable(name, length, line);
+
+    Expr* self = createVariable(name, length, line); //helper for doing the fancy += syntax
+    if (match(T_PLUS_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        Expr* binary = createBinary(self, value, "+", line);
+        return createVarAssignment(name, length, binary, line);
+    }
+    if (match(T_MINUS_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        Expr* binary = createBinary(self, value, "-", line);
+        return createVarAssignment(name, length, binary, line);
+    }
+    if (match(T_STAR_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        Expr* binary = createBinary(self, value, "*", line);
+        return createVarAssignment(name, length, binary, line);
+    }
+    if (match(T_SLASH_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        Expr* binary = createBinary(self, value, "/", line);
+        return createVarAssignment(name, length, binary, line);
+    }
+    return self;
 }
 static Expr* string(bool canAssign, ASTparser* parser)
 {
