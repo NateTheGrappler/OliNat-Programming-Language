@@ -68,11 +68,13 @@ static void concatenate(Vm* vm, Value b, Value a)
     ObjString* result = combineString(chars, length, vm);
     push(vm, CREATE_OBJECT_VAL((Obj*)result));
 }
+
 //-------------------------------------------Main meat of the vm-------------------------------------------//
 static vmResult run(Vm* vm)
 {
 #define READ_BYTE() (*vm->ip++)
 #define READ_CONSTANT() (vm->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
+#define READ_SHORT() (vm->ip += 2, (uint16_t)((vm->ip[-2] << 8) | vm->ip[-1]))
 
 
     //the main meat of it all baby
@@ -447,6 +449,26 @@ static vmResult run(Vm* vm)
                 break;
             }
 
+            case OP_JUMP:
+            {
+                uint16_t offset = READ_SHORT();
+                vm->ip += offset;
+                break;
+            }
+            case OP_JUMP_IF_FALSE:
+            {
+                uint16_t offset = READ_SHORT();
+               if (!GET_BOOL_VAL(peek(vm, 0))) vm->ip += offset;
+                break;
+            }
+            case OP_LOOP:
+            {
+                uint16_t offset = READ_SHORT();
+                vm->ip -= offset;
+                break;
+            }
+
+
             default:
                 printf("Unknown opcode: %d\n", instruction);
                 return INTERPRET_RUNTIME_ERROR;
@@ -454,6 +476,8 @@ static vmResult run(Vm* vm)
     }
 
 #undef READ_BYTE
+#undef READ_CONSTANT
+#undef READ_SHORT
 }
 
 //-----------------------------Actual VM Functionality-----------------------//

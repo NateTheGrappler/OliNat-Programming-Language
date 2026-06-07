@@ -14,4 +14,5 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
 void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCompiler* compiler, Vm* vm);
 void emitDefineGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm);
 void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser);
+short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser);
 #endif //OLI_NAT_BYTECOMPILER_H

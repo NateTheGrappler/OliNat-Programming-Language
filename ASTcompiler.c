@@ -18,6 +18,8 @@ static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
 static Expr* variable(bool canAssign, ASTparser* parser);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
+static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
+static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 
 //------------------------------------------Structs holding all fun data-----------------------------------------------------//
 //defines language grammer for expressions
@@ -423,28 +425,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
 
 }
 
-//Basic statements
-static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
-{
-    //compile and check expression, then compile again to bytecode
-    Expr* expr = astExpression(parser);
-    ValueType type = checkExpression(checker, expr);
-
-    if (type != VALUE_ERROR)
-    {
-        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
-        emitByte(OP_POP, &vm->chunk, parser);
-    }
-
-    //consume the ; and free memory
-    consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", parser);
-    freeExpr(expr);
-}
-static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
-{
-    expressionStatement(parser, checker, compiler, vm);
-}
-
+//block statements
 static void beginScope(AstCompiler* compiler)
 {
     compiler->scopeDepth++;
@@ -477,18 +458,213 @@ static void block(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler
     consume(T_RIGHT_BRACE, "Each of your '{' must inturn have a matching '}', please.", parser);
 }
 
+
+//if statements
+static void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
+{
+    short jump = currentChunk->count - offset - 2;
+
+    if (jump > UINT16_MAX)
+    {
+        error("Too much code to jump over twin.", parser);
+    }
+
+    currentChunk->byteCode[offset] = (jump >> 8) & 0xff;
+    currentChunk->byteCode[offset+1] = jump & 0xff;
+}
+static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    consume(T_LEFT_PAREN, "Please supplement your if statement with a '(' after 'if'.", parser);
+    Expr* condition = astExpression(parser);
+    consume(T_RIGHT_PAREN, "Please close your if statement's condition with ')'.", parser);
+
+
+    ValueType conditionType = checkExpression(checker, condition);
+    if (conditionType != VALUE_BOOL)
+    {
+        error("If condition must be a boolean.", parser);
+    }
+    compileBytecode(condition, parser, &vm->chunk, compiler, vm);
+
+
+    //emit a jump instruction with then two supplementary bytes to store how large the jump is
+    short jumpIndex = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
+    emitByte(OP_POP, &vm->chunk, parser);         //get condition value off stack TODO: see if this causes issues
+    statement(parser, checker, compiler, vm);     //parse block
+
+    short elseJump = emitJump(OP_JUMP, &vm->chunk, parser); //always jump if found
+
+    patchJump(jumpIndex, &vm->chunk, parser);
+    emitByte(OP_POP, &vm->chunk, parser);
+
+
+    if (match(T_ELSE, parser))
+    {
+        statement(parser, checker, compiler, vm);     //parse else block
+    }
+    patchJump(elseJump, &vm->chunk, parser);
+
+}
+
+
+//while loops and for loops
+static void emitLoop(int loopStart, ASTparser* parser, Vm* vm)
+{
+    emitByte(OP_LOOP, &vm->chunk, parser);
+
+    int offset = vm->chunk.count - loopStart + 2;
+    if (offset > UINT16_MAX) error("Loop body is too large.", parser);
+
+    emitByte(((offset >> 8) & 0xff), &vm->chunk, parser);
+    emitByte((offset  & 0xff), &vm->chunk, parser);
+}
+static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    int loopStart = vm->chunk.count;
+
+    consume(T_LEFT_PAREN, "Please supplement your while statement with a '(' after 'while'.", parser);
+    Expr* condition = astExpression(parser);
+    consume(T_RIGHT_PAREN, "Please close your while statement's condition with ')'.", parser);
+
+
+    ValueType conditionType = checkExpression(checker, condition);
+    if (conditionType != VALUE_BOOL)
+    {
+        error("While condition must be a boolean.", parser);
+    }
+    compileBytecode(condition, parser, &vm->chunk, compiler, vm);
+
+    int exitJump = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
+    emitByte(OP_POP, &vm->chunk, parser);
+    statement(parser, checker, compiler, vm);
+    emitLoop(loopStart, parser, vm);
+
+    patchJump(exitJump, &vm->chunk, parser);
+    emitByte(OP_POP, &vm->chunk, parser);
+}
+static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    beginScope(compiler);
+    consume(T_LEFT_PAREN, "Please use a '(' character after the for keyword.", parser);
+
+    if (match(T_SEMICOLON, parser))
+    {
+        //no
+        //initializer, infinite loop
+    }
+    else if (match(T_MAKE, parser))
+    {
+        varDeclaration(parser, checker, compiler, vm);
+    }
+    else
+    {
+        expressionStatement(parser, checker, compiler, vm);
+    }
+
+    int loopStart = vm->chunk.count;
+
+    int exitJump = -1;
+    if (!match(T_SEMICOLON, parser))
+    {
+        //calculate the actual condition
+        Expr* expr = astExpression(parser);
+        ValueType type = checkExpression(checker, expr);
+        if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", parser); }
+
+        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
+        consume(T_SEMICOLON, "The code expects ';' after a for loop conditional.", parser);
+
+        exitJump = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
+        emitByte(OP_POP, &vm->chunk, parser);
+    }
+
+    int bodyJump = -1;
+    int incrementStart = -1;
+    if (!match(T_RIGHT_PAREN, parser))
+    {
+        //evaluate the expression changing the loop
+        bodyJump = emitJump(OP_JUMP, &vm->chunk, parser);
+        incrementStart = vm->chunk.count;
+
+        Expr* expr = astExpression(parser);
+        compileBytecode(expr,parser, &vm->chunk, compiler, vm);
+
+        emitByte(OP_POP, &vm->chunk, parser);
+        consume(T_RIGHT_PAREN, "Expect ')' after for loop clauses", parser);
+
+        emitLoop(loopStart, parser, vm);
+        loopStart = incrementStart;
+        patchJump(bodyJump, &vm->chunk, parser);
+    }
+    else
+    {
+        consume(T_RIGHT_PAREN, "Expect ')' after for clauses", parser);
+    }
+
+    statement(parser, checker, compiler, vm);
+    emitLoop(loopStart, parser, vm);
+
+    if (exitJump != -1)
+    {
+        patchJump(exitJump, &vm->chunk, parser);
+        emitByte(OP_POP, &vm->chunk, parser);
+    }
+
+    endScope(compiler, checker, vm, parser);
+}
+
+//Basic statements
+static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    //compile and check expression, then compile again to bytecode
+    Expr* expr = astExpression(parser);
+    ValueType type = checkExpression(checker, expr);
+
+    if (type != VALUE_ERROR)
+    {
+        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
+        emitByte(OP_POP, &vm->chunk, parser);
+    }
+
+    //consume the ; and free memory
+    consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", parser);
+    freeExpr(expr);
+}
+static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    if (match(T_LEFT_BRACE, parser))
+    {
+        beginScope(compiler);
+        block(parser, checker, compiler, vm);
+        endScope(compiler, checker, vm, parser);
+    }
+
+    else if (match(T_IF, parser))
+    {
+        ifStatement(parser, checker, compiler, vm);
+    }
+    else if (match(T_WHILE, parser))
+    {
+        whileStatement(parser, checker, compiler, vm);
+    }
+    else if (match(T_FOR, parser))
+    {
+        forStatement(parser, checker, compiler, vm);
+    }
+    else
+    {
+        expressionStatement(parser, checker, compiler, vm);
+    }
+}
+
+
+
 //newer stuff for the statements and variables
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     if (match(T_MAKE, parser))
     {
         varDeclaration(parser, checker, compiler, vm);
-    }
-    else if (match(T_LEFT_BRACE, parser))
-    {
-        beginScope(compiler);
-        block(parser, checker, compiler, vm);
-        endScope(compiler, checker, vm, parser);
     }
     else
     {

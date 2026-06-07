@@ -94,6 +94,15 @@ void emitGetLocal(int position, Chunk* chunk, ASTparser* parser)
     emitBytes(OP_GET_LOCAL, (uint8_t)position, chunk, parser);
 }
 
+//control flow
+short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser)
+{
+    emitByte(instruction, chunk, parser);
+    emitByte(0xff, chunk, parser);
+    emitByte(0xff, chunk, parser);
+    return (short)(chunk->count - 2);
+}
+
 
 //-----------------------------------------__HELPER FUNCITONS-----------------------------------------------///
 
