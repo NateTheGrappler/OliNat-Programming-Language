@@ -239,6 +239,18 @@ static Expr* variable(bool canAssign, ASTparser* parser)
         Expr* binary = createBinary(self, value, "/", line);
         return createVarAssignment(name, length, binary, line);
     }
+    if (match(T_PLUS_PLUS, parser) && canAssign)
+    {
+        Expr* value = createLiteralInt(1, line);
+        Expr* binary = createBinary(self, value, "+", line);
+        return createVarAssignment(name, length, binary, line);
+    }
+    if (match(T_MINUS_MINUS, parser) && canAssign)
+    {
+        Expr* value = createLiteralInt(1, line);
+        Expr* binary = createBinary(self, value, "-", line);
+        return createVarAssignment(name, length, binary, line);
+    }
     return self;
 }
 static Expr* string(bool canAssign, ASTparser* parser)

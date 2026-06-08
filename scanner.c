@@ -301,7 +301,7 @@ Token scanToken(Scanner* scanner)
         }
         case '-':
         {
-            if (match('+', scanner)) return makeToken(T_MINUS_MINUS, scanner);
+            if (match('-', scanner)) return makeToken(T_MINUS_MINUS, scanner);
             if (match('=', scanner)) return makeToken(T_MINUS_EQUAL, scanner);
             return makeToken(T_MINUS, scanner);
         }
