@@ -1,0 +1,20 @@
+for (make int i = 0; i < 10; i = i + 1)
+{
+    1 + 1;
+}
+
+for (make int i = 10; i > 0; i = i - 1)
+{
+    2 + 2;
+}
+
+for (make int i = 0; i < 5; i = i + 1)
+{
+    make int x = i + 100;
+}
+
+make int total = 0;
+for (make int i = 1; i < 6; i = i + 1)
+{
+    total = total + i;
+}

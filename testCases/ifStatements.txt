@@ -1,0 +1,37 @@
+make int x = 10;
+make int y = 5;
+
+if (x > y)
+{
+    make int result = 1;
+}
+
+if (x < y)
+{
+    make int result = 0;
+}
+
+make bool flag = true;
+if (flag)
+{
+    make int a = 100;
+}
+
+if (x > y)
+{
+    make int big = 1;
+}
+else
+{
+    make int big = 0;
+}
+
+make int z = 3;
+if (z > y)
+{
+    make int w = 1;
+}
+else
+{
+    make int w = 0;
+}

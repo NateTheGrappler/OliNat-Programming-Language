@@ -44,7 +44,7 @@ static void emitBinaryOperator(const char* operator, Chunk* chunk, ASTparser* pa
     if (strcmp(operator, "==") == 0) {emitByte(OP_EQUAL, chunk, parser);         return;}
     if (strcmp(operator, "!=") == 0) {emitByte(OP_NOT_EQUAL, chunk, parser);     return;}
 
-    error("Invalid operation found in one of your math operations", parser);
+    error("Invalid operation found in one of your math operations", "SYNTAX ERROR", parser);
 }
 static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser)
 {
@@ -54,7 +54,7 @@ static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser)
         case '!': emitByte(OP_INVERSE, chunk, parser); break;
         default:
         {
-            error("Invalid unary operator found in expressions, please double check what you are doing.", parser);
+            error("Invalid unary operator found in expressions, please double check what you are doing.", "SYNTAX ERROR", parser);
             return;
         }
     }
@@ -111,7 +111,7 @@ static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser
     int constantIndex = addConstant(chunk, value, vm);
     if (constantIndex > UINT8_MAX)
     {
-        error("Too many constants in one chunk.", parser); //TODO: add in a way to store more constants than 255 in one chunk
+        error("Too many constants in one chunk.", "MEMORY ERROR", parser); //TODO: add in a way to store more constants than 255 in one chunk
     }
     return (uint8_t)constantIndex;
 }
@@ -130,7 +130,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
 
     if (expr == NULL)
     {
-        error("NULL expression reached in compiler", parser);
+        error("NULL expression reached in compiler", "GOD HELP YOU", parser);
         return;
     }
 

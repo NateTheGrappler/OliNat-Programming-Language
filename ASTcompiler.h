@@ -42,10 +42,10 @@ bool compile(const char* source, struct Vm* vm);
 void initAstCompiler(AstCompiler* compiler);
 
 //shit forwarded to the bytecode compiler
-void error(const char* message, ASTparser* parser);
-void errorAtCurrent(const char* message, ASTparser* parser);
-void errorAt(Token* token, const char* message, ASTparser* parser);
-void consume(TokenType type, const char* message, ASTparser* parser);
+void error(const char* message, const char* messageType, ASTparser* parser);
+void errorAtCurrent(const char* message, const char* messageType, ASTparser* parser);
+void errorAt(Token* token, const char* message, const char* messageType, ASTparser* parser);
+void consume(TokenType type, const char* message, const char* messageType, ASTparser* parser);
 void emitReturn(Chunk* chunk, ASTparser* parser);
 
 #endif //OLI_NAT_ASTCOMPILER_H

@@ -43,7 +43,16 @@ static void runFile(const char* filePath, Vm* vm)
 {
     //get a char array of the source
     const char* source = readFile(filePath);
-    interpret(source, vm);
+    vmResult result = interpret(source, vm);
+
+    if (result == INTERPRET_RUNTIME_ERROR)
+    {
+        exit(65);
+    }
+    if (result == INTERPRET_COMPILE_ERROR)
+    {
+        exit(70);
+    }
 }
 
 

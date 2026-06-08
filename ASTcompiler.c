@@ -127,11 +127,11 @@ void initParser(ASTparser* parser, const char* source)
 //------------------------------------------Error handling functions-----------------------------------------------------//
 
 //main error handling function for compile time
-void errorAt(Token* token, const char* message, ASTparser* parser)
+void errorAt(Token* token, const char* message, const char* messageType, ASTparser* parser)
 {
     if (parser->panicMode) return; //skip if error already detected
 
-    fprintf(stderr, "[line %d Error", token->line);
+    fprintf(stderr, ":>>  %s -- [line %d", messageType, token->line);
 
     if (token->type == T_EOF)
     {
@@ -147,29 +147,29 @@ void errorAt(Token* token, const char* message, ASTparser* parser)
         fprintf(stderr, " at '%.*s'", token->length, token->lexemeStart);
     }
 
-    fprintf(stderr, ": %s\n]", message);
+    fprintf(stderr, ": %s]\n", message);
     parser->hadError = true;
     parser->panicMode = true;
 }
 //error at previous token
-void error(const char* message, ASTparser* parser)
+void error(const char* message, const char* messageType, ASTparser* parser)
 {
-    errorAt(&parser->previous, message, parser);
+    errorAt(&parser->previous, message, messageType, parser);
 }
 //error at current looking at token
-void errorAtCurrent(const char* message, ASTparser* parser)
+void errorAtCurrent(const char* message, const char* messageType, ASTparser* parser)
 {
-    errorAt(&parser->current, message, parser);
+    errorAt(&parser->current, message, messageType, parser);
 }
 //my personal favorite function, check for necessary token
-void consume(TokenType type, const char* message, ASTparser* parser)
+void consume(TokenType type, const char* message, const char* messageType, ASTparser* parser)
 {
     if (parser->current.type == type)
     {
         advance(parser);
         return;
     }
-    errorAtCurrent(message, parser);
+    errorAtCurrent(message, messageType, parser);
 }
 
 
@@ -185,7 +185,7 @@ static void advance(ASTparser* parser)
         parser->current = scanToken(&parser->scanner);
         //printToken(parser->current, &parser->scanner);
         if (parser->current.type != T_ERROR) break;
-        errorAtCurrent(parser->current.lexemeStart, parser);
+        errorAtCurrent(parser->current.lexemeStart, "PARSER ERROR", parser);
     }
 }
 static bool check(TokenType type, ASTparser* parser)
@@ -321,7 +321,7 @@ static Expr* unary(bool canAssign, ASTparser* parser)
 static Expr* grouping(bool canAssign, ASTparser* parser)
 {
     Expr* expr = astExpression(parser);
-    consume(T_RIGHT_PAREN, "Please finish all parentheses with a ')'.", parser);
+    consume(T_RIGHT_PAREN, "Please finish all parentheses with a ')'.", "GROUPING ERROR", parser);
     return expr;
 }
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left)
@@ -359,7 +359,7 @@ static Expr* parserPrecedence(Precedence precedence, ASTparser* parser)
     PrefixFn prefixRule = getRule(parser->previous.type)->prefix;
     if (prefixRule == NULL)
     {
-        error("Expected expression", parser);
+        error("Expected expression", "SYNTAX ERROR", parser);
         return NULL;
     }
 
@@ -390,31 +390,31 @@ static ValueType getVarDeclarationType(ASTparser* parser)
     {
         case T_INTEGER:
         {
-            consume(T_INTEGER, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            consume(T_INTEGER, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_INT;
         }
         case T_FLOAT:
         {
-            consume(T_FLOAT, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            consume(T_FLOAT, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_FLOAT;
         }
         case T_DOUBLE:
         {
-            consume(T_DOUBLE, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            consume(T_DOUBLE, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_DOUBLE;
         }
         case T_STRING:
         {
-            consume(T_STRING, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            consume(T_STRING, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_STRING;
         }
         case T_BOOL:
         {
-            consume(T_BOOL, "Please declare the type of the variable you wish to create after 'make'.", parser);
+            consume(T_BOOL, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_BOOL;
         }
         default:
-            error("Expected a type after 'make'", parser);
+            error("Expected a type after 'make'", "SYNTAX ERROR", parser);
             return VALUE_ERROR;
     }
 }
@@ -425,19 +425,19 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     ValueType type = getVarDeclarationType(parser);
 
     //get the var name
-    consume(T_IDENTIFIER, "You must name your variable, they get sad if you dont.", parser);
+    consume(T_IDENTIFIER, "You must name your variable, they get sad if you dont.", "SYNTAX ERROR", parser);
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
-    consume(T_EQUAL, "Expected a '=' after you declare a new variable.", parser);
+    consume(T_EQUAL, "Expected a '=' after you declare a new variable.", "SYNTAX ERROR", parser);
     Expr* varInitializer = astExpression(parser);
-    consume(T_SEMICOLON, "Expected ';' after you declare a new variable", parser);
+    consume(T_SEMICOLON, "Expected ';' after you declare a new variable", "SYNTAX ERROR", parser);
 
     //check the type of the expression vs the declared type
     ValueType realType = checkExpression(checker, varInitializer);
     if (realType != type)
     {
-        error("A variable expression's type must be the same as it's declared type.", parser);
+        error("A variable expression's type must be the same as it's declared type.", "TYPE MISMATCH ERROR", parser);
     }
 
 
@@ -493,7 +493,7 @@ static void block(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler
         declaration(parser, checker, compiler, vm);
     }
 
-    consume(T_RIGHT_BRACE, "Each of your '{' must inturn have a matching '}', please.", parser);
+    consume(T_RIGHT_BRACE, "Each of your '{' must inturn have a matching '}', please.", "SYNTAX ERROR", parser);
 }
 
 
@@ -504,7 +504,7 @@ static void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
 
     if (jump > UINT16_MAX)
     {
-        error("Too much code to jump over twin.", parser);
+        error("Too much code to jump over twin.", "MEMORY ERROR", parser);
     }
 
     currentChunk->byteCode[offset] = (jump >> 8) & 0xff;
@@ -512,15 +512,15 @@ static void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
 }
 static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
-    consume(T_LEFT_PAREN, "Please supplement your if statement with a '(' after 'if'.", parser);
+    consume(T_LEFT_PAREN, "Please supplement your if statement with a '(' after 'if'.", "SYNTAX ERROR", parser);
     Expr* condition = astExpression(parser);
-    consume(T_RIGHT_PAREN, "Please close your if statement's condition with ')'.", parser);
+    consume(T_RIGHT_PAREN, "Please close your if statement's condition with ')'.","SYNTAX ERROR", parser);
 
 
     ValueType conditionType = checkExpression(checker, condition);
     if (conditionType != VALUE_BOOL)
     {
-        error("If condition must be a boolean.", parser);
+        error("If condition must be a boolean.", "TYPE MISMATCH ERROR", parser);
     }
     compileBytecode(condition, parser, &vm->chunk, compiler, vm);
 
@@ -551,7 +551,7 @@ static void emitLoop(int loopStart, ASTparser* parser, Vm* vm)
     emitByte(OP_LOOP, &vm->chunk, parser);
 
     int offset = vm->chunk.count - loopStart + 2;
-    if (offset > UINT16_MAX) error("Loop body is too large.", parser);
+    if (offset > UINT16_MAX) error("Loop body is too large.", "MEMORY ERROR", parser);
 
     emitByte(((offset >> 8) & 0xff), &vm->chunk, parser);
     emitByte((offset  & 0xff), &vm->chunk, parser);
@@ -560,15 +560,15 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
 {
     int loopStart = vm->chunk.count;
 
-    consume(T_LEFT_PAREN, "Please supplement your while statement with a '(' after 'while'.", parser);
+    consume(T_LEFT_PAREN, "Please supplement your while statement with a '(' after 'while'.", "SYNTAX ERROR", parser);
     Expr* condition = astExpression(parser);
-    consume(T_RIGHT_PAREN, "Please close your while statement's condition with ')'.", parser);
+    consume(T_RIGHT_PAREN, "Please close your while statement's condition with ')'.", "SYNTAX ERROR", parser);
 
 
     ValueType conditionType = checkExpression(checker, condition);
     if (conditionType != VALUE_BOOL)
     {
-        error("While condition must be a boolean.", parser);
+        error("While condition must be a boolean.", "TYPE MISMATCH", parser);
     }
     compileBytecode(condition, parser, &vm->chunk, compiler, vm);
 
@@ -583,7 +583,7 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
 static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     beginScope(compiler);
-    consume(T_LEFT_PAREN, "Please use a '(' character after the for keyword.", parser);
+    consume(T_LEFT_PAREN, "Please use a '(' character after the for keyword.", "SYNTAX ERROR", parser);
 
     if (match(T_SEMICOLON, parser))
     {
@@ -607,10 +607,10 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
         //calculate the actual condition
         Expr* expr = astExpression(parser);
         ValueType type = checkExpression(checker, expr);
-        if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", parser); }
+        if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", "SYNTAX ERROR", parser); }
 
         compileBytecode(expr, parser, &vm->chunk, compiler, vm);
-        consume(T_SEMICOLON, "The code expects ';' after a for loop conditional.", parser);
+        consume(T_SEMICOLON, "The code expects ';' after a for loop conditional.", "SYNTAX ERROR", parser);
 
         exitJump = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
         emitByte(OP_POP, &vm->chunk, parser);
@@ -628,7 +628,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
         compileBytecode(expr,parser, &vm->chunk, compiler, vm);
 
         emitByte(OP_POP, &vm->chunk, parser);
-        consume(T_RIGHT_PAREN, "Expect ')' after for loop clauses", parser);
+        consume(T_RIGHT_PAREN, "Expect ')' after for loop clauses", "SYNTAX ERROR", parser);
 
         emitLoop(loopStart, parser, vm);
         loopStart = incrementStart;
@@ -636,7 +636,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     }
     else
     {
-        consume(T_RIGHT_PAREN, "Expect ')' after for clauses", parser);
+        consume(T_RIGHT_PAREN, "Expect ')' after for clauses", "SYNTAX ERROR", parser);
     }
 
     statement(parser, checker, compiler, vm);
@@ -665,7 +665,7 @@ static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstComp
     }
 
     //consume the ; and free memory
-    consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", parser);
+    consume(T_SEMICOLON, "Please end all of your expressions with a ';'!", "SYNTAX ERROR", parser);
     freeExpr(expr);
 }
 static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)

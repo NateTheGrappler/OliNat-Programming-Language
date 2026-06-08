@@ -21,9 +21,10 @@ static bool isNumeric(ValueType type)
     return type == VALUE_INT || type == VALUE_DOUBLE || type == VALUE_FLOAT;
 }
 
-static void typeError(TypeChecker* checker, Expr* expr, const char* message)
+static void typeError(TypeChecker* checker, Expr* expr, const char* message, const char* messageType)
 {
-    fprintf(stderr, "[Error at Line %d: %s] \n", expr->line, message);
+    //:>>  | %s | at line %d"
+    fprintf(stderr, ":>>  | %s | at line %d: %s] \n", messageType, expr->line, message);
     checker->hadError = true;
     checker->errorCount++;
 }
@@ -59,19 +60,19 @@ ValueType checkUnary(TypeChecker* checker, Expr* expr)
         {
             //check for right operand and then return an error if it's wrong
             if (isNumeric(typeRight)) { return typeRight; }
-            typeError(checker, expr, "When trying to negate a value, please use a number."); //toss error if not number
+            typeError(checker, expr, "When trying to negate a value, please use a number.", "TYPE ERROR"); //toss error if not number
 
             return VALUE_ERROR;
         }
         case '!':
         {
             if (typeRight == VALUE_BOOL) { return typeRight; }
-            typeError(checker, expr, "Operator '!' only works on boolean values man!");
+            typeError(checker, expr, "Operator '!' only works on boolean values man!" , "TYPE ERROR");
             return VALUE_ERROR;
         }
         default:
         {
-            typeError(checker, expr, "Unknown unary expression syntax, what are you doing?");
+            typeError(checker, expr, "Unknown unary expression syntax, what are you doing?", "TYPE ERROR");
             return VALUE_ERROR;
         }
     }
@@ -91,7 +92,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
         if (isNumeric(leftType) && isNumeric(rightType)) return checkBinaryReturnType(rightType, leftType); //somehow handle different expression outputs
         if (strcmp(operator, "+") == 0 && rightType == VALUE_STRING && leftType == VALUE_STRING) { return VALUE_STRING; }
 
-        typeError(checker, expr, "If you want to do math, you have to use numbers (double, float, int), please.");
+        typeError(checker, expr, "If you want to do math, you have to use numbers (double, float, int), please." , "TYPE ERROR");
         return VALUE_ERROR;
     }
 
@@ -102,7 +103,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
         strcmp(operator, ">=") == 0 )
     {
         if (isNumeric(leftType) && isNumeric(rightType)) return VALUE_BOOL; //always a boolean
-        typeError(checker, expr, "Operators comparing value must compare numbers only."); //TODO: maybe add checking strings too idk
+        typeError(checker, expr, "Operators comparing value must compare numbers only.", "TYPE ERROR"); //TODO: maybe add checking strings too idk
         return VALUE_ERROR;
     }
 
@@ -111,12 +112,12 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
     {
         if (leftType == rightType) return VALUE_BOOL;
         if (isNumeric(leftType) && isNumeric(rightType)) return VALUE_BOOL;
-        typeError(checker, expr, "Operators comparing value must compare numbers, booleans, or strings, you cannot mix types (sorry)."); //TODO: maybe add checking strings too idk
+        typeError(checker, expr, "Operators comparing value must compare numbers, booleans, or strings, you cannot mix types (sorry)." , "TYPE ERROR"); //TODO: maybe add checking strings too idk
         return VALUE_ERROR;
     }
 
     //unreachable (HOPEFULLY)
-    typeError(checker, expr, "Unknown binary operator, what on earth are you doing?");
+    typeError(checker, expr, "Unknown binary operator, what on earth are you doing?", "TYPE ERROR");
     return VALUE_ERROR;
 
 }
@@ -137,7 +138,7 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     if (checker->varCount >= 256)
     {
         //TODO: have it so you can store more vars but also have a seperate error system for types
-        error("Too many variables have been declared.", parser);
+        error("Too many variables have been declared.", "MEMORY ERROR", parser);
         return;
     }
     int index = checker->varCount++;
@@ -153,7 +154,7 @@ ValueType checkVariable(TypeChecker* checker, Expr* expr)
     {
         return symbol->type;
     }
-    typeError(checker, expr, "Undefined variable.");
+    typeError(checker, expr, "Undefined variable.", "UNDEFINED ERROR");
     return VALUE_ERROR;
 }
 //-------------------------------Main function for entry-----------------------------------------//
@@ -207,13 +208,13 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
             Symbol* symbol = lookUpSymbol(checker, expr->var_assignment.name, expr->var_assignment.length);
             if (symbol == NULL)
             {
-                typeError(checker,  expr, "You cannot try to reassign a var that does not exist, no having your cake and eating it.");
+                typeError(checker,  expr, "You cannot try to reassign a var that does not exist, no having your cake and eating it.", "UNDEFINED ERROR");
                 return VALUE_ERROR;
             }
             ValueType type = checkExpression(checker, expr->var_assignment.value);
             if (type != symbol->type)
             {
-                typeError(checker, expr, "You cannot try to give a different type to an existing variable!");
+                typeError(checker, expr, "You cannot try to give a different type to an existing variable!", "TYPE MISTMATCH ERROR");
                 return VALUE_ERROR;
             }
             result = symbol->type;

@@ -1,0 +1,19 @@
+make int i = 0;
+while (i < 5)
+{
+    i = i + 1;
+}
+
+make int x = 10;
+while (x > 0)
+{
+    x = x - 1;
+}
+
+make int a = 0;
+make int b = 1;
+while (a < 100)
+{
+    a = a + b;
+    b = b + 1;
+}
