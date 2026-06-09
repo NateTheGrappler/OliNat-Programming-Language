@@ -22,7 +22,7 @@ void emitReturn(Chunk* chunk, ASTparser* parser)
 {
     emitByte(OP_RETURN, chunk, parser);
 }
-static void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm)
+void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
     emitBytes(OP_CONSTANT, makeConstant(value, chunk, vm, parser), chunk, parser);
 }

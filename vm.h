@@ -6,11 +6,20 @@
 #define OLI_NAT_VM_H
 
 #define STACK_MAX 255
+#define FRAMES_MAX 64 //recursion limit
 
 #include "common.h"
 #include "ASTcompiler.h"
 #include "chunk.h"
 #include "Hashmap.h"
+
+
+typedef struct
+{
+    ObjFunction* function;
+    uint8_t* ip;
+    Value* slots;
+} CallFrame;
 
 typedef enum
 {
@@ -24,8 +33,8 @@ typedef struct Vm
     //the stack
     Value  stack[STACK_MAX];
     Value* stackTop;
-    Chunk chunk;
-    uint8_t* ip;
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
     Obj* objects;
 
     Hashmap strings;

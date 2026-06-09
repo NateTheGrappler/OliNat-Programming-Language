@@ -118,6 +118,12 @@ void printObject(Value value)
             printf("%s", AS_CSTRING(value));
             break;
         }
+        case OBJ_FUNCTION:
+        {
+            ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(value);
+            printf("FN-%.*s", function->nameLength, function->name);
+            break;
+        }
     }
 }
 

@@ -124,6 +124,7 @@ void initParser(ASTparser* parser, const char* source)
     advance(parser); //get the scanner goin
 }
 
+
 //------------------------------------------Error handling functions-----------------------------------------------------//
 
 //main error handling function for compile time
@@ -266,8 +267,8 @@ static Expr* boolean(bool canAssign, ASTparser* parser)
 {
     switch (parser->previous.type)
     {
-        case T_TRUE: createLiteralBool(true, parser->previous.line); break;
-        case T_FALSE: createLiteralBool(false, parser->previous.line); break;
+        case T_TRUE: return createLiteralBool(true, parser->previous.line);
+        case T_FALSE: return createLiteralBool(false, parser->previous.line);
         default: return NULL; //unreachable (hopefully)
     }
 }
@@ -418,14 +419,9 @@ static ValueType getVarDeclarationType(ASTparser* parser)
             return VALUE_ERROR;
     }
 }
-static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm, ValueType type)
 {
-
-    //get / consume the declaraed type
-    ValueType type = getVarDeclarationType(parser);
-
     //get the var name
-    consume(T_IDENTIFIER, "You must name your variable, they get sad if you dont.", "SYNTAX ERROR", parser);
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
@@ -445,8 +441,8 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     {
         //set the global to get defined here
         addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);;
-        compileBytecode(varInitializer, parser, &vm->chunk, compiler, vm);
-        emitDefineGlobal(name, nameLength, &vm->chunk, parser, vm);
+        compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
+        emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
     }
     else
     {
@@ -458,7 +454,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
 
         //the compiled value ends up on the stack and IS the local
         addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);
-        compileBytecode(varInitializer, parser, &vm->chunk, compiler, vm);
+        compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
     }
 
 }
@@ -475,7 +471,7 @@ static void endScope(AstCompiler* compiler, TypeChecker* checker, Vm* vm, ASTpar
     //pop locals
     while (compiler->localCount > 0 && compiler->locals[compiler->localCount-1].depth > compiler->scopeDepth)
     {
-        emitByte(OP_POP, &vm->chunk, parser);
+        emitByte(OP_POP, &compiler->function->chunk, parser);
         compiler->localCount--;
     }
 
@@ -522,43 +518,43 @@ static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* co
     {
         error("If condition must be a boolean.", "TYPE MISMATCH ERROR", parser);
     }
-    compileBytecode(condition, parser, &vm->chunk, compiler, vm);
+    compileBytecode(condition, parser, &compiler->function->chunk, compiler, vm);
 
 
     //emit a jump instruction with then two supplementary bytes to store how large the jump is
-    short jumpIndex = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
-    emitByte(OP_POP, &vm->chunk, parser);         //get condition value off stack TODO: see if this causes issues
+    short jumpIndex = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser);
+    emitByte(OP_POP, &compiler->function->chunk, parser);         //get condition value off stack TODO: see if this causes issues
     statement(parser, checker, compiler, vm);     //parse block
 
-    short elseJump = emitJump(OP_JUMP, &vm->chunk, parser); //always jump if found
+    short elseJump = emitJump(OP_JUMP, &compiler->function->chunk, parser); //always jump if found
 
-    patchJump(jumpIndex, &vm->chunk, parser);
-    emitByte(OP_POP, &vm->chunk, parser);
+    patchJump(jumpIndex, &compiler->function->chunk, parser);
+    emitByte(OP_POP, &compiler->function->chunk, parser);
 
 
     if (match(T_ELSE, parser))
     {
         statement(parser, checker, compiler, vm);     //parse else block
     }
-    patchJump(elseJump, &vm->chunk, parser);
+    patchJump(elseJump, &compiler->function->chunk, parser);
 
 }
 
 
 //while loops and for loops
-static void emitLoop(int loopStart, ASTparser* parser, Vm* vm)
+static void emitLoop(int loopStart, ASTparser* parser, AstCompiler* compiler)
 {
-    emitByte(OP_LOOP, &vm->chunk, parser);
+    emitByte(OP_LOOP, &compiler->function->chunk, parser);
 
-    int offset = vm->chunk.count - loopStart + 2;
+    int offset = compiler->function->chunk.count - loopStart + 2;
     if (offset > UINT16_MAX) error("Loop body is too large.", "MEMORY ERROR", parser);
 
-    emitByte(((offset >> 8) & 0xff), &vm->chunk, parser);
-    emitByte((offset  & 0xff), &vm->chunk, parser);
+    emitByte(((offset >> 8) & 0xff), &compiler->function->chunk, parser);
+    emitByte((offset  & 0xff), &compiler->function->chunk, parser);
 }
 static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
-    int loopStart = vm->chunk.count;
+    int loopStart = compiler->function->chunk.count;
 
     consume(T_LEFT_PAREN, "Please supplement your while statement with a '(' after 'while'.", "SYNTAX ERROR", parser);
     Expr* condition = astExpression(parser);
@@ -570,15 +566,15 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
     {
         error("While condition must be a boolean.", "TYPE MISMATCH", parser);
     }
-    compileBytecode(condition, parser, &vm->chunk, compiler, vm);
+    compileBytecode(condition, parser, &compiler->function->chunk, compiler, vm);
 
-    int exitJump = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
-    emitByte(OP_POP, &vm->chunk, parser);
+    int exitJump = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser);
+    emitByte(OP_POP, &compiler->function->chunk, parser);
     statement(parser, checker, compiler, vm);
-    emitLoop(loopStart, parser, vm);
+    emitLoop(loopStart, parser, compiler);
 
-    patchJump(exitJump, &vm->chunk, parser);
-    emitByte(OP_POP, &vm->chunk, parser);
+    patchJump(exitJump, &compiler->function->chunk, parser);
+    emitByte(OP_POP, &compiler->function->chunk, parser);
 }
 static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
@@ -592,14 +588,16 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     }
     else if (match(T_MAKE, parser))
     {
-        varDeclaration(parser, checker, compiler, vm);
+        ValueType type = getVarDeclarationType(parser);
+        consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+        varDeclaration(parser, checker, compiler, vm, type);
     }
     else
     {
         expressionStatement(parser, checker, compiler, vm);
     }
 
-    int loopStart = vm->chunk.count;
+    int loopStart = compiler->function->chunk.count;
 
     int exitJump = -1;
     if (!match(T_SEMICOLON, parser))
@@ -609,11 +607,11 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
         ValueType type = checkExpression(checker, expr);
         if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", "SYNTAX ERROR", parser); }
 
-        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
+        compileBytecode(expr, parser, &compiler->function->chunk, compiler, vm);
         consume(T_SEMICOLON, "The code expects ';' after a for loop conditional.", "SYNTAX ERROR", parser);
 
-        exitJump = emitJump(OP_JUMP_IF_FALSE, &vm->chunk, parser);
-        emitByte(OP_POP, &vm->chunk, parser);
+        exitJump = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser);
+        emitByte(OP_POP, &compiler->function->chunk, parser);
     }
 
     int bodyJump = -1;
@@ -621,18 +619,18 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     if (!match(T_RIGHT_PAREN, parser))
     {
         //evaluate the expression changing the loop
-        bodyJump = emitJump(OP_JUMP, &vm->chunk, parser);
-        incrementStart = vm->chunk.count;
+        bodyJump = emitJump(OP_JUMP, &compiler->function->chunk, parser);
+        incrementStart = compiler->function->chunk.count;
 
         Expr* expr = astExpression(parser);
-        compileBytecode(expr,parser, &vm->chunk, compiler, vm);
+        compileBytecode(expr,parser, &compiler->function->chunk, compiler, vm);
 
-        emitByte(OP_POP, &vm->chunk, parser);
+        emitByte(OP_POP, &compiler->function->chunk, parser);
         consume(T_RIGHT_PAREN, "Expect ')' after for loop clauses", "SYNTAX ERROR", parser);
 
-        emitLoop(loopStart, parser, vm);
+        emitLoop(loopStart, parser, compiler);
         loopStart = incrementStart;
-        patchJump(bodyJump, &vm->chunk, parser);
+        patchJump(bodyJump, &compiler->function->chunk, parser);
     }
     else
     {
@@ -640,15 +638,87 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     }
 
     statement(parser, checker, compiler, vm);
-    emitLoop(loopStart, parser, vm);
+    emitLoop(loopStart, parser, compiler);
 
     if (exitJump != -1)
     {
-        patchJump(exitJump, &vm->chunk, parser);
-        emitByte(OP_POP, &vm->chunk, parser);
+        patchJump(exitJump, &compiler->function->chunk, parser);
+        emitByte(OP_POP, &compiler->function->chunk, parser);
     }
 
     endScope(compiler, checker, vm, parser);
+}
+
+//functions
+static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, Vm* vm)
+{
+    //zero out the compilers inner crap for locals
+    newCompiler->localCount = 0;
+    newCompiler->scopeDepth = (enclosing == NULL) ? 0 : 1;
+    newCompiler->enclosing = enclosing;
+
+    //create the function compiler will fill
+    newCompiler->function = newFunction(name, nameLength, returnType, vm);
+}
+static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser)
+{
+    ObjFunction* function = compiler->function;
+    emitReturn(&function->chunk, parser);
+    return function;
+}
+static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompiler* compiler, Vm* vm, ValueType type)
+{
+    //function name
+    const char* name = parser->previous.lexemeStart;
+    int nameLength = parser->previous.length;
+
+    AstCompiler newCompiler;
+    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, vm);
+
+    //params
+    consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
+    while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
+    {
+        ValueType paramType = getVarDeclarationType(parser);
+        consume(T_IDENTIFIER, "A parameter is expected after a type definition in your function", "SYNTAX ERROR", parser);
+
+        const char* paramName = parser->previous.lexemeStart;
+        int paramLength = parser->previous.length;
+
+        if (newCompiler.function->arity >= MAX_PARAMS)
+        {
+            error("Your function can only have a max of 255 params.", "MEMORY ERROR", parser);
+        }
+        else
+        {
+            ParamInfo* param = &newCompiler.function->params[newCompiler.function->arity++];
+            param->type = paramType;
+            param->name = paramName;
+            param->length = paramLength;
+        }
+        //add in param as local on bottom of function's frame
+        Local* local = &newCompiler.locals[newCompiler.localCount++];
+        local->name = paramName;
+        local->length = paramLength;
+        local->depth = 1;
+
+        addSymbol(checker, paramName, paramLength, 1, paramType, parser);
+        if (!match(T_COMMA, parser)) break; //TODO: see if you can add an error for missing commas
+    }
+    consume(T_RIGHT_PAREN, "Expect ')' after you functions parameters.", "SYNTAX ERROR", parser);
+
+    //function body
+    consume(T_LEFT_BRACE, "Expected '{' after a function declaration", "SYNTAX ERROR", parser);
+    block(parser, checker, &newCompiler, vm);
+
+
+    //creating and passing on
+    ObjFunction* function = endFunctionCompiler(&newCompiler, parser);
+    emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm);
+
+    emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
+    addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);
+
 }
 
 //Basic statements
@@ -660,8 +730,8 @@ static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstComp
 
     if (type != VALUE_ERROR)
     {
-        compileBytecode(expr, parser, &vm->chunk, compiler, vm);
-        emitByte(OP_POP, &vm->chunk, parser);
+        compileBytecode(expr, parser, &compiler->function->chunk, compiler, vm);
+        emitByte(OP_POP, &compiler->function->chunk, parser);
     }
 
     //consume the ; and free memory
@@ -702,7 +772,18 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
 {
     if (match(T_MAKE, parser))
     {
-        varDeclaration(parser, checker, compiler, vm);
+        //get / consume the declaraed type, and then name
+        ValueType type = getVarDeclarationType(parser);
+        consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+
+        if (check(T_LEFT_PAREN, parser))
+        {
+            functionDeclaration(parser, checker, compiler, vm, type);
+        }
+        else
+        {
+            varDeclaration(parser, checker, compiler, vm, type);
+        }
     }
     else
     {
@@ -712,7 +793,7 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
 
 
 //------------------------------------------Compile function-----------------------------------------------------//
-bool compile(const char* source, Vm* vm)
+ObjFunction* compile(const char* source, Vm* vm)
 {
     //set up the parser and essentially the scanner
     ASTparser parser;
@@ -722,7 +803,7 @@ bool compile(const char* source, Vm* vm)
     initTypeChecker(&checker);
 
     AstCompiler compiler;
-    initAstCompiler(&compiler);
+    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, vm);
 
     while (!check(T_EOF, &parser))
     {
@@ -730,7 +811,8 @@ bool compile(const char* source, Vm* vm)
     }
 
 
+    ObjFunction* topScript = endFunctionCompiler(&compiler, &parser);
 
-    emitReturn(&vm->chunk, &parser);
-    return parser.hadError;
+    //emitReturn(&vm->chunk, &parser);
+    return parser.hadError ? NULL : topScript;
 }

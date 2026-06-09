@@ -10,6 +10,7 @@
 #include "Expr.h"
 #include "debug.h"
 #include "typeChecker.h"
+#include "object.h"
 
 struct Vm;
 
@@ -29,16 +30,18 @@ typedef struct {
     int depth;
 } Local;
 
-typedef struct
+typedef struct AstCompiler
 {
     Local locals[UINT8_COUNT];
     int localCount;
     int scopeDepth;
+    ObjFunction* function; //that you write to
+    struct AstCompiler* enclosing;
 } AstCompiler;
 
 
 
-bool compile(const char* source, struct Vm* vm);
+ObjFunction* compile(const char* source, struct Vm* vm);
 void initAstCompiler(AstCompiler* compiler);
 
 //shit forwarded to the bytecode compiler

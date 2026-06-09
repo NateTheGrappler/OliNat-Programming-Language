@@ -34,6 +34,15 @@ static void freeObject(Obj* obj)
             FREE(ObjString, obj);
             break;
         }
+        case OBJ_FUNCTION:
+        {
+            ObjFunction* function = (ObjFunction*)obj;
+            FREE_ARRAY(ParamInfo, function->params, function->arity);
+            freeChunk(&function->chunk);
+            FREE(ObjFunction, obj);
+            break;
+        }
+
     }
 }
 void freeObjects(struct Vm* vm)

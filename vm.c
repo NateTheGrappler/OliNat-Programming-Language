@@ -14,9 +14,6 @@ void initVM(Vm* vm)
 {
     resetStack(vm);
 
-    initChunk(&vm->chunk);
-    vm->ip = vm->chunk.byteCode;
-
     vm->objects = NULL;
 
     initMap(&vm->strings);
@@ -25,9 +22,7 @@ void initVM(Vm* vm)
 }
 void freeVM(Vm* vm)
 {
-    freeChunk(&vm->chunk);
     resetStack(vm);
-
     freeMap(&vm->strings);
     freeMap(&vm->globals);
     freeObjects(vm); //free all vm held objects
@@ -54,6 +49,12 @@ Value peek(Vm* vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
+//-------------------------------------------------_ERROR HANDLING-------------------------------------------//
+static void runtimeError()
+{
+    //TODO: add fancy error handling here
+    printf("RAN IN RUNTIME ERROR\n");
+}
 //----------------------------------------------VM HELPERS-------------------------------------------------//
 static void concatenate(Vm* vm, Value b, Value a)
 {
@@ -69,12 +70,32 @@ static void concatenate(Vm* vm, Value b, Value a)
     push(vm, CREATE_OBJECT_VAL((Obj*)result));
 }
 
+static bool call(ObjFunction* function, int argCount, Vm* vm)
+{
+    if (argCount != function->arity)
+    {
+        runtimeError();
+        return false;
+    }
+    if (vm->frameCount == FRAMES_MAX) {
+        runtimeError();
+        return false;
+    }
+
+    CallFrame* frame = &vm->frames[vm->frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.byteCode;
+    frame->slots = vm->stackTop - argCount - 1;
+    return true;
+}
+
 //-------------------------------------------Main meat of the vm-------------------------------------------//
 static vmResult run(Vm* vm)
 {
-#define READ_BYTE() (*vm->ip++)
-#define READ_CONSTANT() (vm->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
-#define READ_SHORT() (vm->ip += 2, (uint16_t)((vm->ip[-2] << 8) | vm->ip[-1]))
+    CallFrame* frame = &vm->frames[vm->frameCount - 1];
+#define READ_BYTE() (*frame->ip++)
+#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
+#define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 
     //the main meat of it all baby
@@ -89,16 +110,28 @@ static vmResult run(Vm* vm)
                     printf(" ]");
                 }
                 printf("\n");
-                disassembleInstruction(&vm->chunk, (int)(vm->ip - vm->chunk.byteCode));
+                disassembleInstruction(&frame->function->chunk, (int)(frame->ip - frame->function->chunk.byteCode));
         #endif
 
         uint8_t instruction;
         switch (instruction = READ_BYTE())
         {
             case OP_RETURN:
+            {
                 printf("ran inside of return\n");
-                return INTERPRET_OK;
+                Value functionReturn = pop(vm);
+                vm->frameCount--;
 
+                if (vm->frameCount == 0)
+                {
+                    return INTERPRET_OK;
+                }
+
+                vm->stackTop = frame->slots;
+                push(vm, functionReturn);
+                frame = &vm->frames[vm->frameCount - 1];
+                break;
+            }
             //basic math operators + - * /
             case OP_ADD:
             {
@@ -439,32 +472,32 @@ static vmResult run(Vm* vm)
             case OP_SET_LOCAL:
             {
                 uint8_t slot = READ_BYTE();
-                vm->stack[slot] = peek(vm, 0);
+                frame->slots[slot] = peek(vm, 0);
                 break;
             }
             case OP_GET_LOCAL:
             {
                 uint8_t slot = READ_BYTE();
-                push(vm, vm->stack[slot]);
+                push(vm, frame->slots[slot]);
                 break;
             }
 
             case OP_JUMP:
             {
                 uint16_t offset = READ_SHORT();
-                vm->ip += offset;
+                frame->ip += offset;
                 break;
             }
             case OP_JUMP_IF_FALSE:
             {
                 uint16_t offset = READ_SHORT();
-               if (!GET_BOOL_VAL(peek(vm, 0))) vm->ip += offset;
+               if (!GET_BOOL_VAL(peek(vm, 0))) frame->ip += offset;
                 break;
             }
             case OP_LOOP:
             {
                 uint16_t offset = READ_SHORT();
-                vm->ip -= offset;
+                frame->ip -= offset;
                 break;
             }
 
@@ -483,17 +516,18 @@ static vmResult run(Vm* vm)
 //-----------------------------Actual VM Functionality-----------------------//
 vmResult interpret(const char* source, Vm* vm)
 {
-    bool hadErrors = compile(source, vm); //compiles into asts and then also sets up the type checker
+    ObjFunction* topScript = compile(source, vm); //compiles into asts and then also sets up the type checker
 
     //error checking
-    if (hadErrors)
+    if (topScript == NULL)
     {
         return INTERPRET_COMPILE_ERROR;
     }
 
 
     //after compiling the bytecode, set up the place where its going to be read from
-    vm->ip = vm->chunk.byteCode;
+    push(vm, CREATE_OBJECT_VAL((Obj*)topScript));
+    call(topScript, 0, vm);
 
     //run the code that the compiler wrote to the vms chunk
     vmResult result = run(vm);

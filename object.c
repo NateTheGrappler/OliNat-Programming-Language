@@ -72,3 +72,16 @@ ObjString* combineString(char* chars, int length, Vm* vm)
     }
     return allocateString(chars, length, hash, vm);
 }
+
+
+ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm)
+{
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION, vm);
+    function->arity = 0;
+    function->name = name;
+    function->nameLength = nameLength;
+    initChunk(&function->chunk);
+    function->returnType = returnType;
+    return function;
+
+}

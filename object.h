@@ -5,15 +5,19 @@
 #ifndef OLI_NAT_OBJECT_H
 #define OLI_NAT_OBJECT_H
 
+#define MAX_PARAMS 255
+
 #include "memory.h"
 #include "common.h"
 #include "Value.h"
+#include "chunk.h"
 
 typedef struct Vm vm;
 
 typedef enum
 {
     OBJ_STRING,
+    OBJ_FUNCTION,
 } ObjType;
 
 //set up object class to be stored inside of value struct
@@ -33,6 +37,26 @@ typedef struct ObjString
     uint32_t hash;
 } ObjString;
 
+
+//functions
+typedef struct ParamInfo
+{
+    ValueType type;
+    const char* name;
+    int length;
+} ParamInfo;
+
+typedef struct ObjFunction
+{
+    Obj obj;
+    int arity;
+    ParamInfo params[MAX_PARAMS];
+    ValueType returnType;
+    Chunk chunk;
+    const char* name;
+    int nameLength;
+} ObjFunction;
+
 static inline bool IsObjType(Value value, ObjType type)
 {
     return IS_OBJECT(value) && GET_OBJECT_VAL(value)->type == type;
@@ -44,5 +68,6 @@ static inline bool IsObjType(Value value, ObjType type)
 
 ObjString* copyString(const char* chars, int length, struct Vm* vm);
 ObjString* combineString(char* chars, int length, struct Vm* vm);
+ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm);
 
 #endif //OLI_NAT_OBJECT_H
