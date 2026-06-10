@@ -14,10 +14,17 @@ typedef enum {
     EXPR_UNARY,
     EXPR_GROUPING,
     EXPR_ASSIGN,
-    EXPR_VARIABLE, //TODO: add the implementation for this
+    EXPR_VARIABLE,
+    EXPR_CALL
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    struct Expr* callee; //var holding funciton or class
+    struct Expr** args;
+    int argCount;
+} Call;
 typedef struct
 {
     const char* name;
@@ -71,6 +78,7 @@ typedef struct Expr {
         Variable variable;
         Grouping grouping;
         VarAssignment var_assignment;
+        Call objectCall;
     };
 } Expr;
 
@@ -82,6 +90,7 @@ Expr* createLiteralString(char* value, int line);
 Expr* createVarAssignment(char* name, int length, Expr* value, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
+Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line);
 Expr* createGrouping     (Expr* expr, int line);
 Expr* createVariable(const char* name, int length, int line);
 

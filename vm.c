@@ -501,6 +501,21 @@ static vmResult run(Vm* vm)
                 break;
             }
 
+            case OP_CALL:
+            {
+                uint8_t argCount = READ_BYTE();
+                Value callee = peek(vm, argCount);
+                if (!IS_OBJECT(callee))
+                {
+                    runtimeError();
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(callee);
+                call(function, argCount, vm);
+                frame = &vm->frames[vm->frameCount - 1];
+                break;
+            }
+
 
             default:
                 printf("Unknown opcode: %d\n", instruction);

@@ -17,6 +17,7 @@ static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
 static Expr* variable(bool canAssign, ASTparser* parser);
+static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
@@ -51,13 +52,13 @@ typedef struct
 } ParseRule;
 
 ParseRule rules[] = {
-  [T_LEFT_PAREN]    = {grouping,     NULL,   PREC_CALL},
+  [T_LEFT_PAREN]    = {grouping,functionCall,PREC_CALL},
   [T_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [T_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [T_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [T_COMMA]         = {NULL,     NULL,   PREC_NONE},
-  [T_DOT]           = {NULL,     NULL,    PREC_CALL},
-  [T_MINUS]         = {unary,     binary, PREC_TERM},
+  [T_DOT]           = {NULL,     NULL,   PREC_CALL},
+  [T_MINUS]         = {unary,     binary,PREC_TERM},
   [T_PLUS]          = {NULL,     binary, PREC_TERM},
   [T_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [T_SLASH]         = {NULL,     binary, PREC_FACTOR},
@@ -430,7 +431,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     consume(T_SEMICOLON, "Expected ';' after you declare a new variable", "SYNTAX ERROR", parser);
 
     //check the type of the expression vs the declared type
-    ValueType realType = checkExpression(checker, varInitializer);
+    ValueType realType = checkExpression(checker, varInitializer, parser);
     if (realType != type)
     {
         error("A variable expression's type must be the same as it's declared type.", "TYPE MISMATCH ERROR", parser);
@@ -440,7 +441,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     if (compiler->scopeDepth == 0)
     {
         //set the global to get defined here
-        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);;
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);;
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
         emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
     }
@@ -453,7 +454,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
         local->depth = compiler->scopeDepth;
 
         //the compiled value ends up on the stack and IS the local
-        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
     }
 
@@ -513,7 +514,7 @@ static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* co
     consume(T_RIGHT_PAREN, "Please close your if statement's condition with ')'.","SYNTAX ERROR", parser);
 
 
-    ValueType conditionType = checkExpression(checker, condition);
+    ValueType conditionType = checkExpression(checker, condition, parser);
     if (conditionType != VALUE_BOOL)
     {
         error("If condition must be a boolean.", "TYPE MISMATCH ERROR", parser);
@@ -561,7 +562,7 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
     consume(T_RIGHT_PAREN, "Please close your while statement's condition with ')'.", "SYNTAX ERROR", parser);
 
 
-    ValueType conditionType = checkExpression(checker, condition);
+    ValueType conditionType = checkExpression(checker, condition, parser);
     if (conditionType != VALUE_BOOL)
     {
         error("While condition must be a boolean.", "TYPE MISMATCH", parser);
@@ -604,7 +605,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     {
         //calculate the actual condition
         Expr* expr = astExpression(parser);
-        ValueType type = checkExpression(checker, expr);
+        ValueType type = checkExpression(checker, expr, parser);
         if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", "SYNTAX ERROR", parser); }
 
         compileBytecode(expr, parser, &compiler->function->chunk, compiler, vm);
@@ -653,7 +654,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, Vm* vm)
 {
     //zero out the compilers inner crap for locals
-    newCompiler->localCount = 0;
+    newCompiler->localCount = 1;
     newCompiler->scopeDepth = (enclosing == NULL) ? 0 : 1;
     newCompiler->enclosing = enclosing;
 
@@ -702,8 +703,10 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
         local->length = paramLength;
         local->depth = 1;
 
-        addSymbol(checker, paramName, paramLength, 1, paramType, parser);
-        if (!match(T_COMMA, parser)) break; //TODO: see if you can add an error for missing commas
+        addSymbol(checker, paramName, paramLength, 1, paramType, NULL, parser);
+
+        if (check(T_RIGHT_PAREN, parser)) break;
+        consume(T_COMMA, "Please seperate all function parameters with a ','.", "SYNTAX ERROR", parser);
     }
     consume(T_RIGHT_PAREN, "Expect ')' after you functions parameters.", "SYNTAX ERROR", parser);
 
@@ -717,8 +720,25 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm);
 
     emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
-    addSymbol(checker, name, nameLength, compiler->scopeDepth, type, parser);
+    addSymbol(checker, name, nameLength, compiler->scopeDepth, type, function, parser);
 
+}
+static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left)
+{
+    int argCount = 0;
+    Expr** args = NULL;
+    while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
+    {
+        Expr** newArgs = reallocate(args, sizeof(Expr*) * argCount, sizeof(Expr*) * (argCount + 1));
+        args = newArgs;
+        args[argCount++] = astExpression(parser);
+        if (check(T_RIGHT_PAREN, parser)) break;
+        consume(T_COMMA, "Please seperate all function parameters with a ','.", "SYNTAX ERROR", parser);
+    }
+    consume(T_RIGHT_PAREN, "Please end all function calls with a ')'.", "SYNTAX ERROR", parser);
+
+
+    return createCall(left, args, argCount, parser->previous.line);
 }
 
 //Basic statements
@@ -726,7 +746,7 @@ static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstComp
 {
     //compile and check expression, then compile again to bytecode
     Expr* expr = astExpression(parser);
-    ValueType type = checkExpression(checker, expr);
+    ValueType type = checkExpression(checker, expr, parser);
 
     if (type != VALUE_ERROR)
     {

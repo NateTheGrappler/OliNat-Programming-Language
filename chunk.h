@@ -36,6 +36,7 @@ typedef enum
     OP_JUMP_IF_FALSE,
     OP_JUMP,
     OP_LOOP,
+    OP_CALL,
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

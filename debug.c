@@ -102,7 +102,13 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printExpression(expr->var_assignment.value);
             printf(")");
             break;
+        }
+        case EXPR_CALL:
+        {
+            //TODO: finish this up with returns and blah blah
+            printf("(CALL %.*s ", expr->objectCall.callee->variable.length, expr->objectCall.callee->variable.name);
             break;
+
         }
 
     }
@@ -195,6 +201,8 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_POP", offset);
         case OP_NEGATE:
             return simpleInstruction("OP_NEGATE", offset);
+        case OP_INVERSE:
+            return simpleInstruction("OP_INVERSE", offset);
         case OP_ADD:
             return simpleInstruction("OP_ADD", offset);
         case OP_SUBTRACT:
@@ -220,7 +228,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
         case OP_GET_GLOBAL:
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
         case OP_GET_LOCAL:
-            return constantInstruction("OP_GET_LOCAL", chunk, offset);
+            return byteInstruction("OP_GET_LOCAL", chunk, offset);
         case OP_SET_GLOBAL:
             return byteInstruction("OP_SET_GLOBAL", chunk, offset);
         case OP_SET_LOCAL:
@@ -229,5 +237,9 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return jumpInstruction("OP_JUMP", 1, chunk, offset);
         case OP_JUMP_IF_FALSE:
             return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+        case OP_LOOP:
+            return jumpInstruction("OP_LOOP", -1, chunk, offset);
+        case OP_CALL:
+            return byteInstruction("OP_CALL", chunk, offset);
     }
 }

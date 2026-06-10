@@ -37,7 +37,7 @@ static void freeObject(Obj* obj)
         case OBJ_FUNCTION:
         {
             ObjFunction* function = (ObjFunction*)obj;
-            FREE_ARRAY(ParamInfo, function->params, function->arity);
+            //FREE_ARRAY(ParamInfo, function->params, function->arity);
             freeChunk(&function->chunk);
             FREE(ObjFunction, obj);
             break;

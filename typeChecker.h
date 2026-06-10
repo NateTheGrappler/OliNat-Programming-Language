@@ -8,6 +8,7 @@
 #include "Expr.h"
 #include "common.h"
 #include "debug.h"
+#include "object.h"
 
 typedef struct ASTparser;
 
@@ -17,6 +18,7 @@ typedef struct
     int length;
     ValueType   type;
     int depth;
+    ObjFunction* function;
 } Symbol;
 
 
@@ -31,16 +33,16 @@ typedef struct
 
 
 //function to do the checking
-ValueType checkExpression(TypeChecker* checker, Expr* expr);
+ValueType checkExpression(TypeChecker* checker, Expr* expr, struct ASTparser* parser);
 
 ValueType checkLiteral(Expr* expr);
-ValueType checkGrouping(TypeChecker* checker, Expr* expr);
-ValueType checkUnary(TypeChecker* checker, Expr* expr);
-ValueType checkBinary(TypeChecker* checker, Expr* expr);
+ValueType checkGrouping(TypeChecker* checker, Expr* expr, struct ASTparser* parser);
+ValueType checkUnary(TypeChecker* checker, Expr* expr, struct ASTparser* parser);
+ValueType checkBinary(TypeChecker* checker, Expr* expr, struct ASTparser* parser);
 void initTypeChecker(TypeChecker* checker);
 
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length);
-void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, struct ASTparser* parser);
+void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ObjFunction* function, struct ASTparser* parser);
 
 
 

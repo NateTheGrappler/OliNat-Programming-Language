@@ -21,12 +21,15 @@ static bool isNumeric(ValueType type)
     return type == VALUE_INT || type == VALUE_DOUBLE || type == VALUE_FLOAT;
 }
 
-static void typeError(TypeChecker* checker, Expr* expr, const char* message, const char* messageType)
+static void typeError(TypeChecker* checker, ASTparser* parser, Expr* expr, const char* message, const char* messageType)
 {
-    //:>>  | %s | at line %d"
+    if (parser->hadError) return;
+
     fprintf(stderr, ":>>  | %s | at line %d: %s] \n", messageType, expr->line, message);
     checker->hadError = true;
     checker->errorCount++;
+
+    parser->hadError = true;
 }
 
 static ValueType checkBinaryReturnType(ValueType right, ValueType left)
@@ -44,14 +47,14 @@ ValueType checkLiteral(Expr* expr)
     return expr->literal.type;
 }
 
-ValueType checkGrouping(TypeChecker* checker, Expr* expr)
+ValueType checkGrouping(TypeChecker* checker, Expr* expr, ASTparser* parser)
 {
     //just pass it forward
-    return checkExpression(checker, expr->grouping.expr);
+    return checkExpression(checker, expr->grouping.expr, parser);
 }
-ValueType checkUnary(TypeChecker* checker, Expr* expr)
+ValueType checkUnary(TypeChecker* checker, Expr* expr, ASTparser* parser)
 {
-    ValueType typeRight = checkExpression(checker, expr->unary.right);
+    ValueType typeRight = checkExpression(checker, expr->unary.right, parser);
 
     //handle unary cases based on their operator
     switch (expr->unary.operator)
@@ -60,27 +63,27 @@ ValueType checkUnary(TypeChecker* checker, Expr* expr)
         {
             //check for right operand and then return an error if it's wrong
             if (isNumeric(typeRight)) { return typeRight; }
-            typeError(checker, expr, "When trying to negate a value, please use a number.", "TYPE ERROR"); //toss error if not number
+            typeError(checker, parser, expr, "When trying to negate a value, please use a number.", "TYPE ERROR"); //toss error if not number
 
             return VALUE_ERROR;
         }
         case '!':
         {
             if (typeRight == VALUE_BOOL) { return typeRight; }
-            typeError(checker, expr, "Operator '!' only works on boolean values man!" , "TYPE ERROR");
+            typeError(checker, parser, expr, "Operator '!' only works on boolean values man!" , "TYPE ERROR");
             return VALUE_ERROR;
         }
         default:
         {
-            typeError(checker, expr, "Unknown unary expression syntax, what are you doing?", "TYPE ERROR");
+            typeError(checker, parser, expr, "Unknown unary expression syntax, what are you doing?", "TYPE ERROR");
             return VALUE_ERROR;
         }
     }
 }
-ValueType checkBinary(TypeChecker* checker, Expr* expr)
+ValueType checkBinary(TypeChecker* checker, Expr* expr, ASTparser* parser)
 {
-    ValueType rightType = checkExpression(checker, expr->binary.right);
-    ValueType leftType = checkExpression(checker, expr->binary.left);
+    ValueType rightType = checkExpression(checker, expr->binary.right, parser);
+    ValueType leftType = checkExpression(checker, expr->binary.left, parser);
     const char* operator = expr->binary.operator; //it's a 2 char array so it's 2 bytes
 
     //do the arithemtiatic expressions first
@@ -92,7 +95,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
         if (isNumeric(leftType) && isNumeric(rightType)) return checkBinaryReturnType(rightType, leftType); //somehow handle different expression outputs
         if (strcmp(operator, "+") == 0 && rightType == VALUE_STRING && leftType == VALUE_STRING) { return VALUE_STRING; }
 
-        typeError(checker, expr, "If you want to do math, you have to use numbers (double, float, int), please." , "TYPE ERROR");
+        typeError(checker, parser, expr, "If you want to do math, you have to use numbers (double, float, int), please." , "TYPE ERROR");
         return VALUE_ERROR;
     }
 
@@ -103,7 +106,7 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
         strcmp(operator, ">=") == 0 )
     {
         if (isNumeric(leftType) && isNumeric(rightType)) return VALUE_BOOL; //always a boolean
-        typeError(checker, expr, "Operators comparing value must compare numbers only.", "TYPE ERROR"); //TODO: maybe add checking strings too idk
+        typeError(checker, parser, expr, "Operators comparing value must compare numbers only.", "TYPE ERROR"); //TODO: maybe add checking strings too idk
         return VALUE_ERROR;
     }
 
@@ -112,12 +115,12 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
     {
         if (leftType == rightType) return VALUE_BOOL;
         if (isNumeric(leftType) && isNumeric(rightType)) return VALUE_BOOL;
-        typeError(checker, expr, "Operators comparing value must compare numbers, booleans, or strings, you cannot mix types (sorry)." , "TYPE ERROR"); //TODO: maybe add checking strings too idk
+        typeError(checker, parser, expr, "Operators comparing value must compare numbers, booleans, or strings, you cannot mix types (sorry)." , "TYPE ERROR"); //TODO: maybe add checking strings too idk
         return VALUE_ERROR;
     }
 
     //unreachable (HOPEFULLY)
-    typeError(checker, expr, "Unknown binary operator, what on earth are you doing?", "TYPE ERROR");
+    typeError(checker, parser, expr, "Unknown binary operator, what on earth are you doing?", "TYPE ERROR");
     return VALUE_ERROR;
 
 }
@@ -125,15 +128,24 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr)
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
 {
     //traverse the array (backwards for locals) for now
+    #ifdef DEBUG_TRACE_EXECUTION
+        printf("Looking up: %.*s, table has %d symbols\n", length, name, checker->varCount);
+    #endif
+
     for (int i = checker->varCount - 1; i >= 0; i--)
     {
+
+        #ifdef DEBUG_TRACE_EXECUTION
+                printf("  symbol[%d]: %.*s\n", i, checker->symbols[i].length, checker->symbols[i].name);
+        #endif
+
         if (checker->symbols[i].length == length &&
             memcmp(checker->symbols[i].name, name, length) == 0)
             return &checker->symbols[i];
     }
     return NULL;
 }
-void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ASTparser* parser)
+void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ObjFunction* function, ASTparser* parser)
 {
     if (checker->varCount >= 256)
     {
@@ -146,20 +158,21 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].name = name;
     checker->symbols[index].length = length;
     checker->symbols[index].depth = depth;
+    checker->symbols[index].function = function;
 }
-ValueType checkVariable(TypeChecker* checker, Expr* expr)
+ValueType checkVariable(TypeChecker* checker, ASTparser* parser, Expr* expr)
 {
     Symbol* symbol = lookUpSymbol(checker, expr->variable.name, expr->variable.length);
     if (symbol != NULL)
     {
         return symbol->type;
     }
-    typeError(checker, expr, "Undefined variable.", "UNDEFINED ERROR");
+    typeError(checker, parser, expr, "Undefined variable.", "UNDEFINED ERROR");
     return VALUE_ERROR;
 }
 //-------------------------------Main function for entry-----------------------------------------//
 
-ValueType checkExpression(TypeChecker* checker, Expr* expr)
+ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
 {
 #ifdef DEBUG_TRACE_EXECUTION
     printf("Checking new expression: | ");
@@ -176,7 +189,7 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
     {
         case EXPR_BINARY:
         {
-            result = checkBinary(checker, expr);
+            result = checkBinary(checker, expr, parser);
             break;
         }
         case EXPR_LITERAL:
@@ -190,17 +203,17 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
             {
                 return VALUE_ERROR;
             }
-            result = checkUnary(checker, expr);
+            result = checkUnary(checker, expr, parser);
             break;
         }
         case EXPR_GROUPING:
         {
-            result = checkGrouping(checker, expr);
+            result = checkGrouping(checker, expr, parser);
             break;
         }
         case EXPR_VARIABLE:
         {
-            result = checkVariable(checker, expr);
+            result = checkVariable(checker, parser, expr);
             break;
         }
         case EXPR_ASSIGN:
@@ -208,16 +221,48 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr)
             Symbol* symbol = lookUpSymbol(checker, expr->var_assignment.name, expr->var_assignment.length);
             if (symbol == NULL)
             {
-                typeError(checker,  expr, "You cannot try to reassign a var that does not exist, no having your cake and eating it.", "UNDEFINED ERROR");
+                typeError(checker, parser,  expr, "You cannot try to reassign a var that does not exist, no having your cake and eating it.", "UNDEFINED ERROR");
                 return VALUE_ERROR;
             }
-            ValueType type = checkExpression(checker, expr->var_assignment.value);
+            ValueType type = checkExpression(checker, expr->var_assignment.value, parser);
             if (type != symbol->type)
             {
-                typeError(checker, expr, "You cannot try to give a different type to an existing variable!", "TYPE MISTMATCH ERROR");
+                typeError(checker, parser, expr, "You cannot try to give a different type to an existing variable!", "TYPE MISTMATCH ERROR");
                 return VALUE_ERROR;
             }
             result = symbol->type;
+            break;
+        }
+        case EXPR_CALL:
+        {
+            Symbol* symbol = lookUpSymbol(checker, expr->objectCall.callee->variable.name, expr->objectCall.callee->variable.length);
+            if (symbol == NULL || symbol->function == NULL)
+            {
+                typeError(checker, parser, expr, "The object you are calling must be an existing function or class instance.", "UNDEFINED ERROR");
+                return VALUE_ERROR;
+            }
+            if (expr->objectCall.callee->type != EXPR_VARIABLE)
+            {
+                typeError(checker, parser, expr, "Callee must be a named function.", "TYPE ERROR");
+                return VALUE_ERROR;
+            }
+            if (expr->objectCall.argCount != symbol->function->arity)
+            {
+                typeError(checker, parser, expr, "Function call parameters amount does not match function definition.", "UNDEFINED ERROR");
+                return VALUE_ERROR;
+            }
+
+            for (int i = 0; i < symbol->function->arity; i++)
+            {
+                ValueType argType = checkExpression(checker, expr->objectCall.args[i], parser);
+                if (argType != symbol->function->params[i].type)
+                {
+                    typeError(checker, parser, expr, "An arguement of differing type was found in function call. Please double check function input.", "TYPE ERROR");
+                    return VALUE_ERROR;
+                }
+            }
+
+            result = symbol->function->returnType;
             break;
         }
         default:

@@ -125,6 +125,18 @@ Expr* createGrouping(Expr* expr, int line)
     exprG->grouping.expr = expr;
     return exprG;
 }
+Expr* createCall(Expr* callee, Expr** args, int argCount,  int line)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_CALL;
+    expr->line = line;
+
+    expr->objectCall.argCount = argCount;
+    expr->objectCall.args = args;
+    expr->objectCall.callee = callee;
+    return expr;
+}
+
 
 
 void freeExpr(Expr* expr)
@@ -141,7 +153,10 @@ void freeExpr(Expr* expr)
         }
         case EXPR_LITERAL:
         {
-            //TODO: when strings exist, free them in here
+            if (expr->literal.type == VALUE_STRING && expr->literal.value.string_val != NULL)
+            {
+                FREE_ARRAY(char, expr->literal.value.string_val, strlen(expr->literal.value.string_val) + 1);
+            }
             break;
         }
         case EXPR_UNARY:
@@ -154,8 +169,31 @@ void freeExpr(Expr* expr)
             freeExpr(expr->grouping.expr);
             break;
         }
+        case EXPR_ASSIGN:
+        {
+            freeExpr(expr->var_assignment.value);
+            break;
+        }
+        case EXPR_VARIABLE:
+        {
+            //name points to source string so dont free
+            break;
+        }
+        case EXPR_CALL:
+        {
+            freeExpr(expr->objectCall.callee);
+            for (int i = 0; i < expr->objectCall.argCount; i++)
+            {
+                freeExpr(expr->objectCall.args[i]);
+            }
+            FREE_ARRAY(Expr*, expr->objectCall.args, expr->objectCall.argCount);
+            break;
+        }
     }
 
+#ifdef DEBUG_TRACE_EXECUTION
+    printf("freeing expr type: %d\n", expr->type);
+#endif
     //the call to free the actual expression from wherever you are in the recursion
     FREE(Expr, expr);
 }

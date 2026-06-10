@@ -197,6 +197,16 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
                 emitSetGlobal(expr->var_assignment.name, expr->var_assignment.length, vmChunk, parser, vm);
             break;
         }
+        case EXPR_CALL:
+        {
+            compileExpressionByte(expr->objectCall.callee, parser, vmChunk, compiler, vm);
+            for (int i = 0; i < expr->objectCall.argCount; i++)
+            {
+                compileExpressionByte(expr->objectCall.args[i], parser, vmChunk, compiler, vm);
+            }
+            emitBytes(OP_CALL, (uint8_t)expr->objectCall.argCount, vmChunk, parser);
+            break;
+        }
     }
 }
 
