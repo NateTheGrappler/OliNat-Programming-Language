@@ -1,0 +1,32 @@
+// Forward declarations for mutual recursion
+make bool isEven(int n);
+make bool isOdd(int n);
+
+// Now we can call them even though neither is implemented yet
+make bool testEven = isEven(10);
+make bool testOdd = isOdd(7);
+
+// Implementation of isEven (calls isOdd which is only forward declared)
+make bool isEven(int n) {
+    if (n == 0) {
+        return true;
+    }
+    return isOdd(n - 1);
+}
+
+// Implementation of isOdd (calls isEven which IS now defined)
+make bool isOdd(int n) {
+    if (n == 0) {
+        return false;
+    }
+    return isEven(n - 1);
+}
+
+// More tests after both are defined
+make bool finalEven = isEven(10);  // Expected: true
+make bool finalOdd = isOdd(7);     // Expected: true (7 is odd)
+
+testEven;   // Expected: true
+testOdd;    // Expected: true (7 is odd)
+finalEven;  // Expected: true
+finalOdd;   // Expected: true

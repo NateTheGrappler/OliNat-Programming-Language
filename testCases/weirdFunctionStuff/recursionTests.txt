@@ -1,0 +1,38 @@
+// Recursion test - Factorial and Fibonacci
+// Validates that call frames properly stack and unwind
+
+make int factorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+make int fibonacci(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+make int sumToN(int n) {
+    if (n <= 0) {
+        return 0;
+    }
+    return n + sumToN(n - 1);
+}
+
+
+make empty main() {
+    int f = factorial(5);
+    // Expected: 120
+
+    int fib = fibonacci(8);
+    // Expected: 21
+
+    int sum = sumToN(10);
+    // Expected: 55
+
+    int f7 = factorial(7);
+    // Expected: 5040
+}

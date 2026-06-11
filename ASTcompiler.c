@@ -657,7 +657,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 }
 
 //functions
-static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm)
+static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm, TypeChecker* checker, ASTparser* parser)
 {
     //zero out the compilers inner crap for locals
     newCompiler->localCount = 1;
@@ -665,8 +665,9 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
     newCompiler->enclosing = enclosing;
     newCompiler->isTopLevel = isTopLevel;
 
-    //create the function compiler will fill
+    //create the function compiler will fill and add to symbol table for recursive calls
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
+    if (!isTopLevel) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
 }
 static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser)
 {
@@ -685,7 +686,7 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     int nameLength = parser->previous.length;
 
     AstCompiler newCompiler;
-    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, vm);
+    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, vm, checker, parser);
 
     //params
     consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
@@ -721,17 +722,19 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     }
     consume(T_RIGHT_PAREN, "Expect ')' after you functions parameters.", "SYNTAX ERROR", parser);
 
+
+
     //function body
     consume(T_LEFT_BRACE, "Expected '{' after a function declaration", "SYNTAX ERROR", parser);
     block(parser, checker, &newCompiler, vm);
 
-
     //creating and passing on
     ObjFunction* function = endFunctionCompiler(&newCompiler, parser);
-    emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm);
+    Symbol* existingSymbol = lookUpSymbol(checker, name, nameLength);
+    if (existingSymbol) { existingSymbol->function = function; }  // Replace placeholder with real function
 
+    emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm);
     emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
-    addSymbol(checker, name, nameLength, compiler->scopeDepth, type, function, parser);
 
 }
 static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left)
@@ -834,8 +837,6 @@ static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* comp
     }
 }
 
-
-
 //newer stuff for the statements and variables
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
@@ -859,7 +860,78 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
         statement(parser, checker, compiler, vm);
     }
 }
+static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
+{
+    if (match(T_MAKE, parser))
+    {
+        ValueType type = getVarDeclarationType(parser);
+        consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+        if (check(T_LEFT_PAREN, parser))
+        {
+            const char* name = parser->previous.lexemeStart;
+            int nameLength = parser->previous.length;
 
+            //temp function
+            ObjFunction* functionDeclaration = newFunction(name, nameLength, type, vm);
+            functionDeclaration->arity = 0;
+            functionDeclaration->returnType = type;
+
+            consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
+
+            while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
+            {
+                ValueType paramType = getVarDeclarationType(parser);
+                consume(T_IDENTIFIER, "A parameter is expected after a type definition in your function", "SYNTAX ERROR", parser);
+
+                const char* paramName = parser->previous.lexemeStart;
+                int paramLength = parser->previous.length;
+
+                if (functionDeclaration->arity >= MAX_PARAMS)
+                {
+                    error("Your function can only have a max of 255 params.", "MEMORY ERROR", parser);
+                }
+                else
+                {
+                    ParamInfo* param = &functionDeclaration->params[functionDeclaration->arity++];
+                    param->type = paramType;
+                    param->name = paramName;
+                    param->length = paramLength;
+                }
+
+
+                if (check(T_RIGHT_PAREN, parser)) break;
+                consume(T_COMMA, "Please seperate all function parameters with a ','.", "SYNTAX ERROR", parser);
+            }
+            consume(T_RIGHT_PAREN, "Expect ')' after you functions parameters.", "SYNTAX ERROR", parser);
+
+            //add to func symbol table
+            addSymbol(checker, name, nameLength, 0, type, functionDeclaration, parser);
+
+            //skip over the body
+            if (check(T_LEFT_BRACE, parser))
+            {
+                int braceCount = 1;
+                consume(T_LEFT_BRACE, "", "", parser);
+                while (braceCount > 0 && !check(T_EOF, parser))
+                {
+                    if (match(T_LEFT_BRACE, parser)) braceCount++;
+                    else if (match(T_RIGHT_BRACE, parser)) braceCount--;
+                    else advance(parser);
+                }
+            }
+            else if (check(T_SEMICOLON, parser))
+            {
+                consume(T_SEMICOLON, "", "", parser); // Forward declaration
+            }
+        }
+    }
+
+    //skip to next function declaration
+    while (!check(T_EOF, parser) && !check(T_MAKE, parser))
+    {
+        advance(parser);
+    }
+}
 
 //------------------------------------------Compile function-----------------------------------------------------//
 ObjFunction* compile(const char* source, Vm* vm)
@@ -868,17 +940,29 @@ ObjFunction* compile(const char* source, Vm* vm)
     ASTparser parser;
     initParser(&parser, source);
 
+    ASTparser parser2;
+    initParser(&parser2, source);
+
     TypeChecker checker;
     initTypeChecker(&checker);
 
+    //----------------------------First pass--------------------//
+    while (!check(T_EOF, &parser2))
+    {
+        declareFunction(&parser2, &checker, vm );
+    }
+    if (parser2.hadError) return NULL;
+
+    printf("RAN PAST FIRST COMPILATION\n");
+
+    //----------------------------Second pass--------------------//
     AstCompiler compiler;
-    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, true, vm);
+    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, true, vm, &checker, &parser);
 
     while (!check(T_EOF, &parser))
     {
         declaration(&parser, &checker, &compiler, vm );
     }
-
 
     ObjFunction* topScript = endFunctionCompiler(&compiler, &parser);
 

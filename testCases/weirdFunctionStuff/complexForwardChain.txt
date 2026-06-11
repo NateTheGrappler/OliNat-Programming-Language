@@ -1,0 +1,72 @@
+// Forward declarations
+make int fibonacci(int n);
+make int factorial(int n);
+make int ackermann(int m, int n);
+make double power(double base, int exp);
+make string repeat(string s, int count);
+
+// Complex expression calling functions before implementation
+make int fibResult = fibonacci(7);           // 13
+make int factResult = factorial(5);          // 120
+make int ackResult = ackermann(2, 3);        // 9
+make double powerResult = power(2.0, 10);    // 1024.0
+
+// Also call functions from within other forward-declared functions
+make int nestedResult = fibonacci(factorial(4)); // fib(24) = 46368
+
+// Now implementations
+make int fibonacci(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+make int factorial(int n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+make int ackermann(int m, int n) {
+    if (m == 0) {
+        return n + 1;
+    }
+    if (n == 0) {
+        return ackermann(m - 1, 1);
+    }
+    return ackermann(m - 1, ackermann(m, n - 1));
+}
+
+make double power(double base, int exp) {
+    if (exp == 0) {
+        return 1.0;
+    }
+    if (exp < 0) {
+        return 1.0 / power(base, -exp);
+    }
+    return base * power(base, exp - 1);
+}
+
+make string repeat(string s, int count) {
+    if (count <= 0) {
+        return "";
+    }
+    if (count == 1) {
+        return s;
+    }
+    return s + repeat(s, count - 1);
+}
+
+// More tests after implementation
+make double powerAgain = power(3.0, 4);      // 81.0
+make string repeated = repeat("abc", 3);      // "abcabcabc"
+
+fibResult;
+factResult;
+ackResult;
+powerResult;
+nestedResult;
+powerAgain;
+repeated;

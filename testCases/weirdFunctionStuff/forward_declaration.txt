@@ -1,0 +1,25 @@
+make int result1 = multiply(6, 7);
+make double result2 = divide(15.0, 3.0);
+make bool posCheck = isPositive(-5);
+
+make int multiply(int a, int b) {
+    return a * b;
+}
+
+make double divide(double x, double y) {
+    if (y == 0.0) {
+        return 0.0;
+    }
+    return x / y;
+}
+
+make bool isPositive(int n) {
+    if (n > 0) {
+        return true;
+    }
+    return false;
+}
+
+result1;  // Expected: 42
+result2;  // Expected: 5.0
+posCheck; // Expected: false (0)

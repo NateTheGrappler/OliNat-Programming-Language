@@ -1,0 +1,40 @@
+// Mutual recursion test - Even/Odd determination
+// Validates function symbol resolution across multiple functions
+
+make bool isEven(int n) {
+    if (n == 0) {
+        return 1;
+    }
+    return isOdd(n - 1);
+}
+
+make bool isOdd(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return isEven(n - 1);
+}
+
+make int ackermann(int m, int n) {
+    if (m == 0) {
+        return n + 1;
+    }
+    if (n == 0) {
+        return ackermann(m - 1, 1);
+    }
+    return ackermann(m - 1, ackermann(m, n - 1));
+}
+
+make empty main() {
+    bool even5 = isEven(5);
+    // Expected: 0 (false)
+
+    bool odd5 = isOdd(5);
+    // Expected: 1 (true)
+
+    bool even10 = isEven(10);
+    // Expected: 1 (true)
+
+    int a = ackermann(3, 4);
+    // Expected: 125 (famous Ackermann value for 3,4)
+}
