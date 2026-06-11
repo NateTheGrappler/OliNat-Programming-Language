@@ -113,6 +113,7 @@ void initAstCompiler(AstCompiler* compiler)
 {
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
+    compiler->isTopLevel = false;
 }
 void initParser(ASTparser* parser, const char* source)
 {
@@ -415,6 +416,11 @@ static ValueType getVarDeclarationType(ASTparser* parser)
             consume(T_BOOL, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
             return VALUE_BOOL;
         }
+        case T_EMPTY:
+        {
+            consume(T_EMPTY, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            return VALUE_EMPTY;
+        }
         default:
             error("Expected a type after 'make'", "SYNTAX ERROR", parser);
             return VALUE_ERROR;
@@ -651,12 +657,13 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 }
 
 //functions
-static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, Vm* vm)
+static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm)
 {
     //zero out the compilers inner crap for locals
     newCompiler->localCount = 1;
     newCompiler->scopeDepth = (enclosing == NULL) ? 0 : 1;
     newCompiler->enclosing = enclosing;
+    newCompiler->isTopLevel = isTopLevel;
 
     //create the function compiler will fill
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
@@ -664,6 +671,10 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
 static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser)
 {
     ObjFunction* function = compiler->function;
+    if (function->returnType != VALUE_EMPTY)
+    {
+        emitByte(OP_MISSING_RETURN, &function->chunk, parser);
+    }
     emitReturn(&function->chunk, parser);
     return function;
 }
@@ -674,7 +685,7 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     int nameLength = parser->previous.length;
 
     AstCompiler newCompiler;
-    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, vm);
+    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, vm);
 
     //params
     consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
@@ -740,9 +751,40 @@ static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left)
 
     return createCall(left, args, argCount, parser->previous.line);
 }
-static void returnStatement()
+static void returnStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
+    //TODO: add in possible type promotion in return functions
 
+    if (compiler->isTopLevel)
+    {
+        error("You cannot have 'return' in top level code.", "LOGICAL ERROR", parser);
+    }
+
+    if (!check(T_SEMICOLON, parser))
+    {
+        //Non void function returns
+        Expr* returnExpr = astExpression(parser);
+        printExpression(returnExpr);
+        if (checkExpression(checker, returnExpr, parser) != compiler->function->returnType)
+        {
+            error("A return statement should match the type of it's parent function.", "TYPE ERROR", parser);
+        }
+        compileBytecode(returnExpr, parser, &compiler->function->chunk, compiler, vm);
+        freeExpr(returnExpr);
+    }
+    else
+    {
+        //void function returns
+        if (compiler->function->returnType != VALUE_EMPTY)
+        {
+            error("Functions without the return type 'empty' must return a value.", "TYPE ERROR", parser);
+        }
+        emitByte(OP_CONSTANT, &compiler->function->chunk, parser); //dummy value for popping in OP_RETURN
+
+    }
+
+    consume(T_SEMICOLON, "Please finish all return statements with a ';'.", "SYNTAX ERROR", parser);
+    emitByte(OP_RETURN, &compiler->function->chunk, parser);
 }
 
 //Basic statements
@@ -784,7 +826,7 @@ static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* comp
     }
     else if (match(T_RETURN, parser))
     {
-        returnStatement();
+        returnStatement(parser, checker, compiler, vm);
     }
     else
     {
@@ -830,7 +872,7 @@ ObjFunction* compile(const char* source, Vm* vm)
     initTypeChecker(&checker);
 
     AstCompiler compiler;
-    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, vm);
+    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, true, vm);
 
     while (!check(T_EOF, &parser))
     {

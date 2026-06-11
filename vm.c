@@ -515,6 +515,12 @@ static vmResult run(Vm* vm)
                 frame = &vm->frames[vm->frameCount - 1];
                 break;
             }
+            case OP_MISSING_RETURN:
+            {
+                runtimeError();
+                printf("MISSING RETURN STATEMENT!!!\n");
+                return INTERPRET_RUNTIME_ERROR;
+            }
 
 
             default:

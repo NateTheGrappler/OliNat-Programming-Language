@@ -35,6 +35,7 @@ typedef struct AstCompiler
     Local locals[UINT8_COUNT];
     int localCount;
     int scopeDepth;
+    bool isTopLevel;
     ObjFunction* function; //that you write to
     struct AstCompiler* enclosing;
 } AstCompiler;
