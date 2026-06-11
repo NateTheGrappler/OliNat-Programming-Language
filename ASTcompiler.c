@@ -740,6 +740,10 @@ static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left)
 
     return createCall(left, args, argCount, parser->previous.line);
 }
+static void returnStatement()
+{
+
+}
 
 //Basic statements
 static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
@@ -766,7 +770,6 @@ static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* comp
         block(parser, checker, compiler, vm);
         endScope(compiler, checker, vm, parser);
     }
-
     else if (match(T_IF, parser))
     {
         ifStatement(parser, checker, compiler, vm);
@@ -778,6 +781,10 @@ static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* comp
     else if (match(T_FOR, parser))
     {
         forStatement(parser, checker, compiler, vm);
+    }
+    else if (match(T_RETURN, parser))
+    {
+        returnStatement();
     }
     else
     {
