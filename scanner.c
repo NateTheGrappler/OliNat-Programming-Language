@@ -279,6 +279,8 @@ Token scanToken(Scanner* scanner)
         case ')': return makeToken(T_RIGHT_PAREN, scanner);
         case '{': return makeToken(T_LEFT_BRACE,  scanner);
         case '}': return makeToken(T_RIGHT_BRACE, scanner);
+        case '[': return makeToken(T_LEFT_BRACKET,  scanner);
+        case ']': return makeToken(T_RIGHT_BRACKET, scanner);
         case ';': return makeToken(T_SEMICOLON,   scanner);
         case ',': return makeToken(T_COMMA,       scanner);
         case '.': return makeToken(T_DOT,         scanner);

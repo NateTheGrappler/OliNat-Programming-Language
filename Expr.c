@@ -136,6 +136,17 @@ Expr* createCall(Expr* callee, Expr** args, int argCount,  int line)
     expr->objectCall.callee = callee;
     return expr;
 }
+Expr* createStaticArray(Expr** args, int count, ValueType type, int line)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_STATIC_ARRAY;
+    expr->line = line;
+
+    expr->staticArray.length = count;
+    expr->staticArray.values = args;
+    expr->staticArray.type = type;
+    return expr;
+}
 
 
 

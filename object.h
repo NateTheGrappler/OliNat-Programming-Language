@@ -18,6 +18,7 @@ typedef enum
 {
     OBJ_STRING,
     OBJ_FUNCTION,
+    OBJ_STATIC_ARRAY,
 } ObjType;
 
 //set up object class to be stored inside of value struct
@@ -57,6 +58,14 @@ typedef struct ObjFunction
     int nameLength;
 } ObjFunction;
 
+typedef struct ObjStaticArray
+{
+    Obj obj;
+    ValueType arrayType;
+    int length;
+    Value* values;
+} ObjStaticArray;
+
 static inline bool IsObjType(Value value, ObjType type)
 {
     return IS_OBJECT(value) && GET_OBJECT_VAL(value)->type == type;
@@ -69,5 +78,6 @@ static inline bool IsObjType(Value value, ObjType type)
 ObjString* copyString(const char* chars, int length, struct Vm* vm);
 ObjString* combineString(char* chars, int length, struct Vm* vm);
 ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm);
+ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm);
 
 #endif //OLI_NAT_OBJECT_H

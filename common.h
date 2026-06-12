@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 typedef enum {
+    //basic
     VALUE_BOOL,
     VALUE_INT,
     VALUE_STRING,
@@ -20,8 +21,21 @@ typedef enum {
     VALUE_DOUBLE,
     VALUE_FLOAT,
     VALUE_EMPTY,
+    //arrays
+    VALUE_BOOL_ARRAY,
+    VALUE_INT_ARRAY,
+    VALUE_STRING_ARRAY,
+    VALUE_OBJECT_ARRAY,
+    VALUE_DOUBLE_ARRAY,
+    VALUE_FLOAT_ARRAY,
+    VALUE_EMPTY_ARRAY,
+    //error
     VALUE_ERROR,
 } ValueType;
+
+ValueType toArrayType(ValueType base);
+ValueType toElementType(ValueType arrayType);
+
 
 #define DEBUG_TRACE_EXECUTION
 

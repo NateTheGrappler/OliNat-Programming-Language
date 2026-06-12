@@ -10,6 +10,7 @@
 //-------DECLARATIONS------------//
 static void advance(ASTparser* parser);
 static Expr* astExpression(ASTparser* parser);
+static Expr* Array(bool canAssign, ASTparser* parser);
 static Expr* number(bool canAssign, ASTparser* parser);
 static Expr* boolean(bool canAssign, ASTparser* parser);
 static Expr* string(bool canAssign, ASTparser* parser);
@@ -56,6 +57,7 @@ ParseRule rules[] = {
   [T_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [T_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [T_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
+  [T_LEFT_BRACKET]   = {Array,     NULL, PREC_NONE},
   [T_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [T_DOT]           = {NULL,     NULL,   PREC_CALL},
   [T_MINUS]         = {unary,     binary,PREC_TERM},
@@ -256,6 +258,22 @@ static Expr* variable(bool canAssign, ASTparser* parser)
     }
     return self;
 }
+static Expr* Array(bool canAssign, ASTparser* parser)
+{
+    int valueCount = 0;
+    Expr** values = NULL;
+    while (!check(T_RIGHT_BRACKET, parser) && !check(T_EOF, parser))
+    {
+        Expr** newValues = reallocate(values, valueCount * sizeof(Expr*), sizeof(Expr*) * (valueCount + 1));
+        values = newValues;
+        values[valueCount++] = astExpression(parser);
+        if (check(T_RIGHT_BRACKET, parser)) break;
+        consume(T_COMMA, "Please separate array elements with a ','.", "SYNTAX ERROR", parser);
+    }
+    consume(T_RIGHT_BRACKET, "Please finish your array declaration with ']'.", "SYNTAX ERROR", parser);
+
+    return createStaticArray(values, valueCount, VALUE_ERROR, parser->previous.line);
+}
 static Expr* string(bool canAssign, ASTparser* parser)
 {
     //copy the string because the source code representation might still be needed
@@ -428,13 +446,14 @@ static ValueType getVarDeclarationType(ASTparser* parser)
 }
 static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm, ValueType type)
 {
-    //get the var name
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
+    //get the equal and parse the expression
     consume(T_EQUAL, "Expected a '=' after you declare a new variable.", "SYNTAX ERROR", parser);
     Expr* varInitializer = astExpression(parser);
     consume(T_SEMICOLON, "Expected ';' after you declare a new variable", "SYNTAX ERROR", parser);
+
 
     //check the type of the expression vs the declared type
     ValueType realType = checkExpression(checker, varInitializer, parser);
@@ -682,6 +701,7 @@ static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser
 static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompiler* compiler, Vm* vm, ValueType type)
 {
     //function name
+
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
@@ -721,8 +741,6 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
         consume(T_COMMA, "Please seperate all function parameters with a ','.", "SYNTAX ERROR", parser);
     }
     consume(T_RIGHT_PAREN, "Expect ')' after you functions parameters.", "SYNTAX ERROR", parser);
-
-
 
     //function body
     consume(T_LEFT_BRACE, "Expected '{' after a function declaration", "SYNTAX ERROR", parser);
@@ -844,7 +862,17 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
     {
         //get / consume the declaraed type, and then name
         ValueType type = getVarDeclarationType(parser);
+
+        //check for [] for arrays
+        if (match(T_LEFT_BRACKET, parser))
+        {
+            consume(T_RIGHT_BRACKET, "Please match all '[' with a ']',", "SYNTAX ERROR", parser);
+            type = toArrayType(type);
+        }
+
+        //get var name
         consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+
 
         if (check(T_LEFT_PAREN, parser))
         {
@@ -865,7 +893,13 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
     if (match(T_MAKE, parser))
     {
         ValueType type = getVarDeclarationType(parser);
-        consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+        if (check(T_IDENTIFIER, parser)) {consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);}
+        else if (check(T_LEFT_BRACKET, parser))
+        {
+            consume(T_LEFT_BRACKET, "", "SYNTAX ERROR", parser);
+            consume(T_RIGHT_BRACKET, "Please match all '[' with a corresponding ']'.", "SYNTAX ERROR", parser);
+            consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
+        }
         if (check(T_LEFT_PAREN, parser))
         {
             const char* name = parser->previous.lexemeStart;

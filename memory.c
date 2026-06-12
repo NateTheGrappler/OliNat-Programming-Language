@@ -42,6 +42,13 @@ static void freeObject(Obj* obj)
             FREE(ObjFunction, obj);
             break;
         }
+        case OBJ_STATIC_ARRAY:
+        {
+            ObjStaticArray* array = (ObjStaticArray*)obj;
+            FREE_ARRAY(Value, array->values, array->length);
+            FREE(ObjStaticArray, array);
+            break;
+        }
 
     }
 }

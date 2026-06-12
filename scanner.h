@@ -14,6 +14,7 @@ typedef enum
     T_LEFT_BRACE, T_RIGHT_BRACE,
     T_COMMA, T_DOT, T_MINUS, T_PLUS,
     T_SEMICOLON, T_SLASH, T_STAR,
+    T_LEFT_BRACKET, T_RIGHT_BRACKET,
 
     //one or two chars
     T_BANG, T_BANG_EQUAL,

@@ -130,6 +130,18 @@ void printObject(Value value)
             printf("FN-%.*s", function->nameLength, function->name);
             break;
         }
+        case OBJ_STATIC_ARRAY:
+        {
+            ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(value);
+            printf("ARRAY-[");
+            for (int i = 0; i < array->length; i++)
+            {
+                printValue(array->values[i]);
+                if (i < array->length - 1) printf(", ");
+            }
+            printf("]");
+            break;
+        }
     }
 }
 
@@ -171,6 +183,26 @@ static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset)
     jump |= chunk->byteCode[offset + 2];
     printf("%-16s %4d -> %d\n", name, offset,
            offset + 3 + sign * jump);
+    return offset + 3;
+}
+
+static int arrayInstruction(const char* name, Chunk* chunk, int offset)
+{
+    uint8_t count = chunk->byteCode[offset + 1];
+    uint8_t type = chunk->byteCode[offset + 2];
+
+    const char* typeName;
+    switch ((ValueType)type)
+    {
+        case VALUE_INT:    typeName = "int[]";    break;
+        case VALUE_FLOAT:  typeName = "float[]";  break;
+        case VALUE_DOUBLE: typeName = "double[]"; break;
+        case VALUE_STRING: typeName = "string[]"; break;
+        case VALUE_BOOL:   typeName = "bool[]";   break;
+        default:           typeName = "unknown[]"; break;
+    }
+
+    printf("%-16s %4d elements  type: %s\n", name, count, typeName);
     return offset + 3;
 }
 
@@ -243,5 +275,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return byteInstruction("OP_CALL", chunk, offset);
         case OP_MISSING_RETURN:
             return byteInstruction("OP_MISSING_RETURN", chunk, offset);
+        case OP_CREATE_ARRAY:
+            return arrayInstruction("OP_CREATE_ARRAY", chunk, offset);
     }
 }

@@ -29,4 +29,5 @@ add_executable(Oli_Nat main.c
         object.h
         Hashmap.h
         Hashmap.c
+        common.c
 )

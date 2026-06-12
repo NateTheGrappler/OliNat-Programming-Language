@@ -481,6 +481,19 @@ static vmResult run(Vm* vm)
                 push(vm, frame->slots[slot]);
                 break;
             }
+            case OP_CREATE_ARRAY:
+            {
+                int arrayCount = READ_BYTE();
+                ValueType arrayType = (ValueType)READ_BYTE();
+                ObjStaticArray* newArray = newStaticArray(arrayCount, arrayType, vm);
+
+                for (int i = arrayCount - 1; i >= 0; i--)
+                {
+                    newArray->values[i] = pop(vm);
+                }
+                push(vm, CREATE_OBJECT_VAL((Obj*)newArray));
+                break;
+            }
 
             case OP_JUMP:
             {
@@ -521,6 +534,7 @@ static vmResult run(Vm* vm)
                 printf("MISSING RETURN STATEMENT!!!\n");
                 return INTERPRET_RUNTIME_ERROR;
             }
+
 
 
             default:

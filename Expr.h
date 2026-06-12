@@ -15,7 +15,8 @@ typedef enum {
     EXPR_GROUPING,
     EXPR_ASSIGN,
     EXPR_VARIABLE,
-    EXPR_CALL
+    EXPR_CALL,
+    EXPR_STATIC_ARRAY
 } ExprType;
 
 struct Expr;
@@ -30,6 +31,12 @@ typedef struct
     const char* name;
     int length;
 } Variable;
+typedef struct
+{
+    struct Expr** values;
+    ValueType type;
+    int length;
+} staticArray;
 typedef struct
 {
     const char* name;
@@ -79,6 +86,7 @@ typedef struct Expr {
         Grouping grouping;
         VarAssignment var_assignment;
         Call objectCall;
+        staticArray staticArray;
     };
 } Expr;
 
@@ -88,6 +96,7 @@ Expr* createLiteralInt   (int value, int line);
 Expr* createLiteralBool  (bool value, int line);
 Expr* createLiteralString(char* value, int line);
 Expr* createVarAssignment(char* name, int length, Expr* value, int line);
+Expr* createStaticArray(Expr** args, int count, ValueType type, int line);
 Expr* createUnary        (char operator, Expr* right, int line);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
 Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line);

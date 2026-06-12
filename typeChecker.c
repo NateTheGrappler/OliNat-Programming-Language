@@ -265,6 +265,39 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             result = symbol->function->returnType;
             break;
         }
+        case EXPR_STATIC_ARRAY:
+        {
+
+            result = VALUE_ERROR;
+            if (expr->staticArray.length == 0)
+            {
+                error("Cannot declare an empty array without a type.", "TYPE ERROR", parser);
+                result =  VALUE_ERROR;
+                break;
+            }
+
+            ValueType inferType = checkExpression(checker, expr->staticArray.values[0], parser);
+            if (inferType == VALUE_ERROR) {result = VALUE_ERROR; break;}
+
+            //check through all latter elements
+            bool typeError = false;
+            for (int i = 1; i < expr->staticArray.length; i++)
+            {
+                ValueType t = checkExpression(checker, expr->staticArray.values[i], parser);
+                if (t != inferType || t == VALUE_ERROR)
+                {
+                    error("All array elements must be the same type.", "TYPE MISMATCH ERROR", parser);
+                    typeError = true;
+                }
+            }
+            if (!typeError)
+            {
+                expr->staticArray.type = inferType;
+                result = toArrayType(inferType);
+            }
+            expr->staticArray.type = inferType;
+            break;
+        }
         default:
             result =  VALUE_ERROR;
             break;

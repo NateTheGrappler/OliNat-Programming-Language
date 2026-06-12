@@ -207,6 +207,18 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             emitBytes(OP_CALL, (uint8_t)expr->objectCall.argCount, vmChunk, parser);
             break;
         }
+        case EXPR_STATIC_ARRAY:
+        {
+            for (int i = 0; i < expr->staticArray.length; i++)
+            {
+                compileBytecode(expr->staticArray.values[i], parser, vmChunk, compiler, vm);
+            }
+            // emit the count as an operand
+            emitByte(OP_CREATE_ARRAY, vmChunk, parser);
+            emitByte(expr->staticArray.length, vmChunk, parser);
+            emitByte((uint8_t)expr->staticArray.type, vmChunk, parser);
+            break;
+        }
     }
 }
 

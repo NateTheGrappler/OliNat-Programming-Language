@@ -83,5 +83,12 @@ ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType,
     initChunk(&function->chunk);
     function->returnType = returnType;
     return function;
-
+}
+ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm)
+{
+    ObjStaticArray* array = ALLOCATE_OBJ(ObjStaticArray, OBJ_STATIC_ARRAY, vm);
+    array->length = count;
+    array->arrayType  =type;
+    array->values = ALLOCATE(Value, count);
+    return array;
 }
