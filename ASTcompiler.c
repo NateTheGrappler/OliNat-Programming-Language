@@ -17,6 +17,7 @@ static Expr* string(bool canAssign, ASTparser* parser);
 static Expr* unary(bool canAssign, ASTparser* parser);
 static Expr*  grouping(bool canAssign, ASTparser* parser);
 static Expr* binary(bool canAssign, ASTparser* parser, Expr* left);
+static Expr* acesssArray(bool canAssign, ASTparser* parser, Expr* left);
 static Expr* variable(bool canAssign, ASTparser* parser);
 static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
@@ -57,7 +58,7 @@ ParseRule rules[] = {
   [T_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [T_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [T_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
-  [T_LEFT_BRACKET]   = {Array,     NULL, PREC_NONE},
+  [T_LEFT_BRACKET]   = {Array,acesssArray,PREC_CALL},
   [T_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [T_DOT]           = {NULL,     NULL,   PREC_CALL},
   [T_MINUS]         = {unary,     binary,PREC_TERM},
@@ -273,6 +274,20 @@ static Expr* Array(bool canAssign, ASTparser* parser)
     consume(T_RIGHT_BRACKET, "Please finish your array declaration with ']'.", "SYNTAX ERROR", parser);
 
     return createStaticArray(values, valueCount, VALUE_ERROR, parser->previous.line);
+}
+static Expr* acesssArray(bool canAssign, ASTparser* parser, Expr* left)
+{
+    Expr* index = astExpression(parser);
+    consume(T_RIGHT_BRACKET, "Please finish array access calls with a ']'.", "SYNTAX ERROR", parser);
+
+    if (match(T_EQUAL, parser) && canAssign)
+    {
+        Expr* value = astExpression(parser);
+        return createArraySet(left, index, value, parser->previous.line);
+    }
+
+    return createArrayGet(left, index, parser->previous.line);
+
 }
 static Expr* string(bool canAssign, ASTparser* parser)
 {

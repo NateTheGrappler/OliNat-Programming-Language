@@ -16,10 +16,23 @@ typedef enum {
     EXPR_ASSIGN,
     EXPR_VARIABLE,
     EXPR_CALL,
-    EXPR_STATIC_ARRAY
+    EXPR_STATIC_ARRAY,
+    EXPR_GET_ARRAY_INDEX,
+    EXPR_SET_ARRAY_INDEX,
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    struct Expr* left;
+    struct Expr* index;
+} GetArray;
+typedef struct
+{
+    struct Expr* left;
+    struct Expr* index;
+    struct Expr* value;
+} SetArray;
 typedef struct
 {
     struct Expr* callee; //var holding funciton or class
@@ -87,6 +100,8 @@ typedef struct Expr {
         VarAssignment var_assignment;
         Call objectCall;
         staticArray staticArray;
+        GetArray getArray;
+        SetArray setArray;
     };
 } Expr;
 
