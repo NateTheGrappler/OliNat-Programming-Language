@@ -219,6 +219,21 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             emitByte((uint8_t)expr->staticArray.type, vmChunk, parser);
             break;
         }
+        case EXPR_GET_ARRAY_INDEX:
+        {
+            compileBytecode(expr->getArray.left, parser, vmChunk, compiler, vm);
+            compileBytecode(expr->getArray.index, parser, vmChunk, compiler, vm);
+            emitByte(OP_GET_ARRAY_INDEX, vmChunk, parser);
+            break;
+        }
+        case EXPR_SET_ARRAY_INDEX:
+        {
+            compileBytecode(expr->setArray.left, parser, vmChunk, compiler, vm);
+            compileBytecode(expr->setArray.index, parser, vmChunk, compiler, vm);
+            compileBytecode(expr->setArray.value, parser, vmChunk, compiler, vm);
+            emitByte(OP_SET_ARRAY_INDEX, vmChunk, parser);
+            break;
+        }
     }
 }
 

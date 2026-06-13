@@ -481,6 +481,7 @@ static vmResult run(Vm* vm)
                 push(vm, frame->slots[slot]);
                 break;
             }
+
             case OP_CREATE_ARRAY:
             {
                 int arrayCount = READ_BYTE();
@@ -492,6 +493,39 @@ static vmResult run(Vm* vm)
                     newArray->values[i] = pop(vm);
                 }
                 push(vm, CREATE_OBJECT_VAL((Obj*)newArray));
+                break;
+            }
+            case OP_SET_ARRAY_INDEX:
+            {
+                Value value = pop(vm);
+                Value indexval = pop(vm);
+                Value arrayVal = pop(vm);
+                int index = GET_INT_VAL(indexval);
+                ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(arrayVal);
+
+                if (index < 0 || index >= array->length)
+                {
+                    runtimeError();
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                array->values[index] = value;
+                push(vm, array->values[index]);
+                break;
+            }
+            case OP_GET_ARRAY_INDEX:
+            {
+                Value indexval = pop(vm);
+                Value arrayVal = pop(vm);
+                int index = GET_INT_VAL(indexval);
+
+                ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(arrayVal);
+                if (index < 0 || index >= array->length)
+                {
+                    runtimeError();
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                push(vm, array->values[index]);
                 break;
             }
 

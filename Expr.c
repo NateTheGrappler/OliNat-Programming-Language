@@ -68,6 +68,7 @@ Expr* createLiteralInt(int value, int line)
     expr->literal.type = VALUE_INT;
     return expr;
 }
+
 Expr* createVariable(const char* name, int length, int line)
 {
     //allocate the expr in memory and set it's type
@@ -136,6 +137,7 @@ Expr* createCall(Expr* callee, Expr** args, int argCount,  int line)
     expr->objectCall.callee = callee;
     return expr;
 }
+
 Expr* createStaticArray(Expr** args, int count, ValueType type, int line)
 {
     Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
@@ -147,7 +149,27 @@ Expr* createStaticArray(Expr** args, int count, ValueType type, int line)
     expr->staticArray.type = type;
     return expr;
 }
+Expr* createArraySet(Expr* left, Expr* index, Expr* value, int line)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_SET_ARRAY_INDEX;
+    expr->line = line;
 
+    expr->setArray.left = left;
+    expr->setArray.index = index;
+    expr->setArray.value = value;
+    return expr;
+}
+Expr* createArrayGet(Expr* left, Expr* index, int line)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    expr->type = EXPR_GET_ARRAY_INDEX;
+    expr->line = line;
+
+    expr->getArray.left = left;
+    expr->getArray.index = index;
+    return expr;
+}
 
 
 void freeExpr(Expr* expr)
@@ -198,6 +220,28 @@ void freeExpr(Expr* expr)
                 freeExpr(expr->objectCall.args[i]);
             }
             FREE_ARRAY(Expr*, expr->objectCall.args, expr->objectCall.argCount);
+            break;
+        }
+        case EXPR_STATIC_ARRAY:
+        {
+            for (int i = 0; i < expr->staticArray.length; i++)
+            {
+                freeExpr(expr->staticArray.values[i]);
+            }
+            FREE_ARRAY(Expr*, expr->staticArray.values, expr->staticArray.length);
+            break;
+        }
+        case EXPR_GET_ARRAY_INDEX:
+        {
+            freeExpr(expr->getArray.index);
+            freeExpr(expr->getArray.left);
+            break;
+        }
+        case EXPR_SET_ARRAY_INDEX:
+        {
+            freeExpr(expr->setArray.index);
+            freeExpr(expr->setArray.left);
+            freeExpr(expr->setArray.value);
             break;
         }
     }

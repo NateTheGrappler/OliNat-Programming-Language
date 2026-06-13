@@ -298,6 +298,42 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             expr->staticArray.type = inferType;
             break;
         }
+        case EXPR_GET_ARRAY_INDEX:
+        {
+            ValueType arrayType = checkExpression(checker, expr->getArray.left, parser);
+            ValueType indexType = checkExpression(checker, expr->getArray.index, parser);
+
+            if (indexType != VALUE_INT)
+            {
+                error("An index into an array must be of value type INT, please only use those.", "INDEX ERROR", parser);
+                result = VALUE_ERROR;
+                break;
+            }
+            result = toElementType(arrayType);
+            break;
+        }
+        case EXPR_SET_ARRAY_INDEX:
+        {
+            ValueType arrayType = checkExpression(checker, expr->setArray.left, parser);
+            ValueType indexType = checkExpression(checker, expr->setArray.index, parser);
+            ValueType valueType = checkExpression(checker, expr->setArray.value, parser);
+
+            if (indexType != VALUE_INT)
+            {
+                error("An index into an array must be of value type INT, please only use those.", "INDEX ERROR", parser);
+                result = VALUE_ERROR;
+                break;
+            }
+            if (valueType != toElementType(arrayType))
+            {
+                error("When assigning a new element in an array, the assigning type must match the array type.", "TYPE MISTMATCH ERROR", parser);
+                result = VALUE_ERROR;
+                break;
+            }
+
+            result = toElementType(arrayType);
+            break;
+        }
         default:
             result =  VALUE_ERROR;
             break;

@@ -1,0 +1,51 @@
+// ============ BASIC ARRAY CREATION ============
+make int[] intArray = [1, 2, 3];
+make float[] floatArray = [1.0f, 2.0f, 3.0f];
+make double[] doubleArray = [1.0, 2.0, 3.0];
+make bool[] boolArray = [true, false, true];
+make string[] stringArray = ["hello", "world"];
+
+// ============ INDEX ACCESS ============
+intArray[0];
+intArray[1];
+intArray[2];
+
+// ============ INDEX ASSIGNMENT ============
+intArray[0] = 10;
+intArray[1] = 20;
+intArray[2] = 30;
+
+// ============ ASSIGNMENT AS EXPRESSION ============
+1 + (intArray[0] = 27); //Strange I know, I find it endearing
+
+// ============ FUNCTIONS RETURNING ARRAYS ============
+make int[] makeIntArray()
+{
+    return [1, 2, 3];
+}
+make int[] myArray = makeIntArray();
+
+// ================ ARRAYS AS PARAMS ====================
+make int[] makeIntArray(int[] a)
+{
+    return a;
+}
+make int[] x = makeIntArray([1, 2, 3]);
+
+// ============ ARRAYS IN EXPRESSIONS ============
+make int x = intArray[0] + intArray[1];
+make bool b = boolArray[0];
+
+// ============ SHOULD ERROR: type mismatch in array ============
+make int[] badArray = [1, 2, true];
+
+// ============ SHOULD ERROR: wrong type assignment ============
+make int[] numArray = [1, 2, 3];
+numArray[0] = true;
+
+// ============ SHOULD ERROR: declaring wrong array type ============
+make float[] wrongType = [1, 2, 3];
+
+// -------------RUNTIME ERRORS FOR INDEXING AND STUFF------------
+intArray[99];
+intArray[-1];

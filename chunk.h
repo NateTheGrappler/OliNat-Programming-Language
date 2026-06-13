@@ -39,6 +39,8 @@ typedef enum
     OP_CALL,
     OP_MISSING_RETURN,
     OP_CREATE_ARRAY,
+    OP_GET_ARRAY_INDEX,
+    OP_SET_ARRAY_INDEX,
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

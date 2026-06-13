@@ -427,31 +427,61 @@ static ValueType getVarDeclarationType(ASTparser* parser)
         case T_INTEGER:
         {
             consume(T_INTEGER, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_INT_ARRAY;
+            }
             return VALUE_INT;
         }
         case T_FLOAT:
         {
             consume(T_FLOAT, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_FLOAT_ARRAY;
+            }
             return VALUE_FLOAT;
         }
         case T_DOUBLE:
         {
             consume(T_DOUBLE, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_DOUBLE_ARRAY;
+            }
             return VALUE_DOUBLE;
         }
         case T_STRING:
         {
             consume(T_STRING, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_STRING_ARRAY;
+            }
             return VALUE_STRING;
         }
         case T_BOOL:
         {
             consume(T_BOOL, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_STRING_ARRAY;
+            }
             return VALUE_BOOL;
         }
         case T_EMPTY:
         {
             consume(T_EMPTY, "Please declare the type of the variable you wish to create after 'make'.", "SYNTAX ERROR", parser);
+            if (match(T_LEFT_BRACKET, parser))
+            {
+                consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
+                return VALUE_EMPTY_ARRAY;
+            }
             return VALUE_EMPTY;
         }
         default:

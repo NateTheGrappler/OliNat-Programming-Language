@@ -19,6 +19,7 @@ void printExpression(Expr* expr) //a recursive function for printing out express
     if (expr == NULL)
     {
         printf("Expression passed in was null");
+        return;
     }
 
     switch (expr->type)
@@ -110,7 +111,37 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             break;
 
         }
-
+        case EXPR_STATIC_ARRAY:
+        {
+            printf("ARRAY-[");
+            for (int i = 0; i < expr->staticArray.length; i++)
+            {
+                printExpression(expr->staticArray.values[i]);
+                if (i < expr->staticArray.length - 1) printf(", ");
+            }
+            printf("]");
+            break;
+        }
+        case EXPR_GET_ARRAY_INDEX:
+        {
+            printf("(GET_INDEX ");
+            printExpression(expr->getArray.left);
+            printf("[");
+            printExpression(expr->getArray.index);
+            printf("])");
+            break;
+        }
+        case EXPR_SET_ARRAY_INDEX:
+        {
+            printf("(SET_INDEX ");
+            printExpression(expr->setArray.left);
+            printf("[");
+            printExpression(expr->setArray.index);
+            printf("] = ");
+            printExpression(expr->setArray.value);
+            printf(")");
+            break;
+        }
     }
     //printf("\n");
 }
@@ -277,5 +308,9 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return byteInstruction("OP_MISSING_RETURN", chunk, offset);
         case OP_CREATE_ARRAY:
             return arrayInstruction("OP_CREATE_ARRAY", chunk, offset);
+        case OP_GET_ARRAY_INDEX:
+            return simpleInstruction("OP_GET_ARRAY_INDEX", offset);
+        case OP_SET_ARRAY_INDEX:
+            return simpleInstruction("OP_SET_ARRAY_INDEX", offset);
     }
 }
