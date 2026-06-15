@@ -24,7 +24,21 @@ void emitReturn(Chunk* chunk, ASTparser* parser)
 }
 void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    emitBytes(OP_CONSTANT, makeConstant(value, chunk, vm, parser), chunk, parser);
+    int constantIndex = addConstant(chunk, value, vm);
+    if (constantIndex <= UINT8_MAX)
+    {
+        emitBytes(OP_CONSTANT, (uint8_t)constantIndex, chunk, parser);
+    }
+    else if (constantIndex <= UINT16_MAX)
+    {
+        emitByte(OP_CONSTANT_LONG, chunk, parser);
+        emitByte((constantIndex >> 8) & 0xff, chunk, parser);
+        emitByte(constantIndex & 0xff, chunk, parser);
+    }
+    else
+    {
+        error("Too many constants in bytecode chunk", "MEMORY ERROR", parser);
+    }
 }
 
 static void emitBinaryOperator(const char* operator, Chunk* chunk, ASTparser* parser)
@@ -102,20 +116,6 @@ short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser)
     emitByte(0xff, chunk, parser);
     return (short)(chunk->count - 2);
 }
-
-
-//-----------------------------------------__HELPER FUNCITONS-----------------------------------------------///
-
-static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser)
-{
-    int constantIndex = addConstant(chunk, value, vm);
-    if (constantIndex > UINT8_MAX)
-    {
-        error("Too many constants in one chunk.", "MEMORY ERROR", parser); //TODO: add in a way to store more constants than 255 in one chunk
-    }
-    return (uint8_t)constantIndex;
-}
-
 
 //----------------------------------------Actual compiler stuff-------------------------------------------------//
 

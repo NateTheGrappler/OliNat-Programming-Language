@@ -4,7 +4,7 @@
 
 #ifndef OLI_NAT_ASTCOMPILER_H
 #define OLI_NAT_ASTCOMPILER_H
-#define UINT8_COUNT (UINT8_MAX + 1)
+#define UINT16_COUNT (UINT16_MAX + 1)
 #include "scanner.h"
 #include "common.h"
 #include "Expr.h"
@@ -32,7 +32,7 @@ typedef struct {
 
 typedef struct AstCompiler
 {
-    Local locals[UINT8_COUNT];
+    Local locals[UINT16_COUNT];
     int localCount;
     int scopeDepth;
     bool isTopLevel;

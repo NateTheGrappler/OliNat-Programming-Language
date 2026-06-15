@@ -147,7 +147,7 @@ Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
 }
 void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ObjFunction* function, ASTparser* parser)
 {
-    if (checker->varCount >= 256)
+    if (checker->varCount >= MAX_SYMBOLS)
     {
         //TODO: have it so you can store more vars but also have a seperate error system for types
         error("Too many variables have been declared.", "MEMORY ERROR", parser);

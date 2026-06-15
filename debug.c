@@ -198,6 +198,16 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset) {
     printf("'\n");
     return offset + 2; //since the constants hold both an index and a value, you go over two spots in the memory
 }
+static int constantLongInstruction(const char* name, Chunk* chunk, int offset)
+{
+    uint16_t constant = (uint16_t)(chunk->byteCode[offset + 1] << 8) | chunk->byteCode[offset + 2];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 3; //opcode + 2 bytes
+}
+
+
 static int simpleInstruction(const char* name, int offset)
 {
     printf("%s\n", name);
@@ -260,6 +270,8 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_RETURN", offset);
         case OP_CONSTANT:
             return constantInstruction("OP_CONSTANT", chunk, offset);
+        case OP_CONSTANT_LONG:
+            return constantLongInstruction("OP_CONSTANT", chunk, offset);
         case OP_POP:
             return simpleInstruction("OP_POP", offset);
         case OP_NEGATE:

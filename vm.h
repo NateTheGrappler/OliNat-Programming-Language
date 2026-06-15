@@ -5,8 +5,8 @@
 #ifndef OLI_NAT_VM_H
 #define OLI_NAT_VM_H
 
-#define STACK_MAX 255
 #define FRAMES_MAX 64 //recursion limit
+#define STACK_MAX (256 * FRAMES_MAX)
 
 #include "common.h"
 #include "ASTcompiler.h"

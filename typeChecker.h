@@ -4,6 +4,8 @@
 
 #ifndef OLI_NAT_TYPECHECKER_H
 #define OLI_NAT_TYPECHECKER_H
+#define MAX_SYMBOLS 65536
+
 
 #include "Expr.h"
 #include "common.h"
@@ -27,7 +29,7 @@ typedef struct
 {
     bool hadError;
     int errorCount;
-    Symbol symbols[256];
+    Symbol symbols[MAX_SYMBOLS];
     int varCount;
 } TypeChecker;
 

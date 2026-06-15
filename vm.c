@@ -4,12 +4,12 @@
 #include "vm.h"
 #include "debug.h"
 
+static void runtimeError(Vm* vm, const char* message, const char* messageType);
 static void resetStack(Vm* vm)
 {
     //reset the pointer of the stack to the start of array
     vm->stackTop = vm->stack;
 }
-
 void initVM(Vm* vm)
 {
     resetStack(vm);
@@ -33,7 +33,7 @@ void push(Vm* vm, Value value)
 {
     //check for stack overflow
     if (vm->stackTop - vm->stack >= STACK_MAX) {
-        //TODO: implement runtime errors
+        runtimeError(vm, "Too many constants added onto program's stack", "STACK OVERFLOW ERROR");
         return;
     }
     *vm->stackTop = value;
@@ -50,10 +50,30 @@ Value peek(Vm* vm, int distance)
 }
 
 //-------------------------------------------------_ERROR HANDLING-------------------------------------------//
-static void runtimeError()
+static void runtimeError(Vm* vm, const char* message, const char* messageType)
 {
-    //TODO: add fancy error handling here
-    printf("RAN IN RUNTIME ERROR\n");
+    fprintf(stderr, ":>>  %s -- ", messageType);
+    fprintf(stderr, "%s\n", message);
+
+    fprintf(stderr, "Stack trace:\n");
+    for (int i = vm->frameCount - 1; i >= 0; i--)
+    {
+        CallFrame* frame = &vm->frames[i];
+        ObjFunction* function = frame->function;
+
+        int instruction = (int)(frame->ip - function->chunk.byteCode - 1);
+        int line = function->chunk.lines[instruction];
+
+        fprintf(stderr, "  [line %d] in ", line);
+        if (function->nameLength == 0 || function->name == NULL)
+        {
+            fprintf(stderr, "<script>\n");
+        }
+        else
+        {
+            fprintf(stderr, "%.*s()\n", function->nameLength, function->name);
+        }
+    }
 }
 //----------------------------------------------VM HELPERS-------------------------------------------------//
 static void concatenate(Vm* vm, Value b, Value a)
@@ -69,16 +89,15 @@ static void concatenate(Vm* vm, Value b, Value a)
     ObjString* result = combineString(chars, length, vm);
     push(vm, CREATE_OBJECT_VAL((Obj*)result));
 }
-
 static bool call(ObjFunction* function, int argCount, Vm* vm)
 {
     if (argCount != function->arity)
     {
-        runtimeError();
+        runtimeError(vm, "Function call got either more or less arguements than expected.", "INVALID CALL ERROR");
         return false;
     }
     if (vm->frameCount == FRAMES_MAX) {
-        runtimeError();
+        runtimeError(vm, "Too many function calls deep.", "STACK OVERFLOW ERROR");
         return false;
     }
 
@@ -95,6 +114,7 @@ static vmResult run(Vm* vm)
     CallFrame* frame = &vm->frames[vm->frameCount - 1];
 #define READ_BYTE() (*frame->ip++)
 #define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
+#define READ_CONSTANT_LONG() (frame->function->chunk.constants.values[READ_SHORT()])
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 
@@ -104,11 +124,15 @@ static vmResult run(Vm* vm)
         #ifdef DEBUG_TRACE_EXECUTION
                 //print the stack info for the current byte that youre on, starting from bottom of the stack to the top
                 printf("Stack Info:     ");
+                int stackSize= 0;
                 for (Value* slot = vm->stack; slot < vm->stackTop; slot++) {
                     printf("[ ");
                     printValue(*slot);
                     printf(" ]");
+                    stackSize+=1;
                 }
+                printf("\n");
+                printf(("Stack Size: %d"), stackSize);
                 printf("\n");
                 disassembleInstruction(&frame->function->chunk, (int)(frame->ip - frame->function->chunk.byteCode));
         #endif
@@ -211,6 +235,12 @@ static vmResult run(Vm* vm)
                 Value b = pop(vm);
                 Value a = pop(vm);
 
+                if (IS_INT(b) && GET_INT_VAL(b) == 0)
+                {
+                    runtimeError(vm, "Cannot logically divide a number by zero.", "DIVISON BY ZERO ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
                 if (IS_INT(a) && IS_INT(b))
                 {
                     push(vm, CREATE_INT_VAL(GET_INT_VAL(a) / GET_INT_VAL(b)));
@@ -259,6 +289,12 @@ static vmResult run(Vm* vm)
             {
                 Value constant = READ_CONSTANT();
                 push(vm, constant);
+                break;
+            }
+            case OP_CONSTANT_LONG:
+            {
+                Value constant = READ_CONSTANT_LONG();
+                push(vm , constant);
                 break;
             }
             case OP_POP:
@@ -505,7 +541,7 @@ static vmResult run(Vm* vm)
 
                 if (index < 0 || index >= array->length)
                 {
-                    runtimeError();
+                    runtimeError(vm, "You cannot index outside of an array's defined size", "OUT OF BOUNDS ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 array->values[index] = value;
@@ -521,7 +557,7 @@ static vmResult run(Vm* vm)
                 ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(arrayVal);
                 if (index < 0 || index >= array->length)
                 {
-                    runtimeError();
+                    runtimeError(vm, "You cannot index outside of an array's defined size", "OUT OF BOUNDS ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -554,7 +590,7 @@ static vmResult run(Vm* vm)
                 Value callee = peek(vm, argCount);
                 if (!IS_OBJECT(callee))
                 {
-                    runtimeError();
+                    runtimeError(vm, "You can only call instances and functions.", "LOGIC ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(callee);
@@ -564,8 +600,7 @@ static vmResult run(Vm* vm)
             }
             case OP_MISSING_RETURN:
             {
-                runtimeError();
-                printf("MISSING RETURN STATEMENT!!!\n");
+                runtimeError(vm, "Every single function must have a return statement!!", "MISSING RETURN ERROR");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -580,6 +615,7 @@ static vmResult run(Vm* vm)
 #undef READ_BYTE
 #undef READ_CONSTANT
 #undef READ_SHORT
+#undef READ_CONSTANT_LONG
 }
 
 //-----------------------------Actual VM Functionality-----------------------//

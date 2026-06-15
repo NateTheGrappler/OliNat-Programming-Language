@@ -26,6 +26,7 @@ typedef enum
     OP_GREATER_EQUAL,
     OP_LESS_EQUAL,
     OP_CONSTANT,
+    OP_CONSTANT_LONG,
     OP_POP,
     OP_INVERSE,
     OP_DEFINE_GLOBAL,
