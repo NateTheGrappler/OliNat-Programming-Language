@@ -34,7 +34,7 @@ static bool isDigit(char c)
 }
 static bool isAlpha(char c)
 {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' &&  c<='Z') || (c == '_');
+    return (c >= 'a' && c <= 'z') || (c >= 'A' &&  c<='Z') || (c == '_') || (c == '#');
 }
 
 static Token makeToken(TokenType type, Scanner* scanner)
@@ -145,6 +145,7 @@ static TokenType identifierType(Scanner* scanner)
         case 'r' : return checkKeyword(1, 5, "eturn", T_RETURN, scanner);
         case 's' : return checkKeyword(1, 5, "tring", T_STRING, scanner);
         case 'w' : return checkKeyword(1, 4, "hile",  T_WHILE, scanner);
+        case '#' : return checkKeyword(1, 5, "pullf", T_HASH_PULLF, scanner);
 
         //cases for words with branching letters
         case 'e':

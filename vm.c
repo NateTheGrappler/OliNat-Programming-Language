@@ -49,7 +49,53 @@ Value peek(Vm* vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
-//-------------------------------------------------_ERROR HANDLING-------------------------------------------//
+//------------------------------------------Standard Library Stuff-----------------------------------------------///
+
+
+static void defineNative(Vm* vm, const char* name, NativeFn function)
+{
+    //create new native, intern it's name, and toss it into globals
+    ObjNative* native = newNative(function, vm);
+    ObjString* nameStr = copyString(name, (int)strlen(name), vm);
+    MapSet(&vm->globals, nameStr, CREATE_OBJECT_VAL((Obj*)native));
+}
+void registerIONatives(Vm* vm)
+{
+    printf("Registering new natives...\n");
+    defineNative(vm, "print", printNative);
+    printf("NEW NATIVE REGISTERED\n");
+}
+void registerMathNatives(Vm* vm)
+{
+
+}
+void registerTimeNatives(Vm* vm)
+{
+
+}
+void registerFileIONatives(Vm* vm)
+{
+
+}
+void registerTypeNatives(Vm* vm)
+{
+
+}
+void registerHashMapNatives(Vm* vm)
+{
+
+}
+void registerArrayListNatives(Vm* vm)
+{
+
+}
+void registerUtilsNatives(Vm* vm)
+{
+
+}
+
+
+//-------------------------------------------_ERROR HANDLING-------------------------------------------//
 static void runtimeError(Vm* vm, const char* message, const char* messageType)
 {
     fprintf(stderr, ":>>  %s -- ", messageType);
@@ -106,6 +152,35 @@ static bool call(ObjFunction* function, int argCount, Vm* vm)
     frame->ip = function->chunk.byteCode;
     frame->slots = vm->stackTop - argCount - 1;
     return true;
+}
+static bool callValue(Value callee, int argCount, Vm* vm)
+{
+    if (IS_OBJECT(callee))
+    {
+        switch (GET_OBJECT_VAL(callee)->type)
+        {
+            case OBJ_FUNCTION:
+            {
+                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(callee);
+                return call(function, argCount, vm);;
+            }
+            case OBJ_NATIVE:
+            {
+                ObjNative* native = (ObjNative*)GET_OBJECT_VAL(callee);
+                Value result = native->function(argCount, vm->stackTop-argCount);
+                vm->stackTop -= argCount + 1;
+                push(vm, result);
+                return true;
+            }
+            default:
+            {
+                runtimeError(vm, "Undefined calling object, how did you get here?", "SYNTAX ERROR");
+                return false;
+            }
+        }
+    }
+    runtimeError(vm, "You can only call functions.", "LOGIC ERROR");
+    return false;
 }
 
 //-------------------------------------------Main meat of the vm-------------------------------------------//
@@ -594,8 +669,11 @@ static vmResult run(Vm* vm)
                     runtimeError(vm, "You can only call instances and functions.", "LOGIC ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(callee);
-                call(function, argCount, vm);
+                if (!callValue(callee, argCount, vm))
+                {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
                 frame = &vm->frames[vm->frameCount - 1];
                 break;
             }

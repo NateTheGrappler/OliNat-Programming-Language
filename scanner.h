@@ -35,7 +35,7 @@ typedef enum
     T_FALSE, T_TRUE, T_MAKE, T_WHILE,
     T_FOR, T_IF, T_ELSE, T_RETURN,
     T_CLASS, T_FUN, T_EMPTY, T_INHERIT,
-    T_THIS, T_PULLF,
+    T_THIS, T_PULLF, T_HASH_PULLF,
     T_INTEGER, T_FLOAT, T_DOUBLE, T_STRING, T_BOOL,
 
     //extras

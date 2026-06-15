@@ -40,6 +40,58 @@ static ValueType checkBinaryReturnType(ValueType right, ValueType left)
     return VALUE_DOUBLE;
 }
 
+//------------------------------native / stdlib stuff -----------------------------//
+static void registerNativeSymbol(TypeChecker* checker, const char* name, int length, ValueType returnType, ParamInfo* params, int paramCount, ASTparser* parser)
+{
+    // create a dummy ObjFunction just to hold the signature
+    ObjFunction* sig = ALLOCATE(ObjFunction, 1);
+    sig->returnType = returnType;
+    sig->arity = paramCount;
+    for (int i = 0; i < paramCount; i++)
+    {
+        sig->params[i] = params[i];
+    }
+    addSymbol(checker, name, length, 0, returnType, sig, parser);
+}
+void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+    //print(ANY msg)
+    ParamInfo printParams[1];
+    printParams[0].type = VALUE_ANY;
+    printParams[0].name = "msg";
+    printParams[0].length = 3;
+    registerNativeSymbol(checker, "print", 5, VALUE_EMPTY, printParams, 1, parser);
+}
+void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser)
+{
+
+}
+
+
 //-------------------------------Functions for checking different expression types---------------------------//
 ValueType checkLiteral(Expr* expr)
 {
@@ -255,6 +307,7 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             for (int i = 0; i < symbol->function->arity; i++)
             {
                 ValueType argType = checkExpression(checker, expr->objectCall.args[i], parser);
+                if (symbol->function->params[i].type == VALUE_ANY) continue;
                 if (argType != symbol->function->params[i].type)
                 {
                     typeError(checker, parser, expr, "An arguement of differing type was found in function call. Please double check function input.", "TYPE ERROR");

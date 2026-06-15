@@ -92,3 +92,9 @@ ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm)
     array->values = ALLOCATE(Value, count);
     return array;
 }
+ObjNative* newNative(NativeFn function, struct Vm* vm)
+{
+    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE, vm);
+    native->function = function;
+    return native;
+}

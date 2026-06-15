@@ -19,6 +19,7 @@ typedef enum
     OBJ_STRING,
     OBJ_FUNCTION,
     OBJ_STATIC_ARRAY,
+    OBJ_NATIVE
 } ObjType;
 
 //set up object class to be stored inside of value struct
@@ -57,7 +58,6 @@ typedef struct ObjFunction
     const char* name;
     int nameLength;
 } ObjFunction;
-
 typedef struct ObjStaticArray
 {
     Obj obj;
@@ -65,6 +65,14 @@ typedef struct ObjStaticArray
     int length;
     Value* values;
 } ObjStaticArray;
+
+typedef Value (*NativeFn)(int argCount, Value* args);
+typedef struct ObjNative
+{
+    Obj obj;
+    NativeFn function;
+} ObjNative;
+
 
 static inline bool IsObjType(Value value, ObjType type)
 {
@@ -79,5 +87,5 @@ ObjString* copyString(const char* chars, int length, struct Vm* vm);
 ObjString* combineString(char* chars, int length, struct Vm* vm);
 ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm);
 ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm);
-
+ObjNative* newNative(NativeFn function, struct Vm* vm);
 #endif //OLI_NAT_OBJECT_H

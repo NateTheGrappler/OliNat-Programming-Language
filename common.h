@@ -31,6 +31,8 @@ typedef enum {
     VALUE_EMPTY_ARRAY,
     //error
     VALUE_ERROR,
+    //For maybe auto keyword in future, but only for native fns rn
+    VALUE_ANY
 } ValueType;
 
 ValueType toArrayType(ValueType base);

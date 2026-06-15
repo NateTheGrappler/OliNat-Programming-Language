@@ -853,6 +853,77 @@ static void returnStatement(ASTparser* parser, TypeChecker* checker, AstCompiler
     emitByte(OP_RETURN, &compiler->function->chunk, parser);
 }
 
+//native stdlib stuff
+static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    //check the type of native
+    consume(T_IDENTIFIER, "You have to list the name of the library you wish to include.", "SYNTAX ERROR", parser);
+    const char* library = parser->previous.lexemeStart;
+    int length = parser->previous.length;
+
+    if (strncmp(library, "stdlib", length) == 0)
+    {
+        registerIONatives(vm);
+        registerMathNatives(vm);
+        registerTimeNatives(vm);
+        registerFileIONatives(vm);
+        registerTypeNatives(vm);
+        registerUtilsNatives(vm);
+
+        registerIOSymbols(checker, parser);
+        registerMathSymbols(checker, parser);
+        registerTimeSymbols(checker, parser);
+        registerFileIOSymbols(checker, parser);
+        registerTypeSymbols(checker, parser);
+        registerUtilsSymbols(checker, parser);
+    }
+    else if (strncmp(library, "io", length) == 0) //print & output functions
+    {
+        registerIONatives(vm);
+        registerIOSymbols(checker, parser);
+    }
+    else if (strncmp(library, "math", length) == 0) //extra math functions
+    {
+        registerMathNatives(vm);
+        registerMathSymbols(checker, parser);
+    }
+    else if (strncmp(library, "chronos", length) == 0) //time like clock and date
+    {
+        registerTimeNatives(vm);
+        registerTimeSymbols(checker, parser);
+    }
+    else if (strncmp(library, "fileIO", length)== 0) //file reading, writting, creation, deletion
+    {
+        registerFileIONatives(vm);
+        registerFileIOSymbols(checker, parser);
+    }
+    else if (strncmp(library, "types", length)== 0) //converstions between types
+    {
+        registerTypeNatives(vm);
+        registerTypeSymbols(checker, parser);
+    }
+    else if (strncmp(library, "Hashmap", length) == 0)
+    {
+        registerHashMapNatives(vm);
+        registerHashMapSymbols(checker, parser);
+    }
+    else if (strncmp(library, "ArrayList", length) == 0)
+    {
+        registerArrayListNatives(vm);
+        registerArrayListSymbols(checker, parser);
+    }
+    else if (strncmp(library, "utils", length) == 0) //stuff like len() and maybe some sorts idk
+    {
+        registerUtilsNatives(vm);
+        registerUtilsSymbols(checker, parser);
+    }
+    else
+    {
+        error("Unknown library name.", "IMPORT ERROR", parser);
+    }
+
+}
+
 //Basic statements
 static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
@@ -927,6 +998,10 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
         {
             varDeclaration(parser, checker, compiler, vm, type);
         }
+    }
+    else if (match(T_HASH_PULLF, parser))
+    {
+        nativeFunction(parser, checker, compiler, vm);
     }
     else
     {

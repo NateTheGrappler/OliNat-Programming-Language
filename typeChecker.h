@@ -46,6 +46,14 @@ void initTypeChecker(TypeChecker* checker);
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length);
 void addSymbol(TypeChecker* checker, const char* name, int length, int depth, ValueType type, ObjFunction* function, struct ASTparser* parser);
 
-
+//stdlib stuff
+void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser);
+void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser);
 
 #endif //OLI_NAT_TYPECHECKER_H

@@ -12,6 +12,7 @@
 #include "ASTcompiler.h"
 #include "chunk.h"
 #include "Hashmap.h"
+#include "natives.h"
 
 
 typedef struct
@@ -53,6 +54,16 @@ vmResult interpret(const char* source, Vm* vm);
 void push(Vm* vm, Value value);
 Value pop(Vm* vm);
 Value peek(Vm* vm, int distance);
+
+//stdlib stuff
+void registerIONatives(Vm* vm);
+void registerMathNatives(Vm* vm);
+void registerTimeNatives(Vm* vm);
+void registerFileIONatives(Vm* vm);
+void registerTypeNatives(Vm* vm);
+void registerHashMapNatives(Vm* vm);
+void registerArrayListNatives(Vm* vm);
+void registerUtilsNatives(Vm* vm);
 
 
 

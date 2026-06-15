@@ -30,4 +30,6 @@ add_executable(Oli_Nat main.c
         Hashmap.h
         Hashmap.c
         common.c
+        natives.h
+        natives.c
 )
