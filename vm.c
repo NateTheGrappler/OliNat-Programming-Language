@@ -336,11 +336,10 @@ static vmResult run(Vm* vm)
                 }
                 else
                 {
-                    printf("Runtime Error: cannot compare values of different types you goob\n");
+                    runtimeError(vm, "Cannot compare values of different types you goob", "RUNTIME ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-                //TODO: later add strings
             }
             case OP_NOT_EQUAL:
             {
@@ -373,7 +372,7 @@ static vmResult run(Vm* vm)
                 }
                 else
                 {
-                    printf("Runtime Error: cannot compare values of different types you goob\n");
+                    runtimeError(vm, "Cannot compare values of different types you goob", "RUNTIME ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -489,6 +488,7 @@ static vmResult run(Vm* vm)
                 if (!MapGet(&vm->globals, name, &value))
                 {
                     printf("Global not found: %.*s\n", name->length, name->chars);
+                    runtimeError(vm, "Undefined Global variable.", "RUNTIME ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push(vm, value);
@@ -501,6 +501,7 @@ static vmResult run(Vm* vm)
                 if (MapSet(&vm->globals, name, peek(vm, 0)))
                 {
                     printf("Undefined variable '%s'\n", name->chars);
+                    runtimeError(vm, "Undefined global variable.", "RUNTIME ERROR");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -607,7 +608,7 @@ static vmResult run(Vm* vm)
 
 
             default:
-                printf("Unknown opcode: %d\n", instruction);
+                runtimeError(vm, "Unknown opcode encountered.", "RUNTIME ERROR");
                 return INTERPRET_RUNTIME_ERROR;
         }
     }
