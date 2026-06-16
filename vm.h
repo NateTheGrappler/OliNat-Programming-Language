@@ -32,6 +32,7 @@ typedef enum
 typedef struct Vm
 {
     //the stack
+    bool hadRuntimeError;
     Value  stack[STACK_MAX];
     Value* stackTop;
     CallFrame frames[FRAMES_MAX];
@@ -65,6 +66,7 @@ void registerHashMapNatives(Vm* vm);
 void registerArrayListNatives(Vm* vm);
 void registerUtilsNatives(Vm* vm);
 
+void runtimeError(Vm* vm, const char* message, const char* messageType);
 
 
 #endif //OLI_NAT_VM_H

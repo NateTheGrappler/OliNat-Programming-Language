@@ -2,6 +2,7 @@
 // Created by natang on 6/14/26.
 //
 #include "natives.h"
+#include "vm.h"
 
 //-----------------io natives--------------------//
 Value printNative(int argCount, Value* args, struct Vm* vm)
@@ -69,25 +70,84 @@ Value absNative(int argCount, Value* args, struct Vm* vm)
     if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(fabs(GET_DOUBLE_VAL(args[0]))); }
     return CREATE_EMPTY_VAL();
 }
-Value logNative(int argCount, Value* args, struct Vm* vm)
+Value log10Native(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(log10(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(log10(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(log10(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
+}
+Value log2Native(int argCount, Value* args, struct Vm* vm)
+{
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(log2(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(log2(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(log2(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
+}
+Value lnNative(int argCount, Value* args, struct Vm* vm)
+{
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(log(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(log(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(log(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value sqrtNative(int argCount, Value* args, struct Vm* vm)
 {
+    double x;
+    if (IS_INT(args[0]))        x = (double)GET_INT_VAL(args[0]);
+    else if (IS_FLOAT(args[0])) x = (double)GET_FLOAT_VAL(args[0]);
+    else                        x = GET_DOUBLE_VAL(args[0]);
 
+    if (x < 0)
+    {
+        runtimeError(vm, "sqrt() requires a non-negative number input, no imagination in my programming language.\n", "LOGIC ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    return CREATE_DOUBLE_VAL(sqrt(x));
 }
 Value floorNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return CREATE_DOUBLE_VAL(floor(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL((double)floorf(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(floor(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value ceilNative(int argCount, Value* args, struct Vm* vm)
 {
 
+    if (IS_INT(args[0]))    { return CREATE_DOUBLE_VAL(ceil(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL((double)ceilf(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(ceil(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value expoNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return CREATE_DOUBLE_VAL(exp(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL((double)expf(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(exp(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
+}
+Value powNative(int argCount, Value* args, struct Vm* vm)
+{
+    Value a = args[0]; //base
+    Value b = args[1]; //powere
+    if (IS_INT(a) && IS_INT(b))
+    {
+        return CREATE_DOUBLE_VAL(pow(GET_INT_VAL(a), GET_INT_VAL(b)));
+    }
+    if (IS_DOUBLE(a) || IS_DOUBLE(b))
+    {
+        double da = IS_DOUBLE(a) ? GET_DOUBLE_VAL(a) : (double)GET_INT_VAL(a);
+        double db = IS_DOUBLE(b) ? GET_DOUBLE_VAL(b) : (double)GET_INT_VAL(b);
+        return CREATE_DOUBLE_VAL(pow(da, db));
+    }
+    if (IS_FLOAT(a) || IS_FLOAT(b))
+    {
+        double fa = IS_FLOAT(a) ? GET_FLOAT_VAL(a) : (double)GET_INT_VAL(a);
+        double fb = IS_FLOAT(b) ? GET_FLOAT_VAL(b) : (double)GET_INT_VAL(b);
+        return CREATE_DOUBLE_VAL(pow(fa, fb));
+    }
+    return CREATE_EMPTY_VAL();
 }
 
 //--------------Random natives----------------// //TODO: add random

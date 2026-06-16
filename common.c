@@ -24,3 +24,4 @@ ValueType toElementType(ValueType arrayType)
         default: return VALUE_ERROR;
     }
 }
+

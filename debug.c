@@ -189,9 +189,9 @@ void printValue(Value value)
     switch (value.type)
     {
         case VALUE_BOOL:   printf(GET_BOOL_VAL(value) ? "true" : "false"); break;
-        case VALUE_DOUBLE: printf("%g", GET_DOUBLE_VAL(value)); break;
+        case VALUE_DOUBLE: printf("%lf", GET_DOUBLE_VAL(value)); break;
         case VALUE_INT:    printf("%d", GET_INT_VAL(value)); break;
-        case VALUE_FLOAT:  printf("%gf", GET_FLOAT_VAL(value)); break;
+        case VALUE_FLOAT:  printf("%ff", GET_FLOAT_VAL(value)); break;
         case VALUE_OBJECT: printObject(value); break;
         case VALUE_EMPTY:
         {

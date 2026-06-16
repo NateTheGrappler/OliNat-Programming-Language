@@ -24,11 +24,14 @@ Value sinNative(int argCount, Value* args, struct Vm* vm);
 Value cosNative(int argCount, Value* args, struct Vm* vm);
 Value tanNative(int argCount, Value* args, struct Vm* vm);
 Value absNative(int argCount, Value* args, struct Vm* vm);
-Value logNative(int argCount, Value* args, struct Vm* vm);
+Value log10Native(int argCount, Value* args, struct Vm* vm);
+Value log2Native(int argCount, Value* args, struct Vm* vm);
+Value lnNative(int argCount, Value* args, struct Vm* vm);
 Value sqrtNative(int argCount, Value* args, struct Vm* vm);
 Value floorNative(int argCount, Value* args, struct Vm* vm);
 Value ceilNative(int argCount, Value* args, struct Vm* vm);
 Value expoNative(int argCount, Value* args, struct Vm* vm);
+Value powNative(int argCount, Value* args, struct Vm* vm);
 
 //--------------Random natives----------------// //TODO: add random
 

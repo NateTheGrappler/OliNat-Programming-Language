@@ -84,11 +84,26 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
     mathParams[0].name = "num";
     mathParams[0].length = 3;
 
-    //sin(double/float/int radians) -> double
-    registerNativeSymbol(checker, "sin", 3, VALUE_DOUBLE, mathParams, 1, parser);
-    registerNativeSymbol(checker, "cos", 3, VALUE_DOUBLE, mathParams, 1, parser);
-    registerNativeSymbol(checker, "tan", 3, VALUE_DOUBLE, mathParams, 1, parser);
-    registerNativeSymbol(checker, "abs", 3, VALUE_DOUBLE, mathParams, 1, parser);
+    registerNativeSymbol(checker, "sin", 3, VALUE_DOUBLE, mathParams, 1, parser);   //sin(double/float/int radians) -> double
+    registerNativeSymbol(checker, "cos", 3, VALUE_DOUBLE, mathParams, 1, parser);   //cos(double/float/int radians) -> double
+    registerNativeSymbol(checker, "tan", 3, VALUE_DOUBLE, mathParams, 1, parser);   //tan(double/float/int radians) -> double
+    registerNativeSymbol(checker, "abs", 3, VALUE_DOUBLE, mathParams, 1, parser);   //abs(double/float/int num) -> double
+    registerNativeSymbol(checker, "ln", 2, VALUE_DOUBLE, mathParams, 1, parser);    //ln(double/float/int baseE) -> double
+    registerNativeSymbol(checker, "log10", 5, VALUE_DOUBLE, mathParams, 1, parser); //log10(double/float/int base10) -> double
+    registerNativeSymbol(checker, "log2", 4, VALUE_DOUBLE, mathParams, 1, parser);  //log2(double/float/int base2) -> double
+    registerNativeSymbol(checker, "sqrt", 4, VALUE_DOUBLE, mathParams, 1, parser);  //sqrt(double/float/int nonNegtiveNum) -> double
+    registerNativeSymbol(checker, "floor", 5, VALUE_DOUBLE, mathParams, 1, parser); //floor(double/float/int num) -> double
+    registerNativeSymbol(checker, "ceil", 4, VALUE_DOUBLE, mathParams, 1, parser);  //ceil(double/float/int num) -> double
+    registerNativeSymbol(checker, "expo", 4, VALUE_DOUBLE, mathParams, 1, parser);  //expo(double/float/int toTheEPower) -> double
+
+    ParamInfo mathParams2[2];
+    mathParams2[0].type = VALUE_ANY_NUM;
+    mathParams2[0].name = "num1";
+    mathParams2[0].length = 4;
+    mathParams2[1].type = VALUE_ANY_NUM;
+    mathParams2[1].name = "num2";
+    mathParams2[1].length = 4;
+    registerNativeSymbol(checker, "pow", 3, VALUE_DOUBLE, mathParams2, 2, parser);  //expo(double/float/int toTheEPower) -> double
 }
 void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
 {

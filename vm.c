@@ -4,7 +4,6 @@
 #include "vm.h"
 #include "debug.h"
 
-static void runtimeError(Vm* vm, const char* message, const char* messageType);
 static void resetStack(Vm* vm)
 {
     //reset the pointer of the stack to the start of array
@@ -13,7 +12,8 @@ static void resetStack(Vm* vm)
 void initVM(Vm* vm)
 {
     resetStack(vm);
-
+    vm->hadRuntimeError = false;
+    vm->frameCount = 0;
     vm->objects = NULL;
 
     initMap(&vm->strings);
@@ -69,11 +69,14 @@ void registerMathNatives(Vm* vm)
     defineNative(vm, "cos", cosNative);
     defineNative(vm, "tan", tanNative);
     defineNative(vm, "abs", absNative);
-    defineNative(vm, "log", logNative);
+    defineNative(vm, "ln",  lnNative);
+    defineNative(vm, "log10", log10Native);
+    defineNative(vm, "log2", log2Native);
     defineNative(vm, "sqrt", sqrtNative);
     defineNative(vm, "floor", floorNative);
     defineNative(vm, "ceil", ceilNative);
     defineNative(vm, "expo", expoNative);
+    defineNative(vm, "pow", powNative);
 }
 void registerTimeNatives(Vm* vm)
 {
@@ -128,8 +131,9 @@ void registerUtilsNatives(Vm* vm)
 
 
 //-------------------------------------------_ERROR HANDLING-------------------------------------------//
-static void runtimeError(Vm* vm, const char* message, const char* messageType)
+void runtimeError(Vm* vm, const char* message, const char* messageType)
 {
+    vm->hadRuntimeError = true;
     fprintf(stderr, ":>>  %s -- ", messageType);
     fprintf(stderr, "%s\n", message);
 
@@ -140,6 +144,7 @@ static void runtimeError(Vm* vm, const char* message, const char* messageType)
         ObjFunction* function = frame->function;
 
         int instruction = (int)(frame->ip - function->chunk.byteCode - 1);
+        if (instruction < 0) instruction = 0;
         int line = function->chunk.lines[instruction];
 
         fprintf(stderr, "  [line %d] in ", line);
@@ -200,6 +205,10 @@ static bool callValue(Value callee, int argCount, Vm* vm)
             {
                 ObjNative* native = (ObjNative*)GET_OBJECT_VAL(callee);
                 Value result = native->function(argCount, vm->stackTop-argCount, vm);
+
+                //add check for incorrect returns in native functions so runtime errors perk
+                if (vm->hadRuntimeError) return false;
+
                 vm->stackTop -= argCount + 1;
                 push(vm, result);
                 return true;
