@@ -66,11 +66,13 @@ typedef struct ObjStaticArray
     Value* values;
 } ObjStaticArray;
 
-typedef Value (*NativeFn)(int argCount, Value* args);
+typedef Value (*NativeFn)(int argCount, Value* args, struct Vm* vm);
 typedef struct ObjNative
 {
     Obj obj;
     NativeFn function;
+    const char* name;
+    int nameLength;
 } ObjNative;
 
 
@@ -87,5 +89,5 @@ ObjString* copyString(const char* chars, int length, struct Vm* vm);
 ObjString* combineString(char* chars, int length, struct Vm* vm);
 ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm);
 ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm);
-ObjNative* newNative(NativeFn function, struct Vm* vm);
+ObjNative* newNative(NativeFn function, const char* name, int length, struct Vm* vm);
 #endif //OLI_NAT_OBJECT_H

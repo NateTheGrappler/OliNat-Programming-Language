@@ -32,13 +32,14 @@ Expr* createLiteralBool(bool value, int line)
 }
 Expr* createLiteralString(char* value, int line)
 {
+#ifdef DEBUG_TRACE_EXECUTION
     printf("Creating string literal: '%s' (length %zu)\n", value, strlen(value));
+#endif
 
     //allocate the expr in memory and set it's type
     Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
     expr->type = EXPR_LITERAL;
     expr->line = line;
-
     //call the anyonmous union that holds all the different possible expressions
     expr->literal.value.string_val = value;
     expr->literal.type = VALUE_STRING;

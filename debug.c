@@ -161,6 +161,14 @@ void printObject(Value value)
             printf("FN-%.*s", function->nameLength, function->name);
             break;
         }
+        case OBJ_NATIVE:
+        {
+            ObjNative* function = (ObjNative*)GET_OBJECT_VAL(value);
+            ObjNative* native = (ObjNative*)GET_OBJECT_VAL(value);
+            printf("<native fn %.*s>", native->nameLength, native->name);
+
+            break;
+        }
         case OBJ_STATIC_ARRAY:
         {
             ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(value);
@@ -185,7 +193,18 @@ void printValue(Value value)
         case VALUE_INT:    printf("%d", GET_INT_VAL(value)); break;
         case VALUE_FLOAT:  printf("%gf", GET_FLOAT_VAL(value)); break;
         case VALUE_OBJECT: printObject(value); break;
-        case VALUE_EMPTY: break;
+        case VALUE_EMPTY:
+        {
+            printf("EMPTY VAL");
+            break;
+        }
+        case VALUE_ANY:
+        {
+            printf("ANY VAL");
+            break;
+        }
+        default: printf("<unknown type %d>", value.type); break;
+
     }
 }
 

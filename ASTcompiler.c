@@ -1079,9 +1079,33 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
             }
         }
     }
+    else if (match(T_HASH_PULLF, parser))
+    {
+        consume(T_IDENTIFIER, "You have to list the name of the library you wish to include.", "SYNTAX ERROR", parser);
+        const char* library = parser->previous.lexemeStart;
+        int length = parser->previous.length;
+        if (strncmp(library, "stdlib", length) == 0)
+        {
+            registerIOSymbols(checker, parser);
+            registerMathSymbols(checker, parser);
+            registerTimeSymbols(checker, parser);
+            registerFileIOSymbols(checker, parser);
+            registerTypeSymbols(checker, parser);
+            registerUtilsSymbols(checker, parser);
+        }
+        else if (strncmp(library, "io", length) == 0) { registerIOSymbols(checker, parser); }
+        else if (strncmp(library, "math", length) == 0) { registerMathSymbols(checker, parser); }
+        else if (strncmp(library, "chronos", length) == 0) { registerTimeSymbols(checker, parser); }
+        else if (strncmp(library, "fileIO", length)== 0)  { registerFileIOSymbols(checker, parser); }
+        else if (strncmp(library, "types", length)== 0){ registerTypeSymbols(checker, parser); }
+        else if (strncmp(library, "Hashmap", length) == 0){ registerHashMapSymbols(checker, parser); }
+        else if (strncmp(library, "ArrayList", length) == 0){ registerArrayListSymbols(checker, parser); }
+        else if (strncmp(library, "utils", length) == 0){ registerUtilsSymbols(checker, parser); }
+        return;
+    }
 
     //skip to next function declaration
-    while (!check(T_EOF, parser) && !check(T_MAKE, parser))
+    while (!check(T_EOF, parser) && !check(T_MAKE, parser) && !check(T_HASH_PULLF, parser))
     {
         advance(parser);
     }
@@ -1107,7 +1131,9 @@ ObjFunction* compile(const char* source, Vm* vm)
     }
     if (parser2.hadError) return NULL;
 
+#ifdef DEBUG_TRACE_EXECUTION
     printf("RAN PAST FIRST COMPILATION\n");
+#endif
 
     //----------------------------Second pass--------------------//
     AstCompiler compiler;

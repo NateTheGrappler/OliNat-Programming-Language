@@ -50,36 +50,67 @@ Value peek(Vm* vm, int distance)
 }
 
 //------------------------------------------Standard Library Stuff-----------------------------------------------///
-
-
 static void defineNative(Vm* vm, const char* name, NativeFn function)
 {
     //create new native, intern it's name, and toss it into globals
-    ObjNative* native = newNative(function, vm);
+    ObjNative* native = newNative(function, name, strlen(name), vm);
     ObjString* nameStr = copyString(name, (int)strlen(name), vm);
     MapSet(&vm->globals, nameStr, CREATE_OBJECT_VAL((Obj*)native));
 }
 void registerIONatives(Vm* vm)
 {
-    printf("Registering new natives...\n");
     defineNative(vm, "print", printNative);
-    printf("NEW NATIVE REGISTERED\n");
+    defineNative(vm, "println", printlnNatve);
+    defineNative(vm, "intake", intakeNative);
 }
 void registerMathNatives(Vm* vm)
 {
-
+    defineNative(vm, "sin", sinNative);
+    defineNative(vm, "cos", cosNative);
+    defineNative(vm, "tan", tanNative);
+    defineNative(vm, "abs", absNative);
+    defineNative(vm, "log", logNative);
+    defineNative(vm, "sqrt", sqrtNative);
+    defineNative(vm, "floor", floorNative);
+    defineNative(vm, "ceil", ceilNative);
+    defineNative(vm, "expo", expoNative);
 }
 void registerTimeNatives(Vm* vm)
 {
-
+    defineNative(vm, "clock", clockNative);
+    defineNative(vm, "sleep", sleepNative);
+    defineNative(vm, "time", timeNative);
+    defineNative(vm, "dateString", dateStringNative);
+    defineNative(vm, "timeString", timeStringNative);
 }
 void registerFileIONatives(Vm* vm)
 {
-
+    defineNative(vm, "readFile", readFileNative);
+    defineNative(vm, "writeFile", writeFileNative);
+    defineNative(vm, "appendFile", appendFileNative);
+    defineNative(vm, "fileExists", fileExistsNative);
+    defineNative(vm, "deleteFile", deleteFileNative);
 }
 void registerTypeNatives(Vm* vm)
 {
+    defineNative(vm, "intToStr", intToStrNative);
+    defineNative(vm, "intToDouble", intToDoubleNative);
+    defineNative(vm, "intToFloat", intToFloatNative);
 
+    defineNative(vm, "doubleToStr", doubleToStrNative);
+    defineNative(vm, "doubleToInt", doubleToIntNative);
+    defineNative(vm, "doubleToFloat", doubleToFloatNative);
+
+    defineNative(vm, "floatToStr", floatToStrNative);
+    defineNative(vm, "floatToInt", floatToIntNative);
+    defineNative(vm, "floatToDouble", floatToDoubleNative);
+
+    defineNative(vm, "strToFloat", strToFloatNative);
+    defineNative(vm, "strToInt", strToIntNative);
+    defineNative(vm, "strToDouble", strToDoubleNative);
+    defineNative(vm, "strToBool", strToBoolNative);
+
+    defineNative(vm, "boolToStr", boolToStrNative);
 }
 void registerHashMapNatives(Vm* vm)
 {
@@ -91,7 +122,8 @@ void registerArrayListNatives(Vm* vm)
 }
 void registerUtilsNatives(Vm* vm)
 {
-
+    defineNative(vm, "length", lengthNative);
+    defineNative(vm, "assert", assertNative);
 }
 
 
@@ -167,7 +199,7 @@ static bool callValue(Value callee, int argCount, Vm* vm)
             case OBJ_NATIVE:
             {
                 ObjNative* native = (ObjNative*)GET_OBJECT_VAL(callee);
-                Value result = native->function(argCount, vm->stackTop-argCount);
+                Value result = native->function(argCount, vm->stackTop-argCount, vm);
                 vm->stackTop -= argCount + 1;
                 push(vm, result);
                 return true;
@@ -217,7 +249,10 @@ static vmResult run(Vm* vm)
         {
             case OP_RETURN:
             {
-                printf("ran inside of return\n");
+                #ifdef DEBUG_TRACE_EXECUTION
+                    printf("ran inside of return\n");
+                #endif
+
                 Value functionReturn = pop(vm);
                 vm->frameCount--;
 

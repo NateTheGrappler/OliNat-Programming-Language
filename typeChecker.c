@@ -55,12 +55,26 @@ static void registerNativeSymbol(TypeChecker* checker, const char* name, int len
 }
 void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
-    //print(ANY msg)
+    //print(ANY msg) -> void
     ParamInfo printParams[1];
     printParams[0].type = VALUE_ANY;
     printParams[0].name = "msg";
     printParams[0].length = 3;
     registerNativeSymbol(checker, "print", 5, VALUE_EMPTY, printParams, 1, parser);
+
+    //println(ANY msg) -> void
+    ParamInfo printlnParams[1];
+    printlnParams[0].type = VALUE_ANY;
+    printlnParams[0].name = "msg";
+    printlnParams[0].length = 3;
+    registerNativeSymbol(checker, "println", 7, VALUE_EMPTY, printlnParams, 1, parser);
+
+    //intake(String/EMPTY prompt) -> string (the think user inputed)
+    ParamInfo intakeParams[1];
+    intakeParams[0].type = VALUE_ANY;
+    intakeParams[0].name = "prompt";
+    intakeParams[0].length = 6;
+    registerNativeSymbol(checker, "intake", 6, VALUE_STRING, intakeParams, 1, parser);
 }
 void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
