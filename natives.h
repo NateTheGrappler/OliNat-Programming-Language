@@ -8,6 +8,8 @@
 #include "values.h"
 #include "object.h"
 #include "debug.h"
+#include <time.h>
+#include <bits/time.h>
 #include <math.h>
 
 typedef struct Vm;

@@ -42,19 +42,32 @@ Value intakeNative(int argCount, Value* args, struct Vm* vm)
 //--------------math natives----------------//
 Value sinNative(int argCount, Value* args, struct Vm* vm)
 {
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(sin(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(sin(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(sin(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 
 }
 Value cosNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(cos(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(cos(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(cos(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value tanNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL(tan(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL(tan(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(tan(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value absNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (IS_INT(args[0]))    { return  CREATE_DOUBLE_VAL((double)abs(GET_INT_VAL(args[0]))); }
+    if (IS_FLOAT(args[0]))  { return CREATE_DOUBLE_VAL((double)fabsf(GET_FLOAT_VAL(args[0]))); }
+    if (IS_DOUBLE(args[0])) { return CREATE_DOUBLE_VAL(fabs(GET_DOUBLE_VAL(args[0]))); }
+    return CREATE_EMPTY_VAL();
 }
 Value logNative(int argCount, Value* args, struct Vm* vm)
 {
@@ -82,7 +95,7 @@ Value expoNative(int argCount, Value* args, struct Vm* vm)
 //--------------time natives----------------//
 Value clockNative(int argCount, Value* args, struct Vm* vm) //mark time, returns double
 {
-
+    return CREATE_DOUBLE_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 Value sleepNative(int argCount, Value* args, struct Vm* vm) //pause program for x number of milliseconds
 {

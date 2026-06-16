@@ -79,10 +79,20 @@ void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
 
+    ParamInfo mathParams[1];
+    mathParams[0].type = VALUE_ANY_NUM;
+    mathParams[0].name = "num";
+    mathParams[0].length = 3;
+
+    //sin(double/float/int radians) -> double
+    registerNativeSymbol(checker, "sin", 3, VALUE_DOUBLE, mathParams, 1, parser);
+    registerNativeSymbol(checker, "cos", 3, VALUE_DOUBLE, mathParams, 1, parser);
+    registerNativeSymbol(checker, "tan", 3, VALUE_DOUBLE, mathParams, 1, parser);
+    registerNativeSymbol(checker, "abs", 3, VALUE_DOUBLE, mathParams, 1, parser);
 }
 void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
-
+    registerNativeSymbol(checker, "clock", 5, VALUE_DOUBLE, NULL, 0, parser);
 }
 void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
@@ -215,7 +225,6 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
 {
     if (checker->varCount >= MAX_SYMBOLS)
     {
-        //TODO: have it so you can store more vars but also have a seperate error system for types
         error("Too many variables have been declared.", "MEMORY ERROR", parser);
         return;
     }
@@ -322,6 +331,16 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             {
                 ValueType argType = checkExpression(checker, expr->objectCall.args[i], parser);
                 if (symbol->function->params[i].type == VALUE_ANY) continue;
+                if (symbol->function->params[i].type == VALUE_ANY_NUM)
+                {
+                    if (!isNumeric(argType))
+                    {
+                        typeError(checker, parser, expr, "Please only input numeric arguements (int, float, double)", "TYPE ERROR");
+                        return VALUE_ERROR;
+                    }
+                    continue;
+                }
+
                 if (argType != symbol->function->params[i].type)
                 {
                     typeError(checker, parser, expr, "An arguement of differing type was found in function call. Please double check function input.", "TYPE ERROR");

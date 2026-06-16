@@ -33,3 +33,4 @@ add_executable(Oli_Nat main.c
         natives.h
         natives.c
 )
+target_link_libraries(Oli_Nat m)

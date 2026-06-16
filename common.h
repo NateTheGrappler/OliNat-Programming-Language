@@ -32,13 +32,14 @@ typedef enum {
     //error
     VALUE_ERROR,
     //For maybe auto keyword in future, but only for native fns rn
-    VALUE_ANY
+    VALUE_ANY,
+    VALUE_ANY_NUM
 } ValueType;
 
 ValueType toArrayType(ValueType base);
 ValueType toElementType(ValueType arrayType);
 
 
-#define DEBUG_TRACE_EXECUTION
+//#define DEBUG_TRACE_EXECUTION
 
 #endif //OLI_NAT_COMMON_H
