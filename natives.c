@@ -235,63 +235,121 @@ Value deleteFileNative(int argCount, Value* args, struct Vm* vm)    //delete fil
 //--------------Type natives----------------//  //TODO: update this if I ever add longs and shorts
 Value intToStrNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    char str[12];
+    snprintf(str, sizeof(str), "%d", GET_INT_VAL(args[0]));
+    ObjString* returnString = copyString(str, (int)strlen(str), vm);
+    return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 Value intToDoubleNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_DOUBLE_VAL((double)GET_INT_VAL(args[0]));
 }
 Value intToFloatNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_FLOAT_VAL((float)GET_INT_VAL(args[0]));
 }
 
 Value doubleToStrNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    char str[50];
+    snprintf(str, sizeof(str), "%f", GET_DOUBLE_VAL(args[0]));
+    ObjString* returnString = copyString(str, (int)strlen(str), vm);
+    return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 Value doubleToIntNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_INT_VAL((int)GET_DOUBLE_VAL(args[0]));
 }
 Value doubleToFloatNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_FLOAT_VAL((float)GET_DOUBLE_VAL(args[0]));
 }
 
 Value floatToStrNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    char str[20];
+    snprintf(str, sizeof(str), "%f", GET_FLOAT_VAL(args[0]));
+    ObjString* returnString = copyString(str, (int)strlen(str), vm);
+    return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 Value floatToIntNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_INT_VAL((int)GET_FLOAT_VAL(args[0]));
 }
 Value floatToDoubleNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    return CREATE_DOUBLE_VAL((double)GET_FLOAT_VAL(args[0]));
 }
 
 Value strToFloatNative(int argCount, Value* args, struct Vm* vm)
 {
+    char* str = AS_CSTRING(args[0]);
+    char* end;
+    errno = 0;
+    float result = strtof(str, &end);
 
+    if (end == str || *end != '\0' || errno == ERANGE)
+    {
+        runtimeError(vm, "Unable to turn given string into a float value.", "TYPE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    return CREATE_FLOAT_VAL(result);
 }
 Value strToIntNative(int argCount, Value* args, struct Vm* vm)
 {
+    char* str = AS_CSTRING(args[0]);
+    char* end;
+    errno = 0;
+    long result = strtol(str, &end, 10);
 
+    if (end == str || *end != '\0' || errno == ERANGE)
+    {
+        runtimeError(vm, "Unable to turn given string into an int value.", "TYPE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    return CREATE_INT_VAL((int)result);
 }
 Value strToDoubleNative(int argCount, Value* args, struct Vm* vm)
 {
+    char* str = AS_CSTRING(args[0]);
+    char* end;
+    errno = 0;
+    double result = strtod(str, &end);
 
+    if (end == str || *end != '\0' || errno == ERANGE)
+    {
+        runtimeError(vm, "Unable to turn given string into a double value.", "TYPE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    return CREATE_DOUBLE_VAL(result);
 }
 Value strToBoolNative(int argCount, Value* args, struct Vm* vm)
 {
+    char* str = AS_CSTRING(args[0]);
 
+    if (strcmp(str, "true") == 0)  return CREATE_BOOL_VAL(true);
+    if (strcmp(str, "false") == 0) return CREATE_BOOL_VAL(false);
+
+    runtimeError(vm, "Cannot convert string to bool: expected 'true' or 'false'.", "TYPE ERROR");
+    return CREATE_EMPTY_VAL();
 }
 
 Value boolToStrNative(int argCount, Value* args, struct Vm* vm)
 {
+    bool tOrF = GET_BOOL_VAL(args[0]);
 
+    if (tOrF)
+    {
+        const char* a = "true";
+        ObjString* returnString = copyString(a, 4, vm);
+        return CREATE_OBJECT_VAL((Obj*)returnString);
+    }
+    else
+    {
+        const char* b = "false";
+        ObjString* returnString = copyString(b, 5, vm);
+        return CREATE_OBJECT_VAL((Obj*)returnString);
+    }
 }
 
 //--------------hashMap natives----------------//

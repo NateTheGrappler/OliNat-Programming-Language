@@ -124,6 +124,49 @@ void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 }
 void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
+    //----float params---/
+    ParamInfo floatParams[1];
+    floatParams[0].name   = "floatVal";
+    floatParams[0].length = 8;
+    floatParams[0].type = VALUE_FLOAT;
+    registerNativeSymbol(checker, "floatToInt", 10, VALUE_INT, floatParams, 1, parser);
+    registerNativeSymbol(checker, "floatToStr", 10, VALUE_STRING, floatParams, 1, parser);
+    registerNativeSymbol(checker, "floatToDouble", 13, VALUE_FLOAT, floatParams, 1, parser);
+
+    //----Double params---/
+    ParamInfo doubleParams[1];
+    doubleParams[0].name   = "doubleVal";
+    doubleParams[0].length = 9;
+    doubleParams[0].type = VALUE_DOUBLE;
+    registerNativeSymbol(checker, "doubleToInt", 11, VALUE_INT, doubleParams, 1, parser);
+    registerNativeSymbol(checker, "doubleToStr", 11, VALUE_STRING, doubleParams, 1, parser);
+    registerNativeSymbol(checker, "doubleToFloat", 13, VALUE_FLOAT, doubleParams, 1, parser);
+
+    //----Integer params---/
+    ParamInfo intParams[1];
+    intParams[0].name   = "intVal";
+    intParams[0].length = 6;
+    intParams[0].type = VALUE_INT;
+    registerNativeSymbol(checker, "intToDouble", 11, VALUE_DOUBLE, intParams, 1, parser);
+    registerNativeSymbol(checker, "intToStr", 8, VALUE_STRING, intParams, 1, parser);
+    registerNativeSymbol(checker, "intToFloat", 10, VALUE_FLOAT, intParams, 1, parser);
+
+    //----String params---/
+    ParamInfo stringParams[1];
+    stringParams[0].name   = "stringVal";
+    stringParams[0].length = 9;
+    stringParams[0].type = VALUE_STRING;
+    registerNativeSymbol(checker, "strToDouble", 11, VALUE_DOUBLE, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToInt", 8, VALUE_STRING, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToBool", 9, VALUE_FLOAT, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToFloat", 10, VALUE_FLOAT, stringParams, 1, parser);
+
+    //----Bool params---/
+    ParamInfo boolParams[1];
+    boolParams[0].name   = "boolVal";
+    boolParams[0].length = 7;
+    boolParams[0].type = VALUE_BOOL;
+    registerNativeSymbol(checker, "boolToStr", 9, VALUE_STRING, boolParams, 1, parser);
 
 }
 void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser)
