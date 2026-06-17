@@ -163,7 +163,6 @@ void printObject(Value value)
         }
         case OBJ_NATIVE:
         {
-            ObjNative* function = (ObjNative*)GET_OBJECT_VAL(value);
             ObjNative* native = (ObjNative*)GET_OBJECT_VAL(value);
             printf("<native fn %.*s>", native->nameLength, native->name);
 

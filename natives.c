@@ -159,19 +159,52 @@ Value clockNative(int argCount, Value* args, struct Vm* vm) //mark time, returns
 }
 Value sleepNative(int argCount, Value* args, struct Vm* vm) //pause program for x number of milliseconds
 {
+    double ms = 0;
+    if (IS_INT(args[0]))    { ms = (double)GET_INT_VAL(args[0]); }
+    if (IS_FLOAT(args[0]))  { ms = (double)GET_FLOAT_VAL(args[0]); }
+    if (IS_DOUBLE(args[0])) { ms = GET_DOUBLE_VAL(args[0]); }
 
+#ifdef _WIN32
+    Sleep((DWORD)ms);
+#else
+    struct timespec ts;
+    ts.tv_sec = (time_t)(ms / 1000);
+    ts.tv_nsec = (long)((ms - (ts.tv_sec * 1000)) * 1000000);
+    nanosleep(&ts, NULL);
+#endif
+
+    return CREATE_EMPTY_VAL();
 }
-Value timeNative(int argCount, Value* args, struct Vm* vm)  //Unix timestamp as a double
+Value timeNative(int argCount, Value* args, struct Vm* vm)  //Unix timestamp as a double (seconds since January 1, 1970)
 {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_REALTIME, &ts) != 0 )
+    {
+        runtimeError(vm, "Error reading system clock value in native time function.", "INTERNAL ERROR");
+        return CREATE_EMPTY_VAL();
+    }
 
+    return CREATE_DOUBLE_VAL((double)ts.tv_sec + ((double)ts.tv_nsec / 1000000000.0));
 }
 Value dateStringNative(int argCount, Value* args, struct Vm* vm) //print out date as string "06-15-2077"
 {
+    time_t rawTime = time(NULL);
 
+    struct tm *localTime = localtime(&rawTime);
+    char dateString[100];
+    strftime(dateString, sizeof(dateString), "%m-%d-%Y", localTime);
+    ObjString* returnString = copyString(dateString, (int)strlen(dateString), vm);
+    return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 Value timeStringNative(int argCount, Value* args, struct Vm* vm) //print out time of day as string "14:30:00"
 {
+    time_t rawTime = time(NULL);
 
+    struct tm *localTime = localtime(&rawTime);
+    char dateString[100];
+    strftime(dateString, sizeof(dateString), "%H:%M:%S", localTime);
+    ObjString* returnString = copyString(dateString, (int)strlen(dateString), vm);
+    return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 
 //--------------fileIO natives----------------//

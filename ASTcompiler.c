@@ -830,7 +830,6 @@ static void returnStatement(ASTparser* parser, TypeChecker* checker, AstCompiler
     {
         //Non void function returns
         Expr* returnExpr = astExpression(parser);
-        printExpression(returnExpr);
         if (checkExpression(checker, returnExpr, parser) != compiler->function->returnType)
         {
             error("A return statement should match the type of it's parent function.", "TYPE ERROR", parser);

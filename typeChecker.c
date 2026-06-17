@@ -108,6 +108,15 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
 void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
     registerNativeSymbol(checker, "clock", 5, VALUE_DOUBLE, NULL, 0, parser);
+    registerNativeSymbol(checker, "time", 4, VALUE_DOUBLE, NULL, 0, parser);
+    registerNativeSymbol(checker, "dateString", 10, VALUE_STRING, NULL, 0, parser);
+    registerNativeSymbol(checker, "timeString", 10, VALUE_STRING, NULL, 0, parser);
+
+    ParamInfo sleepSymbols[1];
+    sleepSymbols[0].name = "ms";
+    sleepSymbols[0].length = 2;
+    sleepSymbols[0].type = VALUE_ANY_NUM;
+    registerNativeSymbol(checker, "sleep", 5, VALUE_DOUBLE, sleepSymbols, 1, parser);
 }
 void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
