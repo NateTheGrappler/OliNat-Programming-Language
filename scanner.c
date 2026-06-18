@@ -78,7 +78,7 @@ static Token string(Scanner* scanner)
 {
     while (peekChar(scanner) != '"' && !isAtEnd(scanner))
     {
-        if (peekChar(scanner) == '\n') scanner++;
+        if (peekChar(scanner) == '\n') scanner->line++;
         advance(scanner);
     }
 

@@ -293,9 +293,37 @@ static Expr* string(bool canAssign, ASTparser* parser)
 {
     //copy the string because the source code representation might still be needed
     int length = parser->previous.length - 2;
+    const char* src = parser->previous.lexemeStart + 1;
+
     char* chars = ALLOCATE(char, length+1);
-    memcpy(chars, parser->previous.lexemeStart + 1, length);
-    chars[length] = '\0';
+    int outLen = 0;
+
+    for (int i = 0; i < length; i++)
+    {
+        if (src[i] == '\\' && i+1 < length)
+        {
+            i++;
+            switch (src[i])
+            {
+                case 'n': chars[outLen++]  = '\n'; break;
+                case 't': chars[outLen++]  = '\t'; break;
+                case 'r': chars[outLen++]  = '\r'; break;
+                case '\\': chars[outLen++] = '\\'; break;
+                case '"': chars[outLen++]  = '"';  break;
+                default:
+                    chars[outLen++] = '\\';
+                    chars[outLen++] = src[i];
+                    break;
+            }
+        }
+        else
+        {
+            chars[outLen++] = src[i];
+        }
+    }
+
+    chars[outLen] = '\0';
+
     return createLiteralString(chars, parser->previous.line);
 }
 static Expr* boolean(bool canAssign, ASTparser* parser)
