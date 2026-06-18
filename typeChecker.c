@@ -20,6 +20,11 @@ static bool isNumeric(ValueType type)
 {
     return type == VALUE_INT || type == VALUE_DOUBLE || type == VALUE_FLOAT;
 }
+static bool isArray(ValueType type)
+{
+    return type == VALUE_BOOL_ARRAY || type == VALUE_DOUBLE_ARRAY || type == VALUE_FLOAT_ARRAY
+    || type == VALUE_INT_ARRAY || type == VALUE_STRING_ARRAY || type == VALUE_EMPTY_ARRAY || type == VALUE_OBJECT_ARRAY;
+}
 
 static void typeError(TypeChecker* checker, ASTparser* parser, Expr* expr, const char* message, const char* messageType)
 {
@@ -74,6 +79,7 @@ void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
     intakeParams[0].type = VALUE_ANY;
     intakeParams[0].name = "prompt";
     intakeParams[0].length = 6;
+    intakeParams[0].isOptional = true;
     registerNativeSymbol(checker, "intake", 6, VALUE_STRING, intakeParams, 1, parser);
 }
 void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
@@ -120,6 +126,23 @@ void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
 }
 void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
+    ParamInfo stringParam[1];
+    stringParam[0].name = "path";
+    stringParam[0].type = VALUE_STRING;
+    stringParam[0].length = 4;
+    registerNativeSymbol(checker, "readFile", 8, VALUE_STRING, stringParam, 1, parser);
+    registerNativeSymbol(checker, "fileExists", 10, VALUE_STRING, stringParam, 1, parser);
+    registerNativeSymbol(checker, "deleteFile", 10, VALUE_STRING, stringParam, 1, parser);
+
+    ParamInfo writeParam[2];
+    writeParam[0].name = "path";
+    writeParam[0].type = VALUE_STRING;
+    writeParam[0].length = 4;
+    writeParam[1].name = "content";
+    writeParam[1].type = VALUE_STRING;
+    writeParam[1].length = 7;
+    registerNativeSymbol(checker, "writeFile", 9, VALUE_EMPTY, writeParam, 2, parser);
+    registerNativeSymbol(checker, "appendFile", 10, VALUE_EMPTY, writeParam, 2, parser);
 
 }
 void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
@@ -131,7 +154,7 @@ void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
     floatParams[0].type = VALUE_FLOAT;
     registerNativeSymbol(checker, "floatToInt", 10, VALUE_INT, floatParams, 1, parser);
     registerNativeSymbol(checker, "floatToStr", 10, VALUE_STRING, floatParams, 1, parser);
-    registerNativeSymbol(checker, "floatToDouble", 13, VALUE_FLOAT, floatParams, 1, parser);
+    registerNativeSymbol(checker, "floatToDouble", 13, VALUE_DOUBLE, floatParams, 1, parser);
 
     //----Double params---/
     ParamInfo doubleParams[1];
@@ -157,8 +180,8 @@ void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
     stringParams[0].length = 9;
     stringParams[0].type = VALUE_STRING;
     registerNativeSymbol(checker, "strToDouble", 11, VALUE_DOUBLE, stringParams, 1, parser);
-    registerNativeSymbol(checker, "strToInt", 8, VALUE_STRING, stringParams, 1, parser);
-    registerNativeSymbol(checker, "strToBool", 9, VALUE_FLOAT, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToInt", 8, VALUE_INT, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToBool", 9, VALUE_BOOL, stringParams, 1, parser);
     registerNativeSymbol(checker, "strToFloat", 10, VALUE_FLOAT, stringParams, 1, parser);
 
     //----Bool params---/
@@ -179,7 +202,21 @@ void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser)
 }
 void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser)
 {
+    ParamInfo arrayParams[1];
+    arrayParams[0].type = VALUE_ANY_ARRAY;
+    arrayParams[0].length = 5;
+    arrayParams[0].name = "array";
+    registerNativeSymbol(checker, "length", 6, VALUE_INT, arrayParams, 1, parser);
 
+    ParamInfo assertParams[2];
+    assertParams[0].type = VALUE_BOOL;
+    assertParams[0].length = 5;
+    assertParams[0].name = "array";
+    assertParams[1].type = VALUE_STRING;
+    assertParams[1].length = 3;
+    assertParams[1].name = "msg";
+    assertParams[1].isOptional = true;
+    registerNativeSymbol(checker, "assert", 6, VALUE_EMPTY, assertParams, 2, parser);
 }
 
 
@@ -378,6 +415,7 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
         case EXPR_CALL:
         {
             Symbol* symbol = lookUpSymbol(checker, expr->objectCall.callee->variable.name, expr->objectCall.callee->variable.length);
+            //checking callee
             if (symbol == NULL || symbol->function == NULL)
             {
                 typeError(checker, parser, expr, "The object you are calling must be an existing function or class instance.", "UNDEFINED ERROR");
@@ -388,13 +426,21 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
                 typeError(checker, parser, expr, "Callee must be a named function.", "TYPE ERROR");
                 return VALUE_ERROR;
             }
-            if (expr->objectCall.argCount != symbol->function->arity)
+
+            //checking arg counts
+            int requiredCount = 0;
+            for (int i = 0; i < symbol->function->arity; i++)
+            {
+                if (!symbol->function->params[i].isOptional) requiredCount++;
+            }
+            if (expr->objectCall.argCount < requiredCount || expr->objectCall.argCount > symbol->function->arity)
             {
                 typeError(checker, parser, expr, "Function call parameters amount does not match function definition.", "UNDEFINED ERROR");
                 return VALUE_ERROR;
             }
 
-            for (int i = 0; i < symbol->function->arity; i++)
+            //type checking args
+            for (int i = 0; i < expr->objectCall.argCount; i++)
             {
                 ValueType argType = checkExpression(checker, expr->objectCall.args[i], parser);
                 if (symbol->function->params[i].type == VALUE_ANY) continue;
@@ -403,6 +449,15 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
                     if (!isNumeric(argType))
                     {
                         typeError(checker, parser, expr, "Please only input numeric arguements (int, float, double)", "TYPE ERROR");
+                        return VALUE_ERROR;
+                    }
+                    continue;
+                }
+                if (symbol->function->params[i].type == VALUE_ANY_ARRAY)
+                {
+                    if (!isArray(argType))
+                    {
+                        typeError(checker, parser, expr, "Please input an array as an arguement into this function.", "TYPE ERROR");
                         return VALUE_ERROR;
                     }
                     continue;

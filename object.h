@@ -46,6 +46,7 @@ typedef struct ParamInfo
     ValueType type;
     const char* name;
     int length;
+    bool isOptional;
 } ParamInfo;
 
 typedef struct ObjFunction

@@ -211,25 +211,98 @@ Value timeStringNative(int argCount, Value* args, struct Vm* vm) //print out tim
 
 Value readFileNative(int argCount, Value* args, struct Vm* vm) //get all content from file
 {
+    char* path = AS_CSTRING(args[0]);
+    FILE* file = fopen(path, "r");
+
+    if (file == NULL)
+    {
+        char result[100];
+        char errorMsg[] = "Unable to open up file at: ";
+        snprintf(result, sizeof(result), "%s %s", errorMsg, path);
+        runtimeError(vm, result, "FILE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char* buffer = ALLOCATE(char, size+1);
+    if (buffer == NULL)
+    {
+        fclose(file);
+        runtimeError(vm, "Not enough memory to read file.", "MEMORY ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+
+    size_t bytesRead = fread(buffer, 1, size, file);
+    buffer[bytesRead] = '/0';
+    fclose(file);
+
+    ObjString* result = copyString(buffer, (int)bytesRead, vm);
+    FREE(char, buffer);
+    return CREATE_OBJECT_VAL((Obj*)result);
 
 }
 //Value readLineFileNative(int argCount, Value* args, struct Vm* vm);  //read only one line in the file //TODO: maybe add these later with some state
 //Value readWordFileNative(int argCount, Value* args, struct Vm* vm);  //read only one word in the file //TODO: maybe add these later with some state
 Value writeFileNative(int argCount, Value* args, struct Vm* vm)     //create a new file and then write to it
 {
+    char* path = AS_CSTRING(args[0]);
+    char* content = AS_CSTRING(args[1]);
+
+    FILE* file = fopen(path, "w");
+    if (file == NULL)
+    {
+        char result[100];
+        char errorMsg[] = "Unable to open up file for writting: ";
+        snprintf(result, sizeof(result), "%s %s", errorMsg, path);
+        runtimeError(vm, result, "FILE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    fputs(content, file);
+    fclose(file);
+    return CREATE_EMPTY_VAL();
 
 }
-Value appendFileNative(int argCount, Value* args, struct Vm* vm)    //write onto the file, append to it
+Value appendFileNative(int argCount, Value* args, struct Vm* vm)    //write onto the file, append to it //TODO: add a way to have new lines implemented in this
 {
+    char* path = AS_CSTRING(args[0]);
+    char* content = AS_CSTRING(args[1]);
 
+    FILE* file = fopen(path, "a");
+    if (file == NULL)
+    {
+        char result[100];
+        char errorMsg[] = "Unable to open up file for writting: ";
+        snprintf(result, sizeof(result), "%s %s", errorMsg, path);
+        runtimeError(vm, result, "FILE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    fputs(content, file);
+    fclose(file);
+    return CREATE_EMPTY_VAL();
 }
 Value fileExistsNative(int argCount, Value* args, struct Vm* vm)    //bool to see if file exists at path
 {
-
+    char* path = AS_CSTRING(args[0]);
+    FILE* file = fopen(path, "r");
+    if (file == NULL) return CREATE_BOOL_VAL(false);
+    fclose(file);
+    return CREATE_BOOL_VAL(true);
 }
 Value deleteFileNative(int argCount, Value* args, struct Vm* vm)    //delete file at path
 {
-
+    char* path = AS_CSTRING(args[0]);
+    if (remove(path) != 0)
+    {
+        char result[100];
+        char errorMsg[] = "Unable to delete file at path: ";
+        snprintf(result, sizeof(result), "%s %s", errorMsg, path);
+        runtimeError(vm, result, "FILE ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+    return CREATE_EMPTY_VAL();
 }
 
 //--------------Type natives----------------//  //TODO: update this if I ever add longs and shorts
@@ -360,9 +433,23 @@ Value boolToStrNative(int argCount, Value* args, struct Vm* vm)
 //--------------utils natives----------------//
 Value lengthNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    ObjStaticArray* array = (ObjStaticArray*)GET_OBJECT_VAL(args[0]);
+    return CREATE_INT_VAL(array->length);
 }
 Value assertNative(int argCount, Value* args, struct Vm* vm)
 {
-
+    if (!GET_BOOL_VAL(args[0]))
+    {
+        if (argCount == 2)
+        {
+            char* message = AS_CSTRING(args[1]);
+            runtimeError(vm, message, "ASSERTION ERROR");
+        }
+        else
+        {
+            runtimeError(vm, "Assertion Failed.", "ASSERTION ERROR");
+        }
+        return  CREATE_EMPTY_VAL();
+    }
+    return CREATE_EMPTY_VAL();
 }

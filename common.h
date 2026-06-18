@@ -33,7 +33,8 @@ typedef enum {
     VALUE_ERROR,
     //For maybe auto keyword in future, but only for native fns rn
     VALUE_ANY,
-    VALUE_ANY_NUM
+    VALUE_ANY_NUM,
+    VALUE_ANY_ARRAY
 } ValueType;
 
 ValueType toArrayType(ValueType base);
