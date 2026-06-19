@@ -80,6 +80,7 @@ ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType,
     function->arity = 0;
     function->name = name;
     function->nameLength = nameLength;
+    function->upValueCount = 0;
     initChunk(&function->chunk);
     function->returnType = returnType;
     return function;
@@ -99,4 +100,28 @@ ObjNative* newNative(NativeFn function, const char* name, int length, struct Vm*
      native->name = name;
     native->nameLength = length;
     return native;
+}
+
+ObjUpValue* newUpValue(Value* slot, struct Vm* vm)
+{
+    ObjUpValue* upval = ALLOCATE_OBJ(ObjUpValue, OBJ_UPVALUE, vm);
+    upval->location = slot;
+    upval->next = NULL;
+    upval->closed = CREATE_EMPTY_VAL();
+    return upval;
+}
+ObjClosure* newClosure(ObjFunction* function, struct Vm* vm)
+{
+    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE, vm);
+    closure->function = function;
+    closure->upValueCount = function->upValueCount;
+
+    ObjUpValue** upvals = ALLOCATE(ObjUpValue*, function->upValueCount);
+    for (int i = 0; i < function->upValueCount; i++)
+    {
+        upvals[i] = NULL;
+    }
+    closure->upValues = upvals;
+
+    return closure;
 }

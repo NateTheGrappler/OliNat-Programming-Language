@@ -7,6 +7,8 @@
 #include "Expr.h"
 #include "Bytecompiler.h"
 
+//TODO: add in && and || operators for operators
+
 //-------DECLARATIONS------------//
 static void advance(ASTparser* parser);
 static Expr* astExpression(ASTparser* parser);
@@ -570,7 +572,14 @@ static void endScope(AstCompiler* compiler, TypeChecker* checker, Vm* vm, ASTpar
     //pop locals
     while (compiler->localCount > 0 && compiler->locals[compiler->localCount-1].depth > compiler->scopeDepth)
     {
-        emitByte(OP_POP, &compiler->function->chunk, parser);
+        if (compiler->locals[compiler->localCount-1].isCaptured)
+        {
+            emitByte(OP_CLOSE_UPVALUE, &compiler->function->chunk, parser);
+        }
+        else
+        {
+            emitByte(OP_POP, &compiler->function->chunk, parser);
+        }
         compiler->localCount--;
     }
 
@@ -749,8 +758,49 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 }
 
 //functions
+int addUpValue(AstCompiler* compiler, int index, bool isLocal)
+{
+    int count = compiler->function->upValueCount;
+    for (int i = 0; i < count; i++)
+    {
+        //check to see if it is already captured, and then just return that
+        if (compiler->upvalues[i].index == index && compiler->upvalues[i].isLocal == isLocal)
+        {
+            return i;
+        }
+    }
+
+    //set up the new upval at that count
+    compiler->upvalues[count].index = index;
+    compiler->upvalues[count].isLocal = isLocal;
+    return compiler->function->upValueCount++;
+}
+int resolveUpvalue(AstCompiler* compiler, const char* name, int length)
+{
+    if (compiler->enclosing == NULL) return -1;
+
+    //look for that local in the enclosing scope, searching from top down
+    for (int i = compiler->enclosing->localCount - 1; i >= 0; i--)
+    {
+        //get the local in said scope, and compare it to see if it matches
+        Local* local = &compiler->enclosing->locals[i];
+        if (local->length == length && memcmp(local->name, name, length) == 0)
+        {
+            local->isCaptured = true;
+            return addUpValue(compiler, i, true);
+        }
+    }
+
+    int upvalue = resolveUpvalue(compiler->enclosing, name, length);
+    if (upvalue != -1) return addUpValue(compiler, upvalue, false);
+    return -1;
+
+}
 static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm, TypeChecker* checker, ASTparser* parser)
 {
+    memset(newCompiler, 0, sizeof(AstCompiler)); //zero out the compiler so it doesnt read garbage memory for an inner function and just die
+    printf("DEBUG: initFunctionCompiler called for '%.*s'\n", nameLength, name);
+
     //zero out the compilers inner crap for locals
     newCompiler->localCount = 1;
     newCompiler->scopeDepth = (enclosing == NULL) ? 0 : 1;
@@ -758,8 +808,13 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
     newCompiler->isTopLevel = isTopLevel;
 
     //create the function compiler will fill and add to symbol table for recursive calls
+    printf("DEBUG: about to call newFunction\n");
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
+    printf("DEBUG: newFunction returned %p\n", (void*)newCompiler->function);
+
     if (!isTopLevel) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
+    printf("DEBUG: initFunctionCompiler done\n");
+
 }
 static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser)
 {
@@ -824,9 +879,28 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     Symbol* existingSymbol = lookUpSymbol(checker, name, nameLength);
     if (existingSymbol) { existingSymbol->function = function; }  // Replace placeholder with real function
 
-    emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm);
-    emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
+    emitConstant(CREATE_OBJECT_VAL((Obj*)function), &compiler->function->chunk, parser, vm); //create function object on stack
+    emitByte(OP_CLOSURE, &compiler->function->chunk, parser);                                //tell it to start the closure
 
+    //emit each one of the upvalues as well
+    for (int i = 0; i < function->upValueCount; i++)
+    {
+        emitByte(newCompiler.upvalues[i].isLocal ? 1 : 0, &compiler->function->chunk, parser);
+        emitByte(newCompiler.upvalues[i].index, &compiler->function->chunk, parser);
+    }
+
+    if (compiler->scopeDepth > 0) //emit the function as a local only if it's nested
+    {
+        Local* local = &compiler->locals[compiler->localCount++];
+        local->name = name;
+        local->length = nameLength;
+        local->depth = compiler->scopeDepth;
+        local->isCaptured = false;
+    }
+    else
+    {
+        emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm); //after resolving the closure and function, then define it as a new global var
+    }
 }
 static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left)
 {

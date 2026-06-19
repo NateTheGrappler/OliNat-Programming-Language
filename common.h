@@ -41,6 +41,6 @@ ValueType toArrayType(ValueType base);
 ValueType toElementType(ValueType arrayType);
 
 
-//#define DEBUG_TRACE_EXECUTION
+#define DEBUG_TRACE_EXECUTION
 
 #endif //OLI_NAT_COMMON_H

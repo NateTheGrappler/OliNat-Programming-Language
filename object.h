@@ -19,7 +19,9 @@ typedef enum
     OBJ_STRING,
     OBJ_FUNCTION,
     OBJ_STATIC_ARRAY,
-    OBJ_NATIVE
+    OBJ_NATIVE,
+    OBJ_CLOSURE,
+    OBJ_UPVALUE
 } ObjType;
 
 //set up object class to be stored inside of value struct
@@ -40,7 +42,7 @@ typedef struct ObjString
 } ObjString;
 
 
-//functions
+//functions and their extensions
 typedef struct ParamInfo
 {
     ValueType type;
@@ -58,7 +60,28 @@ typedef struct ObjFunction
     Chunk chunk;
     const char* name;
     int nameLength;
+    int upValueCount;
 } ObjFunction;
+
+typedef struct ObjUpValue
+{
+    Obj obj;
+    Value* location;
+    struct ObjUpValue* next;
+    Value closed;
+} ObjUpValue;
+
+typedef struct ObjClosure
+{
+    Obj obj;
+    ObjFunction* function;
+    ObjUpValue** upValues;
+    int upValueCount;
+} ObjClosure;
+
+
+
+//static array literals
 typedef struct ObjStaticArray
 {
     Obj obj;
@@ -67,6 +90,7 @@ typedef struct ObjStaticArray
     Value* values;
 } ObjStaticArray;
 
+//native functions for stdlib
 typedef Value (*NativeFn)(int argCount, Value* args, struct Vm* vm);
 typedef struct ObjNative
 {
@@ -91,4 +115,6 @@ ObjString* combineString(char* chars, int length, struct Vm* vm);
 ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType, struct Vm* vm);
 ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm);
 ObjNative* newNative(NativeFn function, const char* name, int length, struct Vm* vm);
+ObjUpValue* newUpValue(Value* slot, struct Vm* vm);
+ObjClosure* newClosure(ObjFunction* function, struct Vm* vm);
 #endif //OLI_NAT_OBJECT_H

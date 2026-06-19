@@ -5,6 +5,8 @@
 #ifndef OLI_NAT_ASTCOMPILER_H
 #define OLI_NAT_ASTCOMPILER_H
 #define UINT16_COUNT (UINT16_MAX + 1)
+#define MAX_UPVALUES 256
+#define MAX_LOCALS 256
 #include "scanner.h"
 #include "common.h"
 #include "Expr.h"
@@ -28,11 +30,19 @@ typedef struct {
     const char* name;
     int length;
     int depth;
+    bool isCaptured;
 } Local;
+
+typedef struct
+{
+    int index;
+    bool isLocal;
+} UpValueInfo;
 
 typedef struct AstCompiler
 {
-    Local locals[UINT16_COUNT];
+    Local locals[MAX_LOCALS];
+    UpValueInfo upvalues[MAX_UPVALUES];
     int localCount;
     int scopeDepth;
     bool isTopLevel;
@@ -44,6 +54,9 @@ typedef struct AstCompiler
 
 ObjFunction* compile(const char* source, struct Vm* vm);
 void initAstCompiler(AstCompiler* compiler);
+
+int addUpValue(AstCompiler* compiler, int index, bool isLocal);
+int resolveUpvalue(AstCompiler* compiler, const char* name, int length);
 
 //shit forwarded to the bytecode compiler
 void error(const char* message, const char* messageType, ASTparser* parser);

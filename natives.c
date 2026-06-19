@@ -453,3 +453,4 @@ Value assertNative(int argCount, Value* args, struct Vm* vm)
     }
     return CREATE_EMPTY_VAL();
 }
+//TODO: add in more functions for strings like strLength, strContains, strSlice, strReplace, toUpper, toLower

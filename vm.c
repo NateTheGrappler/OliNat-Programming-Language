@@ -15,6 +15,7 @@ void initVM(Vm* vm)
     vm->hadRuntimeError = false;
     vm->frameCount = 0;
     vm->objects = NULL;
+    vm->openUpValues = NULL;
 
     initMap(&vm->strings);
     initMap(&vm->globals);
@@ -141,7 +142,7 @@ void runtimeError(Vm* vm, const char* message, const char* messageType)
     for (int i = vm->frameCount - 1; i >= 0; i--)
     {
         CallFrame* frame = &vm->frames[i];
-        ObjFunction* function = frame->function;
+        ObjFunction* function = frame->closure->function;
 
         int instruction = (int)(frame->ip - function->chunk.byteCode - 1);
         if (instruction < 0) instruction = 0;
@@ -158,6 +159,7 @@ void runtimeError(Vm* vm, const char* message, const char* messageType)
         }
     }
 }
+
 //----------------------------------------------VM HELPERS-------------------------------------------------//
 static void concatenate(Vm* vm, Value b, Value a)
 {
@@ -172,9 +174,9 @@ static void concatenate(Vm* vm, Value b, Value a)
     ObjString* result = combineString(chars, length, vm);
     push(vm, CREATE_OBJECT_VAL((Obj*)result));
 }
-static bool call(ObjFunction* function, int argCount, Vm* vm)
+static bool call(ObjClosure* closure, int argCount, Vm* vm)
 {
-    if (argCount != function->arity)
+    if (argCount != closure->function->arity)
     {
         runtimeError(vm, "Function call got either more or less arguements than expected.", "INVALID CALL ERROR");
         return false;
@@ -185,8 +187,8 @@ static bool call(ObjFunction* function, int argCount, Vm* vm)
     }
 
     CallFrame* frame = &vm->frames[vm->frameCount++];
-    frame->function = function;
-    frame->ip = function->chunk.byteCode;
+    frame->closure = closure;
+    frame->ip = closure->function->chunk.byteCode;
     frame->slots = vm->stackTop - argCount - 1;
     return true;
 }
@@ -196,10 +198,10 @@ static bool callValue(Value callee, int argCount, Vm* vm)
     {
         switch (GET_OBJECT_VAL(callee)->type)
         {
-            case OBJ_FUNCTION:
+            case OBJ_CLOSURE:
             {
-                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(callee);
-                return call(function, argCount, vm);;
+                ObjClosure* closure = (ObjClosure*)GET_OBJECT_VAL(callee);
+                return call(closure, argCount, vm);;
             }
             case OBJ_NATIVE:
             {
@@ -223,14 +225,44 @@ static bool callValue(Value callee, int argCount, Vm* vm)
     runtimeError(vm, "You can only call functions.", "LOGIC ERROR");
     return false;
 }
+static ObjUpValue* captureUpValue(Vm* vm, Value* local)
+{
+    ObjUpValue* prev = NULL;
+    ObjUpValue* current = vm->openUpValues;
+
+    //check out the open upvalue list and find exist one for this slot
+    while (current != NULL && current->location > local)
+    {
+        prev = current;
+        current = current-> next;
+    }
+    if (current != NULL && current->location == local) return current;
+
+    //none found, create one
+    ObjUpValue* newUpval = newUpValue(local, vm);
+    newUpval->next = current;
+    if (prev == NULL) vm->openUpValues = newUpval;
+    else prev->next = newUpval;
+    return newUpval;
+}
+static void closeUpvalues(Vm* vm, Value* last)
+{
+    while (vm->openUpValues != NULL && vm->openUpValues->location >= last)
+    {
+        ObjUpValue* upvalue = vm->openUpValues;
+        upvalue->closed = *upvalue->location;
+        upvalue->location = &upvalue->closed;
+        vm->openUpValues = upvalue->next;
+    }
+}
 
 //-------------------------------------------Main meat of the vm-------------------------------------------//
 static vmResult run(Vm* vm)
 {
     CallFrame* frame = &vm->frames[vm->frameCount - 1];
 #define READ_BYTE() (*frame->ip++)
-#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
-#define READ_CONSTANT_LONG() (frame->function->chunk.constants.values[READ_SHORT()])
+#define READ_CONSTANT() (frame->closure->function->chunk.constants.values[READ_BYTE()]) //get the stored index in the chunk buffer and then index into the chunk's stored values
+#define READ_CONSTANT_LONG() (frame->closure->function->chunk.constants.values[READ_SHORT()])
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 
@@ -250,7 +282,7 @@ static vmResult run(Vm* vm)
                 printf("\n");
                 printf(("Stack Size: %d"), stackSize);
                 printf("\n");
-                disassembleInstruction(&frame->function->chunk, (int)(frame->ip - frame->function->chunk.byteCode));
+                disassembleInstruction(&frame->closure->function->chunk, (int)(frame->ip - frame->closure->function->chunk.byteCode));
         #endif
 
         uint8_t instruction;
@@ -263,6 +295,7 @@ static vmResult run(Vm* vm)
                 #endif
 
                 Value functionReturn = pop(vm);
+                closeUpvalues(vm, frame->slots);
                 vm->frameCount--;
 
                 if (vm->frameCount == 0)
@@ -726,8 +759,46 @@ static vmResult run(Vm* vm)
                 runtimeError(vm, "Every single function must have a return statement!!", "MISSING RETURN ERROR");
                 return INTERPRET_RUNTIME_ERROR;
             }
+            case OP_CLOSURE:
+            {
+                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(pop(vm));
+                ObjClosure* closure = newClosure(function, vm);
+                push(vm, CREATE_OBJECT_VAL((Obj*)closure));
 
-
+                for (int i = 0; i < closure->upValueCount; i++)
+                {
+                    uint8_t isLocal = READ_BYTE();
+                    uint8_t index   = READ_BYTE();
+                    if (isLocal)
+                    {
+                        //just point directly to the local val
+                        closure->upValues[i] = captureUpValue(vm, frame->slots+index);
+                    }
+                    else
+                    {
+                        closure->upValues[i] = frame->closure->upValues[index];
+                    }
+                }
+                break;
+            }
+            case OP_CLOSE_UPVALUE:
+            {
+                closeUpvalues(vm, vm->stackTop - 1);
+                pop(vm);
+                break;
+            }
+            case OP_GET_UPVALUE:
+            {
+                uint8_t slot = READ_BYTE();
+                push(vm, *frame->closure->upValues[slot]->location);
+                break;
+            }
+            case OP_SET_UPVALUE:
+            {
+                uint8_t slot = READ_BYTE();
+                *frame->closure->upValues[slot]->location = peek(vm, 0);
+                break;
+            }
 
             default:
                 runtimeError(vm, "Unknown opcode encountered.", "RUNTIME ERROR");
@@ -754,8 +825,9 @@ vmResult interpret(const char* source, Vm* vm)
 
 
     //after compiling the bytecode, set up the place where its going to be read from
-    push(vm, CREATE_OBJECT_VAL((Obj*)topScript));
-    call(topScript, 0, vm);
+    ObjClosure* scriptClosure = newClosure(topScript, vm);
+    push(vm, CREATE_OBJECT_VAL((Obj*)scriptClosure));
+    call(scriptClosure, 0, vm);
 
     //run the code that the compiler wrote to the vms chunk
     vmResult result = run(vm);

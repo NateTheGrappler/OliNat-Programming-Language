@@ -145,6 +145,8 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         }
         case EXPR_LITERAL:
         {
+            printf("DEBUG: compiling literal, compiler->function = %p\n", (void*)compiler->function);
+            printf("DEBUG: vmChunk = %p\n", (void*)vmChunk);
             switch (expr->literal.type)
             {
                 case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.boolean_val), vmChunk, parser, vm);  break;
@@ -177,13 +179,16 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         case EXPR_VARIABLE:
         {
             int scan = resolveLocal(compiler, expr->variable.name, expr->variable.length);
-            if (scan == -1)
+            if (scan != -1)
             {
-                emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm);
+
+                emitGetLocal(scan, vmChunk, parser);
             }
             else
             {
-                emitGetLocal(scan, vmChunk, parser);
+                int upVal = resolveUpvalue(compiler, expr->variable.name, expr->variable.length);                  //look for upval
+                if (upVal != -1) { emitBytes(OP_GET_UPVALUE, (uint8_t)upVal, vmChunk, parser); }   //emit getting it to the vm
+                else {emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm); }            //emit global as a final resort                                                  //otherwise you know it is a local
             }
             break;
         }
@@ -192,9 +197,15 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             compileExpressionByte(expr->var_assignment.value, parser, vmChunk, compiler, vm);
             int slot = resolveLocal(compiler, expr->var_assignment.name, expr->var_assignment.length);
             if (slot != -1)
+            {
                 emitBytes(OP_SET_LOCAL, (uint8_t)slot, vmChunk, parser);
+            }
             else
-                emitSetGlobal(expr->var_assignment.name, expr->var_assignment.length, vmChunk, parser, vm);
+            {
+                int upVal = resolveUpvalue(compiler, expr->var_assignment.name, expr->var_assignment.length);                  //look for upval
+                if (upVal != -1) { emitBytes(OP_SET_UPVALUE, (uint8_t)upVal, vmChunk, parser); }   //emit getting it to the vm
+                else {emitSetGlobal(expr->var_assignment.name, expr->var_assignment.length, vmChunk, parser, vm);} //otherwise just set the local var
+            }
             break;
         }
         case EXPR_CALL:

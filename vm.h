@@ -17,7 +17,7 @@
 
 typedef struct
 {
-    ObjFunction* function;
+    ObjClosure* closure;
     uint8_t* ip;
     Value* slots;
 } CallFrame;
@@ -33,6 +33,7 @@ typedef struct Vm
 {
     //the stack
     bool hadRuntimeError;
+    ObjUpValue* openUpValues;
     Value  stack[STACK_MAX];
     Value* stackTop;
     CallFrame frames[FRAMES_MAX];

@@ -161,6 +161,19 @@ void printObject(Value value)
             printf("FN-%.*s", function->nameLength, function->name);
             break;
         }
+        case OBJ_CLOSURE:
+        {
+            ObjClosure* closure = (ObjClosure*)GET_OBJECT_VAL(value);
+            printf("CLO-%.*s", closure->function->nameLength, closure->function->name);
+            break;
+        }
+        case OBJ_UPVALUE:
+        {
+            ObjUpValue* upvalue = (ObjUpValue*)GET_OBJECT_VAL(value);
+            printf("UPVAL-");
+            printValue(*upvalue->location);
+            break;
+        }
         case OBJ_NATIVE:
         {
             ObjNative* native = (ObjNative*)GET_OBJECT_VAL(value);
@@ -342,5 +355,13 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_GET_ARRAY_INDEX", offset);
         case OP_SET_ARRAY_INDEX:
             return simpleInstruction("OP_SET_ARRAY_INDEX", offset);
+        case OP_GET_UPVALUE:
+            return byteInstruction("OP_GET_UPVALUE", chunk, offset);
+        case OP_SET_UPVALUE:
+            return byteInstruction("OP_SET_UPVALUE", chunk, offset);
+        case OP_CLOSE_UPVALUE:
+            return simpleInstruction("OP_CLOSE_UPVALUE", offset);
+        case OP_CLOSURE:
+            return simpleInstruction("OP_CLOSURE", offset);
     }
 }
