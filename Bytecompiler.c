@@ -145,8 +145,6 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         }
         case EXPR_LITERAL:
         {
-            printf("DEBUG: compiling literal, compiler->function = %p\n", (void*)compiler->function);
-            printf("DEBUG: vmChunk = %p\n", (void*)vmChunk);
             switch (expr->literal.type)
             {
                 case VALUE_BOOL:   emitConstant(CREATE_BOOL_VAL(expr->literal.value.boolean_val), vmChunk, parser, vm);  break;

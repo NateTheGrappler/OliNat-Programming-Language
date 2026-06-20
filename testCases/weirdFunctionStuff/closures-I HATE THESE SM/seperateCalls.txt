@@ -1,0 +1,22 @@
+#pullf stdlib
+
+make int outer()
+{
+    make int x = 10;
+    make int inner()
+    {
+        x += 100;
+        return x;
+    }
+    return inner();
+}
+
+make int first = outer();
+make int second = outer();
+
+println("First return: "  + intToStr(first));
+println("Second return: " + intToStr(first));
+
+assert(first == 110, "FAILED TEST, NOT EQUAL TO 105");
+assert(second == 110, "FAILED TEST, NOT EQUAL TO 105");
+println("YIPPEEEEEE");

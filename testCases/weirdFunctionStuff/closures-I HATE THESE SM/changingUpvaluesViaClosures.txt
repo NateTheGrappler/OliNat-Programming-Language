@@ -1,0 +1,17 @@
+#pullf stdlib
+
+make int outer()
+{
+    make int x = 10;
+    make int inner()
+    {
+        x = 99;
+        return x;
+    }
+    inner();
+    return x;
+}
+
+make int result = outer();
+assert(result == 99, "FAILED TEST, NOT EQUAL TO 10");
+println("YIPPEEEEEE");

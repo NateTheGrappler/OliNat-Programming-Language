@@ -1,0 +1,29 @@
+#pullf stdlib
+
+make int outer()
+{
+    make int x = 10;
+    make int changeX()
+    {
+        x++;
+        return x;
+    }
+    make int lowerX()
+    {
+        x /= 2;
+        return x;
+    }
+    make int returnX()
+    {
+        return x;
+    }
+    changeX();
+    changeX();
+    lowerX();
+    changeX();
+    return returnX();
+}
+
+make int result = outer();
+assert(result == 7, "FAILED TEST, NOT EQUAL TO 7");
+println("YIPPEEEEEE");

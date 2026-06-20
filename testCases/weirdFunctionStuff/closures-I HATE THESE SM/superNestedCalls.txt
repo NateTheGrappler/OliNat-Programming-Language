@@ -1,0 +1,22 @@
+#pullf stdlib
+
+make int outer()
+{
+    make int x = 7;
+
+    make int middle()
+    {
+        make int innermost()
+        {
+            x = 10;
+            return x;
+        }
+        return innermost();
+    }
+
+    return middle();
+}
+
+make int result = outer();
+assert(result == 10, "FAILED TEST, NOT EQUAL TO 7");
+println("YIPPEEEEEE");

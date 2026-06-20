@@ -1,0 +1,17 @@
+#pullf stdlib
+
+make int outer()
+{
+    make int x = 10;
+    make int inner()
+    {
+        return x;
+    }
+    return inner();
+}
+
+make int result = outer();
+assert(result == 10, "FAILED TEST, NOT EQUAL TO 10");
+println("YIPPEEEEEE");
+
+//expect then by just basic capturing of closures
