@@ -799,7 +799,6 @@ int resolveUpvalue(AstCompiler* compiler, const char* name, int length)
 static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm, TypeChecker* checker, ASTparser* parser)
 {
     memset(newCompiler, 0, sizeof(AstCompiler)); //zero out the compiler so it doesnt read garbage memory for an inner function and just die
-    printf("DEBUG: initFunctionCompiler called for '%.*s'\n", nameLength, name);
 
     //zero out the compilers inner crap for locals
     newCompiler->localCount = 1;
@@ -808,12 +807,9 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
     newCompiler->isTopLevel = isTopLevel;
 
     //create the function compiler will fill and add to symbol table for recursive calls
-    printf("DEBUG: about to call newFunction\n");
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
-    printf("DEBUG: newFunction returned %p\n", (void*)newCompiler->function);
 
     if (!isTopLevel) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
-    printf("DEBUG: initFunctionCompiler done\n");
 
 }
 static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser)
