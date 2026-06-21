@@ -17,6 +17,11 @@ void initVM(Vm* vm)
     vm->objects = NULL;
     vm->openUpValues = NULL;
 
+    vm->grayCapacity = 0;
+    vm->grayCount = 0;
+    vm->bytesAllocated = 0;
+    vm->grayStack = NULL;
+
     initMap(&vm->strings);
     initMap(&vm->globals);
 
@@ -24,8 +29,8 @@ void initVM(Vm* vm)
 void freeVM(Vm* vm)
 {
     resetStack(vm);
-    freeMap(&vm->strings);
-    freeMap(&vm->globals);
+    freeMap(&vm->strings, vm);
+    freeMap(&vm->globals, vm);
     freeObjects(vm); //free all vm held objects
 }
 
@@ -56,7 +61,7 @@ static void defineNative(Vm* vm, const char* name, NativeFn function)
     //create new native, intern it's name, and toss it into globals
     ObjNative* native = newNative(function, name, strlen(name), vm);
     ObjString* nameStr = copyString(name, (int)strlen(name), vm);
-    MapSet(&vm->globals, nameStr, CREATE_OBJECT_VAL((Obj*)native));
+    MapSet(&vm->globals, nameStr, CREATE_OBJECT_VAL((Obj*)native), vm);
 }
 void registerIONatives(Vm* vm)
 {
@@ -167,7 +172,7 @@ static void concatenate(Vm* vm, Value b, Value a)
     ObjString* d = AS_STRING(b);
 
     int length = c->length + d->length;
-    char* chars = ALLOCATE(char, length+1);
+    char* chars = ALLOCATE(char, length+1, vm);
     memcpy(chars, c->chars, c->length);
     memcpy(chars + c->length, d->chars, d->length);
     chars[length] = '\0';
@@ -628,7 +633,7 @@ static vmResult run(Vm* vm)
                 //just change the top val on the stack in map then pop it off
                 Value constant = READ_CONSTANT();
                 ObjString* name = AS_STRING(constant);
-                MapSet(&vm->globals, name, peek(vm, 0));
+                MapSet(&vm->globals, name, peek(vm, 0), vm);
                 pop(vm);
                 break;
             }
@@ -650,7 +655,7 @@ static vmResult run(Vm* vm)
             {
                 Value constant = READ_CONSTANT();
                 ObjString* name = AS_STRING(constant);
-                if (MapSet(&vm->globals, name, peek(vm, 0)))
+                if (MapSet(&vm->globals, name, peek(vm, 0), vm))
                 {
                     printf("Undefined variable '%s'\n", name->chars);
                     runtimeError(vm, "Undefined global variable.", "RUNTIME ERROR");

@@ -8,6 +8,8 @@
 #include "memory.h"
 #include "common.h"
 
+typedef struct Vm vm;
+
 typedef enum {
     EXPR_LITERAL,
     EXPR_BINARY,
@@ -105,21 +107,21 @@ typedef struct Expr {
     };
 } Expr;
 
-Expr* createLiteralDouble(double value, int line);
-Expr* createLiteralFloat (float value, int line);
-Expr* createLiteralInt   (int value, int line);
-Expr* createLiteralBool  (bool value, int line);
-Expr* createLiteralString(char* value, int line);
-Expr* createVarAssignment(char* name, int length, Expr* value, int line);
-Expr* createStaticArray  (Expr** args, int count, ValueType type, int line);
-Expr* createArraySet     (Expr* left, Expr* index, Expr* value, int line);
-Expr* createArrayGet     (Expr* left, Expr* index, int line);
-Expr* createUnary        (char operator, Expr* right, int line);
-Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line);
-Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line);
-Expr* createGrouping     (Expr* expr, int line);
-Expr* createVariable(const char* name, int length, int line);
+Expr* createLiteralDouble(double value, int line, struct Vm* vm);
+Expr* createLiteralFloat (float value, int line, struct Vm* vm);
+Expr* createLiteralInt   (int value, int line, struct Vm* vm);
+Expr* createLiteralBool  (bool value, int line, struct Vm* vm);
+Expr* createLiteralString(char* value, int line, struct Vm* vm);
+Expr* createVarAssignment(char* name, int length, Expr* value, int line, struct Vm* vm);
+Expr* createStaticArray  (Expr** args, int count, ValueType type, int line, struct Vm* vm);
+Expr* createArraySet     (Expr* left, Expr* index, Expr* value, int line, struct Vm* vm);
+Expr* createArrayGet     (Expr* left, Expr* index, int line, struct Vm* vm);
+Expr* createUnary        (char operator, Expr* right, int line, struct Vm* vm);
+Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line, struct Vm* vm);
+Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line, struct Vm* vm);
+Expr* createGrouping     (Expr* expr, int line, struct Vm* vm);
+Expr* createVariable(const char* name, int length, int line, struct Vm* vm);
 
-void freeExpr(Expr* expr);
+void freeExpr(Expr* expr, struct Vm* vm);
 
 #endif //OLI_NAT_EXPR_H

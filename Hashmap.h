@@ -7,6 +7,8 @@
 
 #include "object.h"
 
+typedef struct Vm vm;
+
 //struct for each bucket inside of the hashmap
 typedef struct
 {
@@ -22,9 +24,9 @@ typedef struct
 } Hashmap;
 
 void initMap(Hashmap* hashmap);
-void freeMap(Hashmap* hashmap);
+void freeMap(Hashmap* hashmap, struct Vm* vm);
 
-bool MapSet(Hashmap* hashmap, ObjString* key, Value value);
+bool MapSet(Hashmap* hashmap, ObjString* key, Value value, struct Vm* vm);
 bool MapGet(Hashmap* hashmap, ObjString* key, Value* value);
 bool MapDelete(Hashmap* hashmap, ObjString* key);
 

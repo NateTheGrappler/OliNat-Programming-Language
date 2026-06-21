@@ -8,6 +8,7 @@
 #include "Expr.h"
 
 typedef struct Obj Obj;
+typedef struct Vm vm;
 
 //value representation of whatever value
 typedef struct
@@ -56,8 +57,8 @@ typedef struct {
 #define GET_OBJECT_VAL(value) ((value).as.object_val)
 
 void initValueArray(ValueArray* array);
-void writeValueArray(ValueArray* array, Value value);
-void freeValueArray(ValueArray* array);
+void writeValueArray(ValueArray* array, Value value, struct Vm* vm);
+void freeValueArray(ValueArray* array, struct Vm* vm);
 
 
 //TODO: add null and strings

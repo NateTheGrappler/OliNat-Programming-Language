@@ -59,8 +59,8 @@ typedef struct
 } Chunk;
 
 void initChunk(Chunk* chunk);
-void writeToChunk(Chunk* chunk, uint8_t byte, int line);
-void freeChunk(Chunk* chunk);
+void writeToChunk(Chunk* chunk, uint8_t byte, int line, struct Vm* vm);
+void freeChunk(Chunk* chunk, struct  Vm* vm);
 int addConstant(Chunk* chunk, Value value, struct Vm* vm); //add in a value to the value array and return the index of that value
 
 #endif //OLI_NAT_CHUNK_H

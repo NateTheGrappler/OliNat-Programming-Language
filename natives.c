@@ -227,7 +227,7 @@ Value readFileNative(int argCount, Value* args, struct Vm* vm) //get all content
     long size = ftell(file);
     rewind(file);
 
-    char* buffer = ALLOCATE(char, size+1);
+    char* buffer = ALLOCATE(char, size+1, vm);
     if (buffer == NULL)
     {
         fclose(file);
@@ -236,11 +236,11 @@ Value readFileNative(int argCount, Value* args, struct Vm* vm) //get all content
     }
 
     size_t bytesRead = fread(buffer, 1, size, file);
-    buffer[bytesRead] = '/0';
+    buffer[bytesRead] = '\0';
     fclose(file);
 
     ObjString* result = copyString(buffer, (int)bytesRead, vm);
-    FREE(char, buffer);
+    FREE(char, buffer, vm);
     return CREATE_OBJECT_VAL((Obj*)result);
 
 }

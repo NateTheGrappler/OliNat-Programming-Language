@@ -22,7 +22,7 @@ static uint32_t hashString(const char* key, int length) //basic hashing function
 
 static Obj* allocateObject(size_t size, ObjType type, struct Vm* vm)
 {
-    Obj* object = (Obj*)reallocate(NULL, 0, size);
+    Obj* object = (Obj*)reallocate(NULL, 0, size, vm);
     object->type = type;
 
     object->next = vm->objects;
@@ -39,7 +39,7 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash, struct 
 
     //TODO: garabage collector pushes and whatnot, as well as hashtable stuff too (DONE)
     push(vm, CREATE_OBJECT_VAL((Obj*)string));
-    MapSet(&vm->strings, string, CREATE_EMPTY_VAL());
+    MapSet(&vm->strings, string, CREATE_EMPTY_VAL(), vm);
     pop(vm);
 
     return string;
@@ -53,7 +53,7 @@ ObjString* copyString(const char* chars, int length, struct Vm* vm)
     ObjString* interned = hashmapFindString(&vm->strings, chars, length, hash);
     if (interned != NULL) return interned;
 
-    char* heapChars = ALLOCATE(char, length+1);
+    char* heapChars = ALLOCATE(char, length+1, vm);
     memcpy(heapChars, chars, length);
     heapChars[length] = '\0';
     return allocateString(heapChars, length, hash, vm); //TODO: add hashing
@@ -67,7 +67,7 @@ ObjString* combineString(char* chars, int length, Vm* vm)
     ObjString* interned = hashmapFindString(&vm->strings, chars, length, hash);
     if (interned != NULL)
     {
-        FREE_ARRAY(char, chars, length+1);
+        FREE_ARRAY(char, chars, length+1,vm);
         return interned;
     }
     return allocateString(chars, length, hash, vm);
@@ -90,7 +90,7 @@ ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm)
     ObjStaticArray* array = ALLOCATE_OBJ(ObjStaticArray, OBJ_STATIC_ARRAY, vm);
     array->length = count;
     array->arrayType  =type;
-    array->values = ALLOCATE(Value, count);
+    array->values = ALLOCATE(Value, count, vm);
     return array;
 }
 ObjNative* newNative(NativeFn function, const char* name, int length, struct Vm* vm)
@@ -116,7 +116,7 @@ ObjClosure* newClosure(ObjFunction* function, struct Vm* vm)
     closure->function = function;
     closure->upValueCount = function->upValueCount;
 
-    ObjUpValue** upvals = ALLOCATE(ObjUpValue*, function->upValueCount);
+    ObjUpValue** upvals = ALLOCATE(ObjUpValue*, function->upValueCount, vm);
     for (int i = 0; i < function->upValueCount; i++)
     {
         upvals[i] = NULL;

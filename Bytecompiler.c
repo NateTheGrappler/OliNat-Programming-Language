@@ -9,31 +9,31 @@
 static uint8_t makeConstant(Value value, Chunk* chunk, Vm* vm, ASTparser* parser);
 
 //-------------------------------------Writting to the chunk functions------------------------------------------//
-void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser)
+void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    writeToChunk(chunk, byte, parser->previous.line);
+    writeToChunk(chunk, byte, parser->previous.line, vm);
 }
-static void emitBytes(uint8_t byteOne, uint8_t byteTwo, Chunk* chunk, ASTparser* parser)
+static void emitBytes(uint8_t byteOne, uint8_t byteTwo, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    emitByte(byteOne, chunk, parser);
-    emitByte(byteTwo, chunk, parser);
+    emitByte(byteOne, chunk, parser, vm);
+    emitByte(byteTwo, chunk, parser, vm);
 }
-void emitReturn(Chunk* chunk, ASTparser* parser)
+void emitReturn(Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    emitByte(OP_RETURN, chunk, parser);
+    emitByte(OP_RETURN, chunk, parser, vm);
 }
 void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
     int constantIndex = addConstant(chunk, value, vm);
     if (constantIndex <= UINT8_MAX)
     {
-        emitBytes(OP_CONSTANT, (uint8_t)constantIndex, chunk, parser);
+        emitBytes(OP_CONSTANT, (uint8_t)constantIndex, chunk, parser, vm);
     }
     else if (constantIndex <= UINT16_MAX)
     {
-        emitByte(OP_CONSTANT_LONG, chunk, parser);
-        emitByte((constantIndex >> 8) & 0xff, chunk, parser);
-        emitByte(constantIndex & 0xff, chunk, parser);
+        emitByte(OP_CONSTANT_LONG, chunk, parser, vm);
+        emitByte((constantIndex >> 8) & 0xff, chunk, parser, vm);
+        emitByte(constantIndex & 0xff, chunk, parser, vm);
     }
     else
     {
@@ -41,31 +41,30 @@ void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm)
     }
 }
 
-static void emitBinaryOperator(const char* operator, Chunk* chunk, ASTparser* parser)
+static void emitBinaryOperator(const char* operator, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    //TODO: see if theres a better way than a bunch of if statements
     //math ops
-    if (strcmp(operator, "+") == 0) {emitByte(OP_ADD, chunk, parser);      return;}
-    if (strcmp(operator, "-") == 0) {emitByte(OP_SUBTRACT, chunk, parser); return;}
-    if (strcmp(operator, "/") == 0) {emitByte(OP_DIVIDE, chunk, parser);   return;}
-    if (strcmp(operator, "*") == 0) {emitByte(OP_MULTIPLY, chunk, parser); return;}
+    if (strcmp(operator, "+") == 0) {emitByte(OP_ADD, chunk, parser, vm);      return;}
+    if (strcmp(operator, "-") == 0) {emitByte(OP_SUBTRACT, chunk, parser, vm); return;}
+    if (strcmp(operator, "/") == 0) {emitByte(OP_DIVIDE, chunk, parser, vm);   return;}
+    if (strcmp(operator, "*") == 0) {emitByte(OP_MULTIPLY, chunk, parser, vm); return;}
 
     //comparisions
-    if (strcmp(operator, ">") == 0)  {emitByte(OP_GREATER, chunk, parser);       return;}
-    if (strcmp(operator, "<") == 0)  {emitByte(OP_LESS, chunk, parser);          return;}
-    if (strcmp(operator, ">=") == 0) {emitByte(OP_GREATER_EQUAL, chunk, parser); return;}
-    if (strcmp(operator, "<=") == 0) {emitByte(OP_LESS_EQUAL, chunk, parser);    return;}
-    if (strcmp(operator, "==") == 0) {emitByte(OP_EQUAL, chunk, parser);         return;}
-    if (strcmp(operator, "!=") == 0) {emitByte(OP_NOT_EQUAL, chunk, parser);     return;}
+    if (strcmp(operator, ">") == 0)  {emitByte(OP_GREATER, chunk, parser, vm);       return;}
+    if (strcmp(operator, "<") == 0)  {emitByte(OP_LESS, chunk, parser, vm);          return;}
+    if (strcmp(operator, ">=") == 0) {emitByte(OP_GREATER_EQUAL, chunk, parser, vm); return;}
+    if (strcmp(operator, "<=") == 0) {emitByte(OP_LESS_EQUAL, chunk, parser, vm);    return;}
+    if (strcmp(operator, "==") == 0) {emitByte(OP_EQUAL, chunk, parser, vm);         return;}
+    if (strcmp(operator, "!=") == 0) {emitByte(OP_NOT_EQUAL, chunk, parser, vm);     return;}
 
     error("Invalid operation found in one of your math operations", "SYNTAX ERROR", parser);
 }
-static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser)
+static void emitUnaryOperator(char operator, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
     switch (operator)
     {
-        case '-': emitByte(OP_NEGATE,  chunk, parser); break;
-        case '!': emitByte(OP_INVERSE, chunk, parser); break;
+        case '-': emitByte(OP_NEGATE,  chunk, parser, vm); break;
+        case '!': emitByte(OP_INVERSE, chunk, parser, vm); break;
         default:
         {
             error("Invalid unary operator found in expressions, please double check what you are doing.", "SYNTAX ERROR", parser);
@@ -80,19 +79,19 @@ void emitDefineGlobal(const char* name, int length, Chunk* chunk, ASTparser* par
 {
     ObjString* varName = copyString(name, length, vm);
     uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
-    emitBytes(OP_DEFINE_GLOBAL, index, chunk, parser);
+    emitBytes(OP_DEFINE_GLOBAL, index, chunk, parser, vm);
 }
 void emitGetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
     ObjString* varName = copyString(name, length, vm);
     uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
-    emitBytes(OP_GET_GLOBAL, index, chunk, parser);
+    emitBytes(OP_GET_GLOBAL, index, chunk, parser, vm);
 }
 void emitSetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
     ObjString* varName = copyString(name, length, vm);
     uint8_t index = addConstant(chunk, CREATE_OBJECT_VAL((Obj*)varName), vm);
-    emitBytes(OP_SET_GLOBAL, index, chunk, parser);
+    emitBytes(OP_SET_GLOBAL, index, chunk, parser, vm);
 }
 int resolveLocal(AstCompiler* compiler, const char* name, int length)
 {
@@ -103,17 +102,17 @@ int resolveLocal(AstCompiler* compiler, const char* name, int length)
     }
     return -1; //no local found, must be global
 }
-void emitGetLocal(int position, Chunk* chunk, ASTparser* parser)
+void emitGetLocal(int position, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    emitBytes(OP_GET_LOCAL, (uint8_t)position, chunk, parser);
+    emitBytes(OP_GET_LOCAL, (uint8_t)position, chunk, parser, vm);
 }
 
 //control flow
-short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser)
+short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser, Vm* vm)
 {
-    emitByte(instruction, chunk, parser);
-    emitByte(0xff, chunk, parser);
-    emitByte(0xff, chunk, parser);
+    emitByte(instruction, chunk, parser, vm);
+    emitByte(0xff, chunk, parser, vm);
+    emitByte(0xff, chunk, parser, vm);
     return (short)(chunk->count - 2);
 }
 
@@ -140,7 +139,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         {
             compileExpressionByte(expr->binary.left, parser, vmChunk, compiler, vm);
             compileExpressionByte(expr->binary.right, parser, vmChunk,compiler, vm);
-            emitBinaryOperator(expr->binary.operator, vmChunk, parser);
+            emitBinaryOperator(expr->binary.operator, vmChunk, parser, vm);
             break;
         }
         case EXPR_LITERAL:
@@ -165,7 +164,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         case EXPR_UNARY:
         {
             compileExpressionByte(expr->unary.right, parser, vmChunk, compiler, vm);
-            emitUnaryOperator(expr->unary.operator, vmChunk, parser);
+            emitUnaryOperator(expr->unary.operator, vmChunk, parser, vm);
             break;
         }
         case EXPR_GROUPING:
@@ -180,12 +179,12 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             if (scan != -1)
             {
 
-                emitGetLocal(scan, vmChunk, parser);
+                emitGetLocal(scan, vmChunk, parser, vm);
             }
             else
             {
                 int upVal = resolveUpvalue(compiler, expr->variable.name, expr->variable.length);                  //look for upval
-                if (upVal != -1) { emitBytes(OP_GET_UPVALUE, (uint8_t)upVal, vmChunk, parser); }   //emit getting it to the vm
+                if (upVal != -1) { emitBytes(OP_GET_UPVALUE, (uint8_t)upVal, vmChunk, parser, vm); }   //emit getting it to the vm
                 else {emitGetGlobal(expr->variable.name, expr->variable.length, vmChunk, parser, vm); }            //emit global as a final resort                                                  //otherwise you know it is a local
             }
             break;
@@ -196,12 +195,12 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             int slot = resolveLocal(compiler, expr->var_assignment.name, expr->var_assignment.length);
             if (slot != -1)
             {
-                emitBytes(OP_SET_LOCAL, (uint8_t)slot, vmChunk, parser);
+                emitBytes(OP_SET_LOCAL, (uint8_t)slot, vmChunk, parser, vm);
             }
             else
             {
                 int upVal = resolveUpvalue(compiler, expr->var_assignment.name, expr->var_assignment.length);                  //look for upval
-                if (upVal != -1) { emitBytes(OP_SET_UPVALUE, (uint8_t)upVal, vmChunk, parser); }   //emit getting it to the vm
+                if (upVal != -1) { emitBytes(OP_SET_UPVALUE, (uint8_t)upVal, vmChunk, parser, vm); }   //emit getting it to the vm
                 else {emitSetGlobal(expr->var_assignment.name, expr->var_assignment.length, vmChunk, parser, vm);} //otherwise just set the local var
             }
             break;
@@ -213,7 +212,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             {
                 compileExpressionByte(expr->objectCall.args[i], parser, vmChunk, compiler, vm);
             }
-            emitBytes(OP_CALL, (uint8_t)expr->objectCall.argCount, vmChunk, parser);
+            emitBytes(OP_CALL, (uint8_t)expr->objectCall.argCount, vmChunk, parser, vm);
             break;
         }
         case EXPR_STATIC_ARRAY:
@@ -223,16 +222,16 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
                 compileBytecode(expr->staticArray.values[i], parser, vmChunk, compiler, vm);
             }
             // emit the count as an operand
-            emitByte(OP_CREATE_ARRAY, vmChunk, parser);
-            emitByte(expr->staticArray.length, vmChunk, parser);
-            emitByte((uint8_t)expr->staticArray.type, vmChunk, parser);
+            emitByte(OP_CREATE_ARRAY, vmChunk, parser, vm);
+            emitByte(expr->staticArray.length, vmChunk, parser, vm);
+            emitByte((uint8_t)expr->staticArray.type, vmChunk, parser, vm);
             break;
         }
         case EXPR_GET_ARRAY_INDEX:
         {
             compileBytecode(expr->getArray.left, parser, vmChunk, compiler, vm);
             compileBytecode(expr->getArray.index, parser, vmChunk, compiler, vm);
-            emitByte(OP_GET_ARRAY_INDEX, vmChunk, parser);
+            emitByte(OP_GET_ARRAY_INDEX, vmChunk, parser, vm);
             break;
         }
         case EXPR_SET_ARRAY_INDEX:
@@ -240,7 +239,7 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             compileBytecode(expr->setArray.left, parser, vmChunk, compiler, vm);
             compileBytecode(expr->setArray.index, parser, vmChunk, compiler, vm);
             compileBytecode(expr->setArray.value, parser, vmChunk, compiler, vm);
-            emitByte(OP_SET_ARRAY_INDEX, vmChunk, parser);
+            emitByte(OP_SET_ARRAY_INDEX, vmChunk, parser, vm);
             break;
         }
     }

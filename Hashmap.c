@@ -12,9 +12,9 @@ void initMap(Hashmap* hashmap)
     hashmap->count    =0;
     hashmap->buckets  = NULL;
 }
-void freeMap(Hashmap* hashmap)
+void freeMap(Hashmap* hashmap, struct Vm* vm)
 {
-    FREE_ARRAY(Bucket, hashmap->buckets, hashmap->capacity);
+    FREE_ARRAY(Bucket, hashmap->buckets, hashmap->capacity, vm);
 }
 
 
@@ -48,9 +48,9 @@ static Bucket* findBucket(Bucket* buckets, int capacity, ObjString* key)
         index = (index + 1) % capacity;
     }
 }
-static void adjustCapacity(Hashmap* hashmap, int capacity)
+static void adjustCapacity(Hashmap* hashmap, int capacity, struct Vm* vm)
 {
-    Bucket* buckets = ALLOCATE(Bucket, capacity);
+    Bucket* buckets = ALLOCATE(Bucket, capacity, vm);
 
 
     //init all buckets as empty
@@ -75,18 +75,18 @@ static void adjustCapacity(Hashmap* hashmap, int capacity)
     }
 
     //free the hold hashmap and update the new one
-    FREE_ARRAY(Bucket, hashmap->buckets, hashmap->capacity);
+    FREE_ARRAY(Bucket, hashmap->buckets, hashmap->capacity, vm);
     hashmap->buckets = buckets;
     hashmap->capacity = capacity;
 }
 
 //-------------------Hashmap functionality functions----------------//
-bool MapSet(Hashmap* hashmap, ObjString* key, Value value)
+bool MapSet(Hashmap* hashmap, ObjString* key, Value value, struct Vm* vm)
 {
     if (hashmap->count + 1 > hashmap->capacity * TABLE_MAX_LOAD)
     {
         int capacity = GROW_CAPACITY(hashmap->capacity);
-        adjustCapacity(hashmap, capacity);
+        adjustCapacity(hashmap, capacity, vm);
     }
 
     Bucket* bucket = findBucket(hashmap->buckets, hashmap->capacity, key);

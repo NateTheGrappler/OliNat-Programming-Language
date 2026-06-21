@@ -42,6 +42,14 @@ typedef struct Vm
 
     Hashmap strings;
     Hashmap globals;
+
+    //gc stuff
+    size_t bytesAllocated;
+    size_t nextGC;
+    int grayCapacity;
+    int grayCount;
+    Obj** grayStack;
+
 } Vm;
 
 

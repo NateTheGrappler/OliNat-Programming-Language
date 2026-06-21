@@ -42,5 +42,6 @@ ValueType toElementType(ValueType arrayType);
 
 
 #define DEBUG_TRACE_EXECUTION
-
+#define DEBUG_LOG_GC
+#define DEBUG_STRESS_GC
 #endif //OLI_NAT_COMMON_H

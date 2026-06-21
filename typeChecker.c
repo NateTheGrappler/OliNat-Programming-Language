@@ -46,10 +46,10 @@ static ValueType checkBinaryReturnType(ValueType right, ValueType left)
 }
 
 //------------------------------native / stdlib stuff -----------------------------//
-static void registerNativeSymbol(TypeChecker* checker, const char* name, int length, ValueType returnType, ParamInfo* params, int paramCount, ASTparser* parser)
+static void registerNativeSymbol(TypeChecker* checker, const char* name, int length, ValueType returnType, ParamInfo* params, int paramCount, ASTparser* parser, struct Vm* vm)
 {
     // create a dummy ObjFunction just to hold the signature
-    ObjFunction* sig = ALLOCATE(ObjFunction, 1);
+    ObjFunction* sig = ALLOCATE(ObjFunction, 1, vm);
     sig->returnType = returnType;
     sig->arity = paramCount;
     for (int i = 0; i < paramCount; i++)
@@ -58,21 +58,21 @@ static void registerNativeSymbol(TypeChecker* checker, const char* name, int len
     }
     addSymbol(checker, name, length, 0, returnType, sig, parser);
 }
-void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
     //print(ANY msg) -> void
     ParamInfo printParams[1];
     printParams[0].type = VALUE_ANY;
     printParams[0].name = "msg";
     printParams[0].length = 3;
-    registerNativeSymbol(checker, "print", 5, VALUE_EMPTY, printParams, 1, parser);
+    registerNativeSymbol(checker, "print", 5, VALUE_EMPTY, printParams, 1, parser, vm);
 
     //println(ANY msg) -> void
     ParamInfo printlnParams[1];
     printlnParams[0].type = VALUE_ANY;
     printlnParams[0].name = "msg";
     printlnParams[0].length = 3;
-    registerNativeSymbol(checker, "println", 7, VALUE_EMPTY, printlnParams, 1, parser);
+    registerNativeSymbol(checker, "println", 7, VALUE_EMPTY, printlnParams, 1, parser, vm);
 
     //intake(String/EMPTY prompt) -> string (the think user inputed)
     ParamInfo intakeParams[1];
@@ -80,9 +80,9 @@ void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser)
     intakeParams[0].name = "prompt";
     intakeParams[0].length = 6;
     intakeParams[0].isOptional = true;
-    registerNativeSymbol(checker, "intake", 6, VALUE_STRING, intakeParams, 1, parser);
+    registerNativeSymbol(checker, "intake", 6, VALUE_STRING, intakeParams, 1, parser, vm);
 }
-void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
 
     ParamInfo mathParams[1];
@@ -90,17 +90,17 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
     mathParams[0].name = "num";
     mathParams[0].length = 3;
 
-    registerNativeSymbol(checker, "sin", 3, VALUE_DOUBLE, mathParams, 1, parser);   //sin(double/float/int radians) -> double
-    registerNativeSymbol(checker, "cos", 3, VALUE_DOUBLE, mathParams, 1, parser);   //cos(double/float/int radians) -> double
-    registerNativeSymbol(checker, "tan", 3, VALUE_DOUBLE, mathParams, 1, parser);   //tan(double/float/int radians) -> double
-    registerNativeSymbol(checker, "abs", 3, VALUE_DOUBLE, mathParams, 1, parser);   //abs(double/float/int num) -> double
-    registerNativeSymbol(checker, "ln", 2, VALUE_DOUBLE, mathParams, 1, parser);    //ln(double/float/int baseE) -> double
-    registerNativeSymbol(checker, "log10", 5, VALUE_DOUBLE, mathParams, 1, parser); //log10(double/float/int base10) -> double
-    registerNativeSymbol(checker, "log2", 4, VALUE_DOUBLE, mathParams, 1, parser);  //log2(double/float/int base2) -> double
-    registerNativeSymbol(checker, "sqrt", 4, VALUE_DOUBLE, mathParams, 1, parser);  //sqrt(double/float/int nonNegtiveNum) -> double
-    registerNativeSymbol(checker, "floor", 5, VALUE_DOUBLE, mathParams, 1, parser); //floor(double/float/int num) -> double
-    registerNativeSymbol(checker, "ceil", 4, VALUE_DOUBLE, mathParams, 1, parser);  //ceil(double/float/int num) -> double
-    registerNativeSymbol(checker, "expo", 4, VALUE_DOUBLE, mathParams, 1, parser);  //expo(double/float/int toTheEPower) -> double
+    registerNativeSymbol(checker, "sin", 3, VALUE_DOUBLE, mathParams, 1, parser, vm);   //sin(double/float/int radians) -> double
+    registerNativeSymbol(checker, "cos", 3, VALUE_DOUBLE, mathParams, 1, parser, vm);   //cos(double/float/int radians) -> double
+    registerNativeSymbol(checker, "tan", 3, VALUE_DOUBLE, mathParams, 1, parser, vm);   //tan(double/float/int radians) -> double
+    registerNativeSymbol(checker, "abs", 3, VALUE_DOUBLE, mathParams, 1, parser, vm);   //abs(double/float/int num) -> double
+    registerNativeSymbol(checker, "ln", 2, VALUE_DOUBLE, mathParams, 1, parser, vm);    //ln(double/float/int baseE) -> double
+    registerNativeSymbol(checker, "log10", 5, VALUE_DOUBLE, mathParams, 1, parser, vm); //log10(double/float/int base10) -> double
+    registerNativeSymbol(checker, "log2", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //log2(double/float/int base2) -> double
+    registerNativeSymbol(checker, "sqrt", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //sqrt(double/float/int nonNegtiveNum) -> double
+    registerNativeSymbol(checker, "floor", 5, VALUE_DOUBLE, mathParams, 1, parser, vm); //floor(double/float/int num) -> double
+    registerNativeSymbol(checker, "ceil", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //ceil(double/float/int num) -> double
+    registerNativeSymbol(checker, "expo", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //expo(double/float/int toTheEPower) -> double
 
     ParamInfo mathParams2[2];
     mathParams2[0].type = VALUE_ANY_NUM;
@@ -109,30 +109,30 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser)
     mathParams2[1].type = VALUE_ANY_NUM;
     mathParams2[1].name = "num2";
     mathParams2[1].length = 4;
-    registerNativeSymbol(checker, "pow", 3, VALUE_DOUBLE, mathParams2, 2, parser);  //expo(double/float/int toTheEPower) -> double
+    registerNativeSymbol(checker, "pow", 3, VALUE_DOUBLE, mathParams2, 2, parser, vm);  //expo(double/float/int toTheEPower) -> double
 }
-void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
-    registerNativeSymbol(checker, "clock", 5, VALUE_DOUBLE, NULL, 0, parser);
-    registerNativeSymbol(checker, "time", 4, VALUE_DOUBLE, NULL, 0, parser);
-    registerNativeSymbol(checker, "dateString", 10, VALUE_STRING, NULL, 0, parser);
-    registerNativeSymbol(checker, "timeString", 10, VALUE_STRING, NULL, 0, parser);
+    registerNativeSymbol(checker, "clock", 5, VALUE_DOUBLE, NULL, 0, parser, vm);
+    registerNativeSymbol(checker, "time", 4, VALUE_DOUBLE, NULL, 0, parser, vm);
+    registerNativeSymbol(checker, "dateString", 10, VALUE_STRING, NULL, 0, parser, vm);
+    registerNativeSymbol(checker, "timeString", 10, VALUE_STRING, NULL, 0, parser, vm);
 
     ParamInfo sleepSymbols[1];
     sleepSymbols[0].name = "ms";
     sleepSymbols[0].length = 2;
     sleepSymbols[0].type = VALUE_ANY_NUM;
-    registerNativeSymbol(checker, "sleep", 5, VALUE_DOUBLE, sleepSymbols, 1, parser);
+    registerNativeSymbol(checker, "sleep", 5, VALUE_DOUBLE, sleepSymbols, 1, parser, vm);
 }
-void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
     ParamInfo stringParam[1];
     stringParam[0].name = "path";
     stringParam[0].type = VALUE_STRING;
     stringParam[0].length = 4;
-    registerNativeSymbol(checker, "readFile", 8, VALUE_STRING, stringParam, 1, parser);
-    registerNativeSymbol(checker, "fileExists", 10, VALUE_STRING, stringParam, 1, parser);
-    registerNativeSymbol(checker, "deleteFile", 10, VALUE_STRING, stringParam, 1, parser);
+    registerNativeSymbol(checker, "readFile", 8, VALUE_STRING, stringParam, 1, parser, vm);
+    registerNativeSymbol(checker, "fileExists", 10, VALUE_STRING, stringParam, 1, parser, vm);
+    registerNativeSymbol(checker, "deleteFile", 10, VALUE_STRING, stringParam, 1, parser, vm);
 
     ParamInfo writeParam[2];
     writeParam[0].name = "path";
@@ -141,72 +141,72 @@ void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser)
     writeParam[1].name = "content";
     writeParam[1].type = VALUE_STRING;
     writeParam[1].length = 7;
-    registerNativeSymbol(checker, "writeFile", 9, VALUE_EMPTY, writeParam, 2, parser);
-    registerNativeSymbol(checker, "appendFile", 10, VALUE_EMPTY, writeParam, 2, parser);
+    registerNativeSymbol(checker, "writeFile", 9, VALUE_EMPTY, writeParam, 2, parser, vm);
+    registerNativeSymbol(checker, "appendFile", 10, VALUE_EMPTY, writeParam, 2, parser, vm);
 
 }
-void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
     //----float params---/
     ParamInfo floatParams[1];
     floatParams[0].name   = "floatVal";
     floatParams[0].length = 8;
     floatParams[0].type = VALUE_FLOAT;
-    registerNativeSymbol(checker, "floatToInt", 10, VALUE_INT, floatParams, 1, parser);
-    registerNativeSymbol(checker, "floatToStr", 10, VALUE_STRING, floatParams, 1, parser);
-    registerNativeSymbol(checker, "floatToDouble", 13, VALUE_DOUBLE, floatParams, 1, parser);
+    registerNativeSymbol(checker, "floatToInt", 10, VALUE_INT, floatParams, 1, parser, vm);
+    registerNativeSymbol(checker, "floatToStr", 10, VALUE_STRING, floatParams, 1, parser, vm);
+    registerNativeSymbol(checker, "floatToDouble", 13, VALUE_DOUBLE, floatParams, 1, parser, vm);
 
     //----Double params---/
     ParamInfo doubleParams[1];
     doubleParams[0].name   = "doubleVal";
     doubleParams[0].length = 9;
     doubleParams[0].type = VALUE_DOUBLE;
-    registerNativeSymbol(checker, "doubleToInt", 11, VALUE_INT, doubleParams, 1, parser);
-    registerNativeSymbol(checker, "doubleToStr", 11, VALUE_STRING, doubleParams, 1, parser);
-    registerNativeSymbol(checker, "doubleToFloat", 13, VALUE_FLOAT, doubleParams, 1, parser);
+    registerNativeSymbol(checker, "doubleToInt", 11, VALUE_INT, doubleParams, 1, parser, vm);
+    registerNativeSymbol(checker, "doubleToStr", 11, VALUE_STRING, doubleParams, 1, parser, vm);
+    registerNativeSymbol(checker, "doubleToFloat", 13, VALUE_FLOAT, doubleParams, 1, parser, vm);
 
     //----Integer params---/
     ParamInfo intParams[1];
     intParams[0].name   = "intVal";
     intParams[0].length = 6;
     intParams[0].type = VALUE_INT;
-    registerNativeSymbol(checker, "intToDouble", 11, VALUE_DOUBLE, intParams, 1, parser);
-    registerNativeSymbol(checker, "intToStr", 8, VALUE_STRING, intParams, 1, parser);
-    registerNativeSymbol(checker, "intToFloat", 10, VALUE_FLOAT, intParams, 1, parser);
+    registerNativeSymbol(checker, "intToDouble", 11, VALUE_DOUBLE, intParams, 1, parser, vm);
+    registerNativeSymbol(checker, "intToStr", 8, VALUE_STRING, intParams, 1, parser, vm);
+    registerNativeSymbol(checker, "intToFloat", 10, VALUE_FLOAT, intParams, 1, parser, vm);
 
     //----String params---/
     ParamInfo stringParams[1];
     stringParams[0].name   = "stringVal";
     stringParams[0].length = 9;
     stringParams[0].type = VALUE_STRING;
-    registerNativeSymbol(checker, "strToDouble", 11, VALUE_DOUBLE, stringParams, 1, parser);
-    registerNativeSymbol(checker, "strToInt", 8, VALUE_INT, stringParams, 1, parser);
-    registerNativeSymbol(checker, "strToBool", 9, VALUE_BOOL, stringParams, 1, parser);
-    registerNativeSymbol(checker, "strToFloat", 10, VALUE_FLOAT, stringParams, 1, parser);
+    registerNativeSymbol(checker, "strToDouble", 11, VALUE_DOUBLE, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strToInt", 8, VALUE_INT, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strToBool", 9, VALUE_BOOL, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strToFloat", 10, VALUE_FLOAT, stringParams, 1, parser, vm);
 
     //----Bool params---/
     ParamInfo boolParams[1];
     boolParams[0].name   = "boolVal";
     boolParams[0].length = 7;
     boolParams[0].type = VALUE_BOOL;
-    registerNativeSymbol(checker, "boolToStr", 9, VALUE_STRING, boolParams, 1, parser);
+    registerNativeSymbol(checker, "boolToStr", 9, VALUE_STRING, boolParams, 1, parser, vm);
 
 }
-void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
 
 }
-void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
 
 }
-void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser)
+void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
     ParamInfo arrayParams[1];
     arrayParams[0].type = VALUE_ANY_ARRAY;
     arrayParams[0].length = 5;
     arrayParams[0].name = "array";
-    registerNativeSymbol(checker, "length", 6, VALUE_INT, arrayParams, 1, parser);
+    registerNativeSymbol(checker, "length", 6, VALUE_INT, arrayParams, 1, parser, vm);
 
     ParamInfo assertParams[2];
     assertParams[0].type = VALUE_BOOL;
@@ -216,7 +216,7 @@ void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser)
     assertParams[1].length = 3;
     assertParams[1].name = "msg";
     assertParams[1].isOptional = true;
-    registerNativeSymbol(checker, "assert", 6, VALUE_EMPTY, assertParams, 2, parser);
+    registerNativeSymbol(checker, "assert", 6, VALUE_EMPTY, assertParams, 2, parser, vm);
 }
 
 

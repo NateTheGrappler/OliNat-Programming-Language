@@ -6,10 +6,10 @@
 
 //------------------Basic initializers for expressions------------------------//
 
-Expr* createLiteralDouble(double value, int line)
+Expr* createLiteralDouble(double value, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_LITERAL;
     expr->line = line;
 
@@ -18,10 +18,10 @@ Expr* createLiteralDouble(double value, int line)
     expr->literal.type = VALUE_DOUBLE;
     return expr;
 }
-Expr* createLiteralBool(bool value, int line)
+Expr* createLiteralBool(bool value, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_LITERAL;
     expr->line = line;
 
@@ -30,14 +30,14 @@ Expr* createLiteralBool(bool value, int line)
     expr->literal.type = VALUE_BOOL;
     return expr;
 }
-Expr* createLiteralString(char* value, int line)
+Expr* createLiteralString(char* value, int line, struct Vm* vm)
 {
 #ifdef DEBUG_TRACE_EXECUTION
     printf("Creating string literal: '%s' (length %zu)\n", value, strlen(value));
 #endif
 
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_LITERAL;
     expr->line = line;
     //call the anyonmous union that holds all the different possible expressions
@@ -45,10 +45,10 @@ Expr* createLiteralString(char* value, int line)
     expr->literal.type = VALUE_STRING;
     return expr;
 }
-Expr* createLiteralFloat(float value, int line)
+Expr* createLiteralFloat(float value, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_LITERAL;
     expr->line = line;
 
@@ -57,10 +57,10 @@ Expr* createLiteralFloat(float value, int line)
     expr->literal.type = VALUE_FLOAT;
     return expr;
 }
-Expr* createLiteralInt(int value, int line)
+Expr* createLiteralInt(int value, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_LITERAL;
     expr->line = line;
 
@@ -70,10 +70,10 @@ Expr* createLiteralInt(int value, int line)
     return expr;
 }
 
-Expr* createVariable(const char* name, int length, int line)
+Expr* createVariable(const char* name, int length, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_VARIABLE;
     expr->line = line;
 
@@ -82,9 +82,9 @@ Expr* createVariable(const char* name, int length, int line)
     expr->variable.name = name;
     return expr;
 }
-Expr* createVarAssignment(char* name, int length, Expr* value, int line)
+Expr* createVarAssignment(char* name, int length, Expr* value, int line, struct Vm* vm)
 {
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_ASSIGN;
     expr->line = line;
 
@@ -95,10 +95,10 @@ Expr* createVarAssignment(char* name, int length, Expr* value, int line)
     return expr;
 }
 
-Expr* createUnary(char operator, Expr* right, int line)
+Expr* createUnary(char operator, Expr* right, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0,  sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0,  sizeof(Expr), vm);
     expr->type = EXPR_UNARY;
     expr->line = line;
 
@@ -106,10 +106,10 @@ Expr* createUnary(char operator, Expr* right, int line)
     expr->unary.right = right;
     return expr;
 }
-Expr* createBinary(Expr* left, Expr* right, const char* operator, int line)
+Expr* createBinary(Expr* left, Expr* right, const char* operator, int line, struct Vm* vm)
 {
     //allocate the expr in memory and set it's type
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_BINARY;
     expr->line = line;
 
@@ -118,18 +118,18 @@ Expr* createBinary(Expr* left, Expr* right, const char* operator, int line)
     expr->binary.left = left;
     return expr;
 }
-Expr* createGrouping(Expr* expr, int line)
+Expr* createGrouping(Expr* expr, int line, struct Vm* vm)
 {
-    Expr* exprG = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* exprG = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     exprG->type = EXPR_GROUPING;
     exprG->line = line;
 
     exprG->grouping.expr = expr;
     return exprG;
 }
-Expr* createCall(Expr* callee, Expr** args, int argCount,  int line)
+Expr* createCall(Expr* callee, Expr** args, int argCount,  int line, struct Vm* vm)
 {
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_CALL;
     expr->line = line;
 
@@ -139,9 +139,9 @@ Expr* createCall(Expr* callee, Expr** args, int argCount,  int line)
     return expr;
 }
 
-Expr* createStaticArray(Expr** args, int count, ValueType type, int line)
+Expr* createStaticArray(Expr** args, int count, ValueType type, int line, struct Vm* vm)
 {
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_STATIC_ARRAY;
     expr->line = line;
 
@@ -150,9 +150,9 @@ Expr* createStaticArray(Expr** args, int count, ValueType type, int line)
     expr->staticArray.type = type;
     return expr;
 }
-Expr* createArraySet(Expr* left, Expr* index, Expr* value, int line)
+Expr* createArraySet(Expr* left, Expr* index, Expr* value, int line, struct Vm* vm)
 {
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_SET_ARRAY_INDEX;
     expr->line = line;
 
@@ -161,9 +161,9 @@ Expr* createArraySet(Expr* left, Expr* index, Expr* value, int line)
     expr->setArray.value = value;
     return expr;
 }
-Expr* createArrayGet(Expr* left, Expr* index, int line)
+Expr* createArrayGet(Expr* left, Expr* index, int line, struct Vm* vm)
 {
-    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr));
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_GET_ARRAY_INDEX;
     expr->line = line;
 
@@ -173,7 +173,7 @@ Expr* createArrayGet(Expr* left, Expr* index, int line)
 }
 
 
-void freeExpr(Expr* expr)
+void freeExpr(Expr* expr, struct Vm* vm)
 {
     //switch statement that frees the values based on their type
     ////recursively frees the data for any child nodes as well
@@ -181,31 +181,31 @@ void freeExpr(Expr* expr)
     {
         case EXPR_BINARY:
         {
-            freeExpr(expr->binary.left);
-            freeExpr(expr->binary.right);
+            freeExpr(expr->binary.left, vm);
+            freeExpr(expr->binary.right, vm);
             break;
         }
         case EXPR_LITERAL:
         {
             if (expr->literal.type == VALUE_STRING && expr->literal.value.string_val != NULL)
             {
-                FREE_ARRAY(char, expr->literal.value.string_val, strlen(expr->literal.value.string_val) + 1);
+                FREE_ARRAY(char, expr->literal.value.string_val, strlen(expr->literal.value.string_val) + 1, vm);
             }
             break;
         }
         case EXPR_UNARY:
         {
-            freeExpr(expr->unary.right);
+            freeExpr(expr->unary.right, vm);
             break;
         }
         case EXPR_GROUPING:
         {
-            freeExpr(expr->grouping.expr);
+            freeExpr(expr->grouping.expr, vm);
             break;
         }
         case EXPR_ASSIGN:
         {
-            freeExpr(expr->var_assignment.value);
+            freeExpr(expr->var_assignment.value, vm);
             break;
         }
         case EXPR_VARIABLE:
@@ -215,34 +215,34 @@ void freeExpr(Expr* expr)
         }
         case EXPR_CALL:
         {
-            freeExpr(expr->objectCall.callee);
+            freeExpr(expr->objectCall.callee, vm);
             for (int i = 0; i < expr->objectCall.argCount; i++)
             {
-                freeExpr(expr->objectCall.args[i]);
+                freeExpr(expr->objectCall.args[i], vm);
             }
-            FREE_ARRAY(Expr*, expr->objectCall.args, expr->objectCall.argCount);
+            FREE_ARRAY(Expr*, expr->objectCall.args, expr->objectCall.argCount, vm);
             break;
         }
         case EXPR_STATIC_ARRAY:
         {
             for (int i = 0; i < expr->staticArray.length; i++)
             {
-                freeExpr(expr->staticArray.values[i]);
+                freeExpr(expr->staticArray.values[i], vm);
             }
-            FREE_ARRAY(Expr*, expr->staticArray.values, expr->staticArray.length);
+            FREE_ARRAY(Expr*, expr->staticArray.values, expr->staticArray.length, vm);
             break;
         }
         case EXPR_GET_ARRAY_INDEX:
         {
-            freeExpr(expr->getArray.index);
-            freeExpr(expr->getArray.left);
+            freeExpr(expr->getArray.index, vm);
+            freeExpr(expr->getArray.left, vm);
             break;
         }
         case EXPR_SET_ARRAY_INDEX:
         {
-            freeExpr(expr->setArray.index);
-            freeExpr(expr->setArray.left);
-            freeExpr(expr->setArray.value);
+            freeExpr(expr->setArray.index, vm);
+            freeExpr(expr->setArray.left, vm);
+            freeExpr(expr->setArray.value, vm);
             break;
         }
     }
@@ -251,5 +251,5 @@ void freeExpr(Expr* expr)
     printf("freeing expr type: %d\n", expr->type);
 #endif
     //the call to free the actual expression from wherever you are in the recursion
-    FREE(Expr, expr);
+    FREE(Expr, expr, vm);
 }
