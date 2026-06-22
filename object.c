@@ -24,9 +24,15 @@ static Obj* allocateObject(size_t size, ObjType type, struct Vm* vm)
 {
     Obj* object = (Obj*)reallocate(NULL, 0, size, vm);
     object->type = type;
+    object->isMarked = false;
 
     object->next = vm->objects;
     vm->objects = object;
+
+#ifdef DEBUG_LOG_GC
+    printf("%p allocate %zu for %d\n", (void*)object, size, type);
+#endif
+
     return object;
 }
 
@@ -37,7 +43,6 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash, struct 
     string->chars = chars;
     string->hash = hash;
 
-    //TODO: garabage collector pushes and whatnot, as well as hashtable stuff too (DONE)
     push(vm, CREATE_OBJECT_VAL((Obj*)string));
     MapSet(&vm->strings, string, CREATE_EMPTY_VAL(), vm);
     pop(vm);
@@ -112,15 +117,16 @@ ObjUpValue* newUpValue(Value* slot, struct Vm* vm)
 }
 ObjClosure* newClosure(ObjFunction* function, struct Vm* vm)
 {
-    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE, vm);
-    closure->function = function;
-    closure->upValueCount = function->upValueCount;
 
     ObjUpValue** upvals = ALLOCATE(ObjUpValue*, function->upValueCount, vm);
     for (int i = 0; i < function->upValueCount; i++)
     {
         upvals[i] = NULL;
     }
+
+    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE, vm);
+    closure->function = function;
+    closure->upValueCount = function->upValueCount;
     closure->upValues = upvals;
 
     return closure;

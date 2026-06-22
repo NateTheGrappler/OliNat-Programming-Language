@@ -28,6 +28,7 @@ typedef enum
 typedef struct Obj
 {
     ObjType type;
+    bool isMarked;
     struct Obj* next; //for storing in vm
 } Obj;
 

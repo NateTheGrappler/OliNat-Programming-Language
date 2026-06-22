@@ -4,14 +4,18 @@
 
 #ifndef OLI_NAT_MEMORY_H
 #define OLI_NAT_MEMORY_H
-
 #endif //OLI_NAT_MEMORY_H
 #include <stddef.h>
+#include "Value.h"
 
 struct Vm;
+struct Obj;
+//typedef struct Value Value;
+
+#define GC_HEAP_GROW_FACTOR 2
 
 #define GROW_CAPACITY(capacity) \
-((capacity)) < 8 ? 8 : (capacity) * 2
+(((capacity)) < 8 ? 8 : (capacity) * 2)
 
 #define GROW_ARRAY(type, pointer, oldCount, newCount, vm) \
     (type*)reallocate(pointer, sizeof(type) * oldCount, \
@@ -32,3 +36,4 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize, struct Vm* vm);
 void freeObjects(struct Vm* vm);
 
 void collectGarbage(struct Vm* vm);
+void markObject(struct Obj* object, struct Vm* vm);

@@ -31,6 +31,7 @@ void freeVM(Vm* vm)
     resetStack(vm);
     freeMap(&vm->strings, vm);
     freeMap(&vm->globals, vm);
+    free(vm->grayStack);
     freeObjects(vm); //free all vm held objects
 }
 
@@ -60,8 +61,14 @@ static void defineNative(Vm* vm, const char* name, NativeFn function)
 {
     //create new native, intern it's name, and toss it into globals
     ObjNative* native = newNative(function, name, strlen(name), vm);
+    push(vm, CREATE_OBJECT_VAL((Obj*)native));
+
     ObjString* nameStr = copyString(name, (int)strlen(name), vm);
+    push(vm, CREATE_OBJECT_VAL((Obj*)nameStr));
+
     MapSet(&vm->globals, nameStr, CREATE_OBJECT_VAL((Obj*)native), vm);
+    pop(vm);
+    pop(vm);
 }
 void registerIONatives(Vm* vm)
 {
@@ -766,9 +773,9 @@ static vmResult run(Vm* vm)
             }
             case OP_CLOSURE:
             {
-                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(pop(vm));
+                ObjFunction* function = (ObjFunction*)GET_OBJECT_VAL(peek(vm, 0));
                 ObjClosure* closure = newClosure(function, vm);
-                push(vm, CREATE_OBJECT_VAL((Obj*)closure));
+                vm->stackTop[-1] = CREATE_OBJECT_VAL((Obj*)closure);
 
                 for (int i = 0; i < closure->upValueCount; i++)
                 {
@@ -830,7 +837,11 @@ vmResult interpret(const char* source, Vm* vm)
 
 
     //after compiling the bytecode, set up the place where its going to be read from
+    push(vm, CREATE_OBJECT_VAL((Obj*)topScript)); //protect topScript func while it turns into closure
     ObjClosure* scriptClosure = newClosure(topScript, vm);
+    pop(vm);
+
+
     push(vm, CREATE_OBJECT_VAL((Obj*)scriptClosure));
     call(scriptClosure, 0, vm);
 

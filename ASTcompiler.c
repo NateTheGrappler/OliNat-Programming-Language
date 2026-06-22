@@ -807,6 +807,7 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
 
     //create the function compiler will fill and add to symbol table for recursive calls
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
+    push(vm, CREATE_OBJECT_VAL((Obj*)newCompiler->function)); //push onto stack to protect from gc
 
     if (!isTopLevel) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
 
@@ -871,6 +872,8 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
 
     //creating and passing on
     ObjFunction* function = endFunctionCompiler(&newCompiler, parser, vm);
+    pop(vm); //pop function off vm for gc
+
     Symbol* existingSymbol = lookUpSymbol(checker, name, nameLength);
     if (existingSymbol) { existingSymbol->function = function; }  // Replace placeholder with real function
 
@@ -1123,6 +1126,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 
             //temp function
             ObjFunction* functionDeclaration = newFunction(name, nameLength, type, vm);
+            push(vm, CREATE_OBJECT_VAL((Obj*)functionDeclaration)); //push for gc sake
             functionDeclaration->arity = 0;
             functionDeclaration->returnType = type;
 
@@ -1156,7 +1160,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 
             //add to func symbol table
             addSymbol(checker, name, nameLength, 0, type, functionDeclaration, parser);
-
+            pop(vm); //get off of stack
             //skip over the body
             if (check(T_LEFT_BRACE, parser))
             {
@@ -1241,6 +1245,7 @@ ObjFunction* compile(const char* source, Vm* vm)
     }
 
     ObjFunction* topScript = endFunctionCompiler(&compiler, &parser, vm);
+    pop(vm); //pop the top level script off the stack since gc no longer needs it
 
     //emitReturn(&vm->chunk, &parser);
     return parser.hadError ? NULL : topScript;

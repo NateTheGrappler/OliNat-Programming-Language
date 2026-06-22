@@ -6,6 +6,8 @@
 #define OLI_NAT_VALUE_H
 #include "common.h"
 #include "Expr.h"
+#include "memory.h"
+
 
 typedef struct Obj Obj;
 typedef struct Vm vm;

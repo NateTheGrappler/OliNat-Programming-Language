@@ -49,7 +49,7 @@ static ValueType checkBinaryReturnType(ValueType right, ValueType left)
 static void registerNativeSymbol(TypeChecker* checker, const char* name, int length, ValueType returnType, ParamInfo* params, int paramCount, ASTparser* parser, struct Vm* vm)
 {
     // create a dummy ObjFunction just to hold the signature
-    ObjFunction* sig = ALLOCATE(ObjFunction, 1, vm);
+    ObjFunction* sig = calloc(1, sizeof(ObjFunction));
     sig->returnType = returnType;
     sig->arity = paramCount;
     for (int i = 0; i < paramCount; i++)
