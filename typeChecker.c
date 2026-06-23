@@ -57,6 +57,7 @@ static void registerNativeSymbol(TypeChecker* checker, const char* name, int len
         sig->params[i] = params[i];
     }
     addSymbol(checker, name, length, 0, returnType, sig, parser);
+    checker->symbols[checker->varCount - 1].isTemp = true; //for freeing later so no memory leaks out
 }
 void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
@@ -384,6 +385,7 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].length = length;
     checker->symbols[index].depth = depth;
     checker->symbols[index].function = function;
+    checker->symbols[index].isTemp = false;
 }
 ValueType checkVariable(TypeChecker* checker, ASTparser* parser, Expr* expr)
 {
@@ -624,4 +626,16 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
     // #endif
 
     return result;
+}
+void freeTypeChecker(TypeChecker* checker)
+{
+    for (int i = 0; i< checker->varCount; i++)
+    {
+        if (checker->symbols[i].isTemp && checker->symbols[i].function != NULL)
+        {
+            free(checker->symbols[i].function);
+            checker->symbols[i].function = NULL;
+        }
+
+    }
 }

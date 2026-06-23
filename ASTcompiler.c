@@ -546,6 +546,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     if (realType != type)
     {
         error("A variable expression's type must be the same as it's declared type.", "TYPE MISMATCH ERROR", parser);
+        freeExpr(varInitializer, vm); //fix possible leak on error
     }
 
 
@@ -555,6 +556,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
         addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);;
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
         emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
+        freeExpr(varInitializer, vm);
     }
     else
     {
@@ -567,6 +569,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
         //the compiled value ends up on the stack and IS the local
         addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
+        freeExpr(varInitializer, vm);
     }
 
 }
@@ -1264,8 +1267,12 @@ ObjFunction* compile(const char* source, Vm* vm)
         declaration(&parser, &checker, &compiler, vm );
     }
 
+
     ObjFunction* topScript = endFunctionCompiler(&compiler, &parser, vm);
     pop(vm); //pop the top level script off the stack since gc no longer needs it
+
+    //free all of the temp functions make in type checker
+    freeTypeChecker(&checker);
 
     //emitReturn(&vm->chunk, &parser);
     return parser.hadError ? NULL : topScript;

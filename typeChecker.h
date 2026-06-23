@@ -21,6 +21,7 @@ typedef struct
     ValueType   type;
     int depth;
     ObjFunction* function;
+    bool isTemp;
 } Symbol;
 
 
@@ -36,6 +37,7 @@ typedef struct
 
 //function to do the checking
 ValueType checkExpression(TypeChecker* checker, Expr* expr, struct ASTparser* parser);
+void freeTypeChecker(TypeChecker* checker);
 
 ValueType checkLiteral(Expr* expr);
 ValueType checkGrouping(TypeChecker* checker, Expr* expr, struct ASTparser* parser);

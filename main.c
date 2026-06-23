@@ -44,9 +44,10 @@ static const char* readFile(const char* filepath)
 //passing it to rest of vm
 static void runFile(const char* filePath, Vm* vm)
 {
-    //get a char array of the source
+    //get a char array of the source, interpet, then free
     const char* source = readFile(filePath);
     vmResult result = interpret(source, vm);
+    free((void*)source);
 
     if (result == INTERPRET_RUNTIME_ERROR)
     {
