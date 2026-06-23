@@ -11,17 +11,19 @@
 
 //-------DECLARATIONS------------//
 static void advance(ASTparser* parser);
-static Expr* astExpression(ASTparser* parser, Vm* vm);
-static Expr* Array(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* number(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* boolean(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* string(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* unary(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr*  grouping(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* binary(bool canAssign, ASTparser* parser, Expr* left, Vm* vm);
-static Expr* acesssArray(bool canAssign, ASTparser* parser, Expr* left, Vm* vm);
-static Expr* variable(bool canAssign, ASTparser* parser, Vm* vm);
-static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left, Vm* vm);
+static Expr* astExpression(ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* Array(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* number(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* boolean(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* string(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* unary(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr*  grouping(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* binary(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
+static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
+static Expr* _and(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
+static Expr* acesssArray(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
+static Expr* variable(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* functionCall(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
@@ -45,8 +47,8 @@ typedef enum
 
 //The rules for the prat parser stuff, basically the brain for the compiler
 //set up a function pointer and set up the different fillable fields for these functions
-typedef Expr* (*PrefixFn)(bool canAssign, ASTparser* parser, Vm* vm);
-typedef Expr* (*InfixFn)(bool canAssign, ASTparser* parser, Expr* left, Vm* vm);
+typedef Expr* (*PrefixFn)(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+typedef Expr* (*InfixFn)(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
 
 typedef struct
 {
@@ -89,7 +91,7 @@ ParseRule rules[] = {
   [T_DOUBLE_VAL]    = {number,   NULL,   PREC_NONE},
   [T_INTEGER_VAL]   = {number,   NULL,   PREC_NONE},
 
-  [T_AND]           = {NULL,     NULL,   PREC_AND},
+  [T_AND]           = {NULL,     _and,   PREC_AND},
   [T_CLASS]         = {NULL,     NULL,   PREC_NONE},
   [T_ELSE]          = {NULL,     NULL,   PREC_NONE},
   [T_FALSE]         = {boolean,  NULL,   PREC_NONE},
@@ -97,7 +99,7 @@ ParseRule rules[] = {
   [T_FUN]           = {NULL,     NULL,   PREC_NONE},
   [T_IF]            = {NULL,     NULL,   PREC_NONE},
   [T_EMPTY]         = {NULL,     NULL,   PREC_NONE},
-  [T_OR]            = {NULL,     NULL,   PREC_OR},
+  [T_OR]            = {NULL,     _or,    PREC_OR},
   [T_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [T_PULLF]         = {NULL,     NULL,   PREC_NONE},
   [T_THIS]          = {NULL,     NULL,   PREC_NONE},
@@ -110,7 +112,7 @@ ParseRule rules[] = {
 
 
 //-------DECLARATIONS------------//
-static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, Vm* vm);
+static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static ParseRule* getRule(TokenType type);
 
 //------------------------------------------Init functions-----------------------------------------------------//
@@ -209,7 +211,7 @@ static bool match(TokenType type, ASTparser* parser)
 
 
 //literal expression parsing
-static Expr* variable(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* variable(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     //save the name of the var
     const char* name = parser->previous.lexemeStart;
@@ -218,32 +220,32 @@ static Expr* variable(bool canAssign, ASTparser* parser, Vm* vm)
 
     if (match(T_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         return createVarAssignment(name, length, value, line, vm);
     }
 
     Expr* self = createVariable(name, length, line, vm); //helper for doing the fancy += syntax
     if (match(T_PLUS_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         Expr* binary = createBinary(self, value, "+", line, vm);
         return createVarAssignment(name, length, binary, line, vm);
     }
     if (match(T_MINUS_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         Expr* binary = createBinary(self, value, "-", line, vm);
         return createVarAssignment(name, length, binary, line, vm);
     }
     if (match(T_STAR_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         Expr* binary = createBinary(self, value, "*", line, vm);
         return createVarAssignment(name, length, binary, line, vm);
     }
     if (match(T_SLASH_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         Expr* binary = createBinary(self, value, "/", line, vm);
         return createVarAssignment(name, length, binary, line, vm);
     }
@@ -261,7 +263,7 @@ static Expr* variable(bool canAssign, ASTparser* parser, Vm* vm)
     }
     return self;
 }
-static Expr* Array(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* Array(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     int valueCount = 0;
     Expr** values = NULL;
@@ -269,7 +271,7 @@ static Expr* Array(bool canAssign, ASTparser* parser, Vm* vm)
     {
         Expr** newValues = reallocate(values, valueCount * sizeof(Expr*), sizeof(Expr*) * (valueCount + 1), vm);
         values = newValues;
-        values[valueCount++] = astExpression(parser, vm);
+        values[valueCount++] = astExpression(parser, compiler, vm);
         if (check(T_RIGHT_BRACKET, parser)) break;
         consume(T_COMMA, "Please separate array elements with a ','.", "SYNTAX ERROR", parser);
     }
@@ -277,21 +279,21 @@ static Expr* Array(bool canAssign, ASTparser* parser, Vm* vm)
 
     return createStaticArray(values, valueCount, VALUE_ERROR, parser->previous.line, vm);
 }
-static Expr* acesssArray(bool canAssign, ASTparser* parser, Expr* left, Vm* vm)
+static Expr* acesssArray(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
 {
-    Expr* index = astExpression(parser, vm);
+    Expr* index = astExpression(parser, compiler, vm);
     consume(T_RIGHT_BRACKET, "Please finish array access calls with a ']'.", "SYNTAX ERROR", parser);
 
     if (match(T_EQUAL, parser) && canAssign)
     {
-        Expr* value = astExpression(parser, vm);
+        Expr* value = astExpression(parser, compiler, vm);
         return createArraySet(left, index, value, parser->previous.line, vm);
     }
 
     return createArrayGet(left, index, parser->previous.line, vm);
 
 }
-static Expr* string(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* string(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     //copy the string because the source code representation might still be needed
     int length = parser->previous.length - 2;
@@ -328,7 +330,7 @@ static Expr* string(bool canAssign, ASTparser* parser, Vm* vm)
 
     return createLiteralString(chars, parser->previous.line, vm);
 }
-static Expr* boolean(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* boolean(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     switch (parser->previous.type)
     {
@@ -337,7 +339,7 @@ static Expr* boolean(bool canAssign, ASTparser* parser, Vm* vm)
         default: return NULL; //unreachable (hopefully)
     }
 }
-static Expr* number(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* number(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     //handle all three possible numbers you can have
     switch (parser->previous.type)
@@ -362,13 +364,13 @@ static Expr* number(bool canAssign, ASTparser* parser, Vm* vm)
 
     }
 }
-static Expr* unary(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* unary(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     //get unary type
     TokenType operatorType = parser->previous.type;
 
     //recursive call to consume next literal
-    Expr* right = parserPrecedence(PREC_UNARY, parser, vm);
+    Expr* right = parserPrecedence(PREC_UNARY, parser, compiler, vm);
 
     switch (operatorType)
     {
@@ -383,18 +385,18 @@ static Expr* unary(bool canAssign, ASTparser* parser, Vm* vm)
         default: return NULL; //unreachable
     }
 }
-static Expr* grouping(bool canAssign, ASTparser* parser, Vm* vm)
+static Expr* grouping(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
-    Expr* expr = astExpression(parser, vm);
+    Expr* expr = astExpression(parser, compiler, vm);
     consume(T_RIGHT_PAREN, "Please finish all parentheses with a ')'.", "GROUPING ERROR", parser);
     return expr;
 }
-static Expr* binary(bool canAssign, ASTparser* parser, Expr* left, Vm* vm)
+static Expr* binary(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
 {
     //compile the second literal and also check out the type of operation you got
     TokenType operatorType = parser->previous.type;
     ParseRule* rule = getRule(operatorType);
-    Expr* right = parserPrecedence((Precedence)(rule->precedence+1), parser, vm);
+    Expr* right = parserPrecedence((Precedence)(rule->precedence+1), parser, compiler, vm);
 
     switch (operatorType)
     {
@@ -410,13 +412,23 @@ static Expr* binary(bool canAssign, ASTparser* parser, Expr* left, Vm* vm)
         case T_LESS_EQUAL:    return createBinary(left, right, "<=", parser->previous.line, vm);
     }
 }
+static Expr* _and(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
+{
+    Expr* right = parserPrecedence(PREC_AND, parser, compiler, vm);
+    return createAnd(left, right, parser->previous.line, vm);
+}
+static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
+{
+    Expr* right = parserPrecedence(PREC_AND, parser, compiler, vm);
+    return createOr(left, right, parser->previous.line, vm);
+}
 
 //actual parser precedence stuff
 static ParseRule* getRule(TokenType type)
 {
     return &rules[type];
 }
-static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, Vm* vm)
+static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     //advance to next token, get the rule for the literal value and then some
     //error catching for bad snytax
@@ -429,7 +441,7 @@ static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, Vm* vm)
     }
 
     bool canAssign = precedence <= PREC_ASSIGNMENT; //for when i add variables
-    Expr* left = prefixRule(precedence <= PREC_ASSIGNMENT, parser, vm);
+    Expr* left = prefixRule(precedence <= PREC_ASSIGNMENT, parser, compiler, vm);
 
     //consume the actual expression operator and what not, lead the recursive portion of
     //this setup
@@ -437,14 +449,14 @@ static Expr* parserPrecedence(Precedence precedence, ASTparser* parser, Vm* vm)
     {
         advance(parser);
         InfixFn infixRule = getRule(parser->previous.type)->infix;
-        left = infixRule(canAssign, parser, left, vm);
+        left = infixRule(canAssign, parser, compiler, left, vm);
     }
 
     return left;
 }
-static Expr* astExpression(ASTparser* parser, Vm* vm)
+static Expr* astExpression(ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
-    return parserPrecedence(PREC_ASSIGNMENT, parser, vm);
+    return parserPrecedence(PREC_ASSIGNMENT, parser, compiler, vm);
 }
 
 
@@ -525,7 +537,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
 
     //get the equal and parse the expression
     consume(T_EQUAL, "Expected a '=' after you declare a new variable.", "SYNTAX ERROR", parser);
-    Expr* varInitializer = astExpression(parser, vm);
+    Expr* varInitializer = astExpression(parser, compiler, vm);
     consume(T_SEMICOLON, "Expected ';' after you declare a new variable", "SYNTAX ERROR", parser);
 
 
@@ -601,7 +613,7 @@ static void block(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler
 
 
 //if statements
-static void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
+void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
 {
     short jump = currentChunk->count - offset - 2;
 
@@ -616,7 +628,7 @@ static void patchJump(int offset, Chunk* currentChunk, ASTparser* parser)
 static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     consume(T_LEFT_PAREN, "Please supplement your if statement with a '(' after 'if'.", "SYNTAX ERROR", parser);
-    Expr* condition = astExpression(parser, vm);
+    Expr* condition = astExpression(parser, compiler, vm);
     consume(T_RIGHT_PAREN, "Please close your if statement's condition with ')'.","SYNTAX ERROR", parser);
 
 
@@ -664,7 +676,7 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
     int loopStart = compiler->function->chunk.count;
 
     consume(T_LEFT_PAREN, "Please supplement your while statement with a '(' after 'while'.", "SYNTAX ERROR", parser);
-    Expr* condition = astExpression(parser, vm);
+    Expr* condition = astExpression(parser, compiler, vm);
     consume(T_RIGHT_PAREN, "Please close your while statement's condition with ')'.", "SYNTAX ERROR", parser);
 
 
@@ -710,7 +722,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     if (!match(T_SEMICOLON, parser))
     {
         //calculate the actual condition
-        Expr* expr = astExpression(parser, vm);
+        Expr* expr = astExpression(parser, compiler, vm);
         ValueType type = checkExpression(checker, expr, parser);
         if (type != VALUE_BOOL) { error("A for loops condition must evaluate to a boolean expression.", "SYNTAX ERROR", parser); }
 
@@ -729,7 +741,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
         bodyJump = emitJump(OP_JUMP, &compiler->function->chunk, parser, vm);
         incrementStart = compiler->function->chunk.count;
 
-        Expr* expr = astExpression(parser, vm);
+        Expr* expr = astExpression(parser, compiler, vm);
         compileBytecode(expr,parser, &compiler->function->chunk, compiler, vm);
 
         emitByte(OP_POP, &compiler->function->chunk, parser, vm);
@@ -900,7 +912,7 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
         emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm); //after resolving the closure and function, then define it as a new global var
     }
 }
-static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left, Vm* vm)
+static Expr* functionCall(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
 {
     int argCount = 0;
     Expr** args = NULL;
@@ -908,7 +920,7 @@ static Expr* functionCall(bool canAssign, ASTparser* parser, Expr* left, Vm* vm)
     {
         Expr** newArgs = reallocate(args, sizeof(Expr*) * argCount, sizeof(Expr*) * (argCount + 1), vm);
         args = newArgs;
-        args[argCount++] = astExpression(parser, vm);
+        args[argCount++] = astExpression(parser, compiler, vm);
         if (check(T_RIGHT_PAREN, parser)) break;
         consume(T_COMMA, "Please seperate all function parameters with a ','.", "SYNTAX ERROR", parser);
     }
@@ -929,7 +941,7 @@ static void returnStatement(ASTparser* parser, TypeChecker* checker, AstCompiler
     if (!check(T_SEMICOLON, parser))
     {
         //Non void function returns
-        Expr* returnExpr = astExpression(parser, vm);
+        Expr* returnExpr = astExpression(parser, compiler, vm);
         if (checkExpression(checker, returnExpr, parser) != compiler->function->returnType)
         {
             error("A return statement should match the type of it's parent function.", "TYPE ERROR", parser);
@@ -968,6 +980,7 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
         registerFileIONatives(vm);
         registerTypeNatives(vm);
         registerUtilsNatives(vm);
+        registerStringNatives(vm);
 
         registerIOSymbols(checker, parser, vm);
         registerMathSymbols(checker, parser, vm);
@@ -975,6 +988,7 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
         registerFileIOSymbols(checker, parser, vm);
         registerTypeSymbols(checker, parser, vm);
         registerUtilsSymbols(checker, parser, vm);
+        registerStringSymbols(checker, parser, vm);
     }
     else if (strncmp(library, "io", length) == 0) //print & output functions
     {
@@ -1011,6 +1025,11 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
         registerArrayListNatives(vm);
         registerArrayListSymbols(checker, parser, vm);
     }
+    else if (strncmp(library, "Strings", length) == 0)
+    {
+        registerStringNatives(vm);
+        registerStringSymbols(checker, parser, vm);
+    }
     else if (strncmp(library, "utils", length) == 0) //stuff like len() and maybe some sorts idk
     {
         registerUtilsNatives(vm);
@@ -1027,7 +1046,7 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
 static void expressionStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     //compile and check expression, then compile again to bytecode
-    Expr* expr = astExpression(parser, vm);
+    Expr* expr = astExpression(parser, compiler, vm);
     ValueType type = checkExpression(checker, expr, parser);
 
     if (type != VALUE_ERROR)
@@ -1200,6 +1219,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         else if (strncmp(library, "types", length)== 0){ registerTypeSymbols(checker, parser, vm); }
         else if (strncmp(library, "Hashmap", length) == 0){ registerHashMapSymbols(checker, parser, vm); }
         else if (strncmp(library, "ArrayList", length) == 0){ registerArrayListSymbols(checker, parser, vm); }
+        else if (strncmp(library, "Strings", length) == 0){ registerStringSymbols(checker, parser, vm); }
         else if (strncmp(library, "utils", length) == 0){ registerUtilsSymbols(checker, parser, vm); }
         return;
     }

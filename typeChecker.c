@@ -200,6 +200,52 @@ void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser, st
 {
 
 }
+void registerStringSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
+{
+    ParamInfo stringParams[1];
+    stringParams[0].name   = "stringVal";
+    stringParams[0].length = 9;
+    stringParams[0].type = VALUE_STRING;
+
+    registerNativeSymbol(checker, "strLength", 9, VALUE_INT, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strToUpper", 10, VALUE_STRING, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strToLower", 10, VALUE_STRING, stringParams, 1, parser, vm);
+
+    ParamInfo twoStringParams[2];
+    twoStringParams[0].name   = "stringVal";
+    twoStringParams[0].length = 9;
+    twoStringParams[0].type = VALUE_STRING;
+    twoStringParams[1].name   = "stringVal2";
+    twoStringParams[1].length = 10;
+    twoStringParams[1].type = VALUE_STRING;
+    registerNativeSymbol(checker, "strContains", 11, VALUE_BOOL, twoStringParams, 2, parser, vm);
+
+
+    ParamInfo threeStringParams[3];
+    threeStringParams[0].name   = "stringVal";
+    threeStringParams[0].length = 9;
+    threeStringParams[0].type = VALUE_STRING;
+    threeStringParams[1].name   = "stringVal2";
+    threeStringParams[1].length = 10;
+    threeStringParams[1].type = VALUE_STRING;
+    threeStringParams[2].name   = "stringVal3";
+    threeStringParams[2].length = 10;
+    threeStringParams[2].type = VALUE_STRING;
+    registerNativeSymbol(checker, "strReplace", 10, VALUE_STRING, threeStringParams, 3, parser, vm);
+
+    ParamInfo stringAndIntParams[3];
+    stringAndIntParams[0].name   = "stringVal";
+    stringAndIntParams[0].length = 9;
+    stringAndIntParams[0].type = VALUE_STRING;
+    stringAndIntParams[1].name   = "intVal1";
+    stringAndIntParams[1].length = 7;
+    stringAndIntParams[1].type = VALUE_INT;
+    stringAndIntParams[2].name   = "intVal2";
+    stringAndIntParams[2].length = 7;
+    stringAndIntParams[2].type = VALUE_INT;
+    registerNativeSymbol(checker, "strSlice", 8, VALUE_STRING, stringAndIntParams, 3, parser, vm);
+
+}
 void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {
     ParamInfo arrayParams[1];
@@ -540,6 +586,32 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             }
 
             result = toElementType(arrayType);
+            break;
+        }
+        case EXPR_AND:
+        {
+            ValueType left = checkExpression(checker, expr->andExpr.left, parser);
+            ValueType right = checkExpression(checker, expr->andExpr.right, parser);
+            if (left == right && left == VALUE_BOOL)
+            {
+                result = VALUE_BOOL;
+                break;
+            }
+            error("An expression involving '&&' must compare two boolean values please.", "TYPE MISMATCH ERROR", parser);
+            result = VALUE_ERROR;
+            break;
+        }
+        case EXPR_OR:
+        {
+            ValueType left = checkExpression(checker, expr->orExpr.left, parser);
+            ValueType right = checkExpression(checker, expr->orExpr.right, parser);
+            if (left == right && left == VALUE_BOOL)
+            {
+                result = VALUE_BOOL;
+                break;
+            }
+            error("An expression involving '||' must compare two boolean values please.", "TYPE MISMATCH ERROR", parser);
+            result = VALUE_ERROR;
             break;
         }
         default:

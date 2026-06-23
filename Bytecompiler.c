@@ -242,6 +242,27 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             emitByte(OP_SET_ARRAY_INDEX, vmChunk, parser, vm);
             break;
         }
+        case EXPR_AND:
+        {
+            compileExpressionByte(expr->andExpr.left, parser, vmChunk, compiler, vm);
+            int endJump = emitJump(OP_JUMP_IF_FALSE, vmChunk, parser, vm);
+            emitByte(OP_POP, vmChunk, parser, vm);
+            compileExpressionByte(expr->andExpr.right, parser, vmChunk, compiler, vm);
+            patchJump(endJump, vmChunk, parser);
+            break;
+        }
+        case EXPR_OR:
+        {
+            compileExpressionByte(expr->orExpr.left, parser, vmChunk, compiler, vm);
+            int elseJump = emitJump(OP_JUMP_IF_FALSE, vmChunk, parser, vm);
+            int endJump  = emitJump(OP_JUMP, vmChunk, parser, vm);
+            patchJump(elseJump, vmChunk, parser);
+            emitByte(OP_POP, vmChunk, parser, vm);
+            compileExpressionByte(expr->orExpr.right, parser, vmChunk, compiler, vm);
+            patchJump(endJump, vmChunk, parser);
+            break;
+        }
+
     }
 }
 

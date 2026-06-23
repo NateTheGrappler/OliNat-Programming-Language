@@ -78,6 +78,14 @@ Value boolToStrNative(int argCount, Value* args, struct Vm* vm);
 //--------------dynamic array natives----------------//
 //TODO: do later
 
+//--------------string natives----------------//
+Value strLength(int argCount, Value* args, struct Vm* vm);
+Value strContains(int argCount, Value* args, struct Vm* vm);
+Value strSlice(int argCount, Value* args, struct Vm* vm);
+Value strToLower(int argCount, Value* args, struct Vm* vm);
+Value strToUpper(int argCount, Value* args, struct Vm* vm);
+Value strReplace(int argCount, Value* args, struct Vm* vm);
+
 //--------------utils natives----------------//
 Value lengthNative(int argCount, Value* args, struct Vm* vm);
 Value assertNative(int argCount, Value* args, struct Vm* vm);

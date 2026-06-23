@@ -21,9 +21,21 @@ typedef enum {
     EXPR_STATIC_ARRAY,
     EXPR_GET_ARRAY_INDEX,
     EXPR_SET_ARRAY_INDEX,
+    EXPR_OR,
+    EXPR_AND
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    struct Expr* left;
+    struct Expr* right;
+} AndExpr;
+typedef struct
+{
+    struct Expr* left;
+    struct Expr* right;
+} OrExpr;
 typedef struct
 {
     struct Expr* left;
@@ -104,6 +116,9 @@ typedef struct Expr {
         staticArray staticArray;
         GetArray getArray;
         SetArray setArray;
+        AndExpr andExpr;
+        OrExpr orExpr;
+
     };
 } Expr;
 
@@ -118,6 +133,8 @@ Expr* createArraySet     (Expr* left, Expr* index, Expr* value, int line, struct
 Expr* createArrayGet     (Expr* left, Expr* index, int line, struct Vm* vm);
 Expr* createUnary        (char operator, Expr* right, int line, struct Vm* vm);
 Expr* createBinary       (Expr* left, Expr* right, const char* operator, int line, struct Vm* vm);
+Expr* createOr           (Expr* left, Expr* right, int line, struct Vm* vm);
+Expr* createAnd          (Expr* left, Expr* right, int line, struct Vm* vm);
 Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line, struct Vm* vm);
 Expr* createGrouping     (Expr* expr, int line, struct Vm* vm);
 Expr* createVariable(const char* name, int length, int line, struct Vm* vm);

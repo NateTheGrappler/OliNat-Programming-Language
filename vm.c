@@ -141,6 +141,15 @@ void registerUtilsNatives(Vm* vm)
     defineNative(vm, "length", lengthNative);
     defineNative(vm, "assert", assertNative);
 }
+void registerStringNatives(Vm* vm)
+{
+    defineNative(vm, "strLength", strLength);
+    defineNative(vm, "strContains", strContains);
+    defineNative(vm, "strSlice", strSlice);
+    defineNative(vm, "strToUpper", strToUpper);
+    defineNative(vm, "strToLower", strToLower);
+    defineNative(vm, "strReplace", strReplace);
+}
 
 
 //-------------------------------------------_ERROR HANDLING-------------------------------------------//

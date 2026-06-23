@@ -2,6 +2,10 @@
 // Created by natang on 6/14/26.
 //
 #include "natives.h"
+
+#include <ctype.h>
+#include <iso646.h>
+
 #include "vm.h"
 
 //-----------------io natives--------------------//
@@ -429,6 +433,105 @@ Value boolToStrNative(int argCount, Value* args, struct Vm* vm)
 //TODO: do later
 //--------------dynamic array natives----------------//
 //TODO: do later
+
+//--------------string natives----------------//
+Value strLength(int argCount, Value* args, struct Vm* vm)
+{
+    return CREATE_INT_VAL(((ObjString*)GET_OBJECT_VAL(args[0]))->length);
+}
+Value strContains(int argCount, Value* args, struct Vm* vm)
+{
+    ObjString* haystack = AS_STRING(args[0]);
+    ObjString* needle = AS_STRING(args[1]);
+
+    bool found = strstr(haystack->chars, needle->chars) != NULL;
+    return CREATE_BOOL_VAL(found);
+
+}
+Value strSlice(int argCount, Value* args, struct Vm* vm)
+{
+    ObjString* original = AS_STRING(args[0]);
+    int start = GET_INT_VAL(args[1]);
+    int end = GET_INT_VAL(args[2]);
+
+    if (start < 0 || end > original->length || start > end)
+    {
+        runtimeError(vm, "Slice indices are wayyyy out of bounds, cant do it.", "INDEX ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+
+    int newLength = end - start;
+    char* buffer = ALLOCATE(char, newLength+1, vm);
+    memcpy(buffer, original->chars + start, newLength);
+    buffer[newLength] = '\0';
+
+    ObjString* returnString = copyString(buffer, (int)strlen(buffer), vm);
+    FREE_ARRAY(char, buffer, newLength+1, vm)
+    return CREATE_OBJECT_VAL((Obj*)returnString);
+}
+Value strToLower(int argCount, Value* args, struct Vm* vm)
+{
+    ObjString* original = AS_STRING(args[0]);
+    int length = original->length;
+
+    char* buffer = ALLOCATE(char, length + 1, vm);
+    for (int i = 0; i < length; i++)
+    {
+        buffer[i] = tolower((unsigned char)original->chars[i]);
+    }
+    buffer[length] = '\0';
+
+    ObjString* returnString = copyString(buffer, (int)strlen(buffer), vm);
+    FREE_ARRAY(char, buffer, length+1, vm)
+    return CREATE_OBJECT_VAL((Obj*)returnString);
+}
+Value strToUpper(int argCount, Value* args, struct Vm* vm)
+{
+    ObjString* original = AS_STRING(args[0]);
+    int length = original->length;
+
+    char* buffer = ALLOCATE(char, length + 1, vm);
+    for (int i = 0; i < length; i++)
+    {
+        buffer[i] = toupper((unsigned char)original->chars[i]);
+    }
+    buffer[length] = '\0';
+
+    ObjString* returnString = copyString(buffer, (int)strlen(buffer), vm);
+    FREE_ARRAY(char, buffer, length+1, vm)
+    return CREATE_OBJECT_VAL((Obj*)returnString);
+}
+Value strReplace(int argCount, Value* args, struct Vm* vm)
+{
+    //get the stuff from args
+    ObjString* original = AS_STRING(args[0]);
+    ObjString* target = AS_STRING(args[1]);
+    ObjString* replacement = AS_STRING(args[2]);
+
+    //find replacement in original string
+    char* foundString = strstr(original->chars, target->chars);
+    if (foundString == NULL)
+    {
+        runtimeError(vm, "Unable to find target string to replace in original string.", "LOGIC ERROR");
+        return CREATE_EMPTY_VAL();
+    }
+
+    //calc the lengths
+    int beforeLength = (int)(foundString - original->chars);
+    int afterLength  = original->length - beforeLength - target->length;
+    int newLength    = beforeLength + replacement->length + afterLength;
+
+    //build new string
+    char* buffer = ALLOCATE(char, newLength+1, vm);
+    memcpy(buffer, original->chars, beforeLength);
+    memcpy(buffer + beforeLength, replacement->chars, replacement->length);
+    memcpy(buffer+beforeLength+replacement->length, foundString+target->length, afterLength);
+    buffer[newLength] = '\0';
+
+    ObjString* returnString = copyString(buffer, newLength, vm);
+    FREE_ARRAY(char, buffer, newLength+1, vm)
+    return CREATE_OBJECT_VAL((Obj*)returnString);
+}
 
 //--------------utils natives----------------//
 Value lengthNative(int argCount, Value* args, struct Vm* vm)

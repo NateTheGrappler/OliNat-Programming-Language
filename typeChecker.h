@@ -54,6 +54,7 @@ void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser, struc
 void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerHashMapSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerArrayListSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
+void registerStringSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerUtilsSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 
 #endif //OLI_NAT_TYPECHECKER_H

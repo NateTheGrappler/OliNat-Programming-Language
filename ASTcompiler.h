@@ -63,6 +63,7 @@ void error(const char* message, const char* messageType, ASTparser* parser);
 void errorAtCurrent(const char* message, const char* messageType, ASTparser* parser);
 void errorAt(Token* token, const char* message, const char* messageType, ASTparser* parser);
 void consume(TokenType type, const char* message, const char* messageType, ASTparser* parser);
+void patchJump(int offset, Chunk* currentChunk, ASTparser* parser);
 void emitReturn(Chunk* chunk, ASTparser* parser, struct Vm* vm);
 
 #endif //OLI_NAT_ASTCOMPILER_H

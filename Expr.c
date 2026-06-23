@@ -118,6 +118,26 @@ Expr* createBinary(Expr* left, Expr* right, const char* operator, int line, stru
     expr->binary.left = left;
     return expr;
 }
+Expr* createOr(Expr* left, Expr* right, int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_OR;
+    expr->line = line;
+
+    expr->binary.right = right;
+    expr->binary.left = left;
+    return expr;
+}
+Expr* createAnd(Expr* left, Expr* right, int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_AND;
+    expr->line = line;
+
+    expr->binary.right = right;
+    expr->binary.left = left;
+    return expr;
+}
 Expr* createGrouping(Expr* expr, int line, struct Vm* vm)
 {
     Expr* exprG = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
@@ -183,6 +203,18 @@ void freeExpr(Expr* expr, struct Vm* vm)
         {
             freeExpr(expr->binary.left, vm);
             freeExpr(expr->binary.right, vm);
+            break;
+        }
+        case EXPR_AND:
+        {
+            freeExpr(expr->andExpr.left, vm);
+            freeExpr(expr->andExpr.right, vm);
+            break;
+        }
+        case EXPR_OR:
+        {
+            freeExpr(expr->orExpr.left, vm);
+            freeExpr(expr->orExpr.right, vm);
             break;
         }
         case EXPR_LITERAL:

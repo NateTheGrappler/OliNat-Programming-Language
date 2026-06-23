@@ -73,6 +73,7 @@ void registerFileIONatives(Vm* vm);
 void registerTypeNatives(Vm* vm);
 void registerHashMapNatives(Vm* vm);
 void registerArrayListNatives(Vm* vm);
+void registerStringNatives(Vm* vm);
 void registerUtilsNatives(Vm* vm);
 
 void runtimeError(Vm* vm, const char* message, const char* messageType);

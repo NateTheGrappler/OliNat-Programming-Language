@@ -142,6 +142,23 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf(")");
             break;
         }
+        case EXPR_AND:
+        {
+            printf("( && ");
+            printExpression(expr->andExpr.left);
+            printf(" ");
+            printExpression(expr->andExpr.right);
+            printf(")");
+        }
+        case EXPR_OR:
+        {
+            printf("( || ");
+            printExpression(expr->orExpr.left);
+            printf(" ");
+            printExpression(expr->orExpr.right);
+            printf(")");
+        }
+
     }
     //printf("\n");
 }
