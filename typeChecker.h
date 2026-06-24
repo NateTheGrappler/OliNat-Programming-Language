@@ -22,6 +22,8 @@ typedef struct
     int depth;
     ObjFunction* function;
     bool isTemp;
+    const char* className;
+    int classNameLength;
 } Symbol;
 
 
@@ -32,6 +34,8 @@ typedef struct
     int errorCount;
     Symbol symbols[MAX_SYMBOLS];
     int varCount;
+    const char* lastClassName;
+    int lastClassNameLength;
 } TypeChecker;
 
 

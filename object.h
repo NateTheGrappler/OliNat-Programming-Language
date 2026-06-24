@@ -84,11 +84,14 @@ typedef struct ObjClosure
 //classes
 typedef struct ObjClass
 {
-
+    Obj obj;
+    const char* name;
+    int nameLength;
 } ObjClass;
 typedef struct ObjInstance
 {
-
+    Obj obj;
+    ObjClass* class;
 } ObjInstance;
 
 
@@ -128,4 +131,6 @@ ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm);
 ObjNative* newNative(NativeFn function, const char* name, int length, struct Vm* vm);
 ObjUpValue* newUpValue(Value* slot, struct Vm* vm);
 ObjClosure* newClosure(ObjFunction* function, struct Vm* vm);
+ObjClass* newClass(const char* name, int nameLength, struct Vm* vm);
+ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm);
 #endif //OLI_NAT_OBJECT_H

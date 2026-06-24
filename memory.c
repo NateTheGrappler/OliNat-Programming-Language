@@ -78,6 +78,18 @@ static void freeObject(Obj* obj, struct Vm* vm)
             FREE(ObjNative, obj, vm);
             break;
         }
+        case OBJ_CLASS:
+        {
+            ObjClass* klass = (ObjClass*)obj;
+            FREE(ObjClass, obj, vm);
+            break;
+        }
+        case OBJ_INSTANCE:
+        {
+            ObjInstance* instance = (ObjInstance*)obj;
+            FREE(ObjInstance, obj, vm);
+            break;
+        }
 
     }
 }

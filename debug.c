@@ -210,6 +210,18 @@ void printObject(Value value)
             printf("]");
             break;
         }
+        case OBJ_CLASS:
+        {
+            ObjClass* klass = (ObjClass*)GET_OBJECT_VAL(value);
+            printf("CLASS-%.*s", klass->nameLength, klass->name);
+            break;
+        }
+        case OBJ_INSTANCE:
+        {
+            ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(value);
+            printf("INSTANCE-%.*s", instance->class->nameLength, instance->class->name);
+            break;
+        }
     }
 }
 
@@ -380,5 +392,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_CLOSE_UPVALUE", offset);
         case OP_CLOSURE:
             return simpleInstruction("OP_CLOSURE", offset);
+        case OP_CLASS:
+            return constantInstruction("OP_CLASS", chunk, offset);
     }
 }

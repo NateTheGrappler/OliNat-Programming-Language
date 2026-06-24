@@ -461,7 +461,7 @@ static Expr* astExpression(ASTparser* parser, AstCompiler* compiler, Vm* vm)
 
 
 //------Variable Items-------//
-static ValueType getVarDeclarationType(ASTparser* parser)
+static ValueType getVarDeclarationType(ASTparser* parser, TypeChecker* checker)
 {
     switch (parser->current.type)
     {
@@ -525,7 +525,27 @@ static ValueType getVarDeclarationType(ASTparser* parser)
             }
             return VALUE_EMPTY;
         }
+        case T_IDENTIFIER:
+        {
+            consume(T_IDENTIFIER, "Expected a type after 'make'", "SYNTAX ERROR", parser);
+            const char* name = parser->previous.lexemeStart;
+            int length = parser->previous.length;
+
+            Symbol* symbol = lookUpSymbol(checker, name, length);
+            if (symbol!=NULL && symbol->type == VALUE_CLASS)
+            {
+                printf("Ran inside IF STATEMENT\n");
+                checker->lastClassName = name;
+                checker->lastClassNameLength = length;
+                return VALUE_INSTANCE;
+            }
+            printf("Ran inside of T_IDENTIFER-3\n");
+
+            error("Expected a type after 'make'", "SYNTAX ERROR", parser);
+            return VALUE_ERROR;
+        }
         default:
+            //techically unreachable now with classes, but Ill keep it for old times sake
             error("Expected a type after 'make'", "SYNTAX ERROR", parser);
             return VALUE_ERROR;
     }
@@ -534,6 +554,8 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
 {
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
+
+
 
     //get the equal and parse the expression
     consume(T_EQUAL, "Expected a '=' after you declare a new variable.", "SYNTAX ERROR", parser);
@@ -553,7 +575,16 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     if (compiler->scopeDepth == 0)
     {
         //set the global to get defined here
-        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);;
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);
+
+        //check to see if the type is a class declaration somewhere, and update the metadata in the typechecker to know what class it is
+        if (type == VALUE_INSTANCE)
+        {
+            Symbol* symbol = lookUpSymbol(checker, name, nameLength);
+            symbol->className = checker->lastClassName;
+            symbol->classNameLength = checker->lastClassNameLength;
+        }
+
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
         emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
         freeExpr(varInitializer, vm);
@@ -568,6 +599,15 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
 
         //the compiled value ends up on the stack and IS the local
         addSymbol(checker, name, nameLength, compiler->scopeDepth, type, NULL, parser);
+
+        //check to see if the type is a class declaration somewhere, and update the metadata in the typechecker to know what class it is
+        if (type == VALUE_INSTANCE)
+        {
+            Symbol* symbol = lookUpSymbol(checker, name, nameLength);
+            symbol->className = checker->lastClassName;
+            symbol->classNameLength = checker->lastClassNameLength;
+        }
+
         compileBytecode(varInitializer, parser, &compiler->function->chunk, compiler, vm);
         freeExpr(varInitializer, vm);
     }
@@ -710,7 +750,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
     }
     else if (match(T_MAKE, parser))
     {
-        ValueType type = getVarDeclarationType(parser);
+        ValueType type = getVarDeclarationType(parser, checker);
         consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);
         varDeclaration(parser, checker, compiler, vm, type);
     }
@@ -851,7 +891,7 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
     while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
     {
-        ValueType paramType = getVarDeclarationType(parser);
+        ValueType paramType = getVarDeclarationType(parser, checker);
         consume(T_IDENTIFIER, "A parameter is expected after a type definition in your function", "SYNTAX ERROR", parser);
 
         const char* paramName = parser->previous.lexemeStart;
@@ -1092,13 +1132,46 @@ static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* comp
     }
 }
 
+//classes
+static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
+{
+    //consume name
+    consume(T_IDENTIFIER, "Please name your classes, they get sad if you don't.", "SYNTAX ERROR", parser);
+    const char* name = parser->previous.lexemeStart;
+    int nameLength = parser->previous.length;
+
+    //add into symbol table
+    addSymbol(checker, name, nameLength, compiler->scopeDepth, VALUE_CLASS, NULL, parser);
+
+    //emit onto the stack (OP_CLASS CODE, INDEX FOR NAME)
+    emitByte(OP_CLASS, &compiler->function->chunk, parser, vm);
+    ObjString* nameString = copyString(name, nameLength, vm);
+    uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)nameString), vm);
+    emitByte(nameIndex, &compiler->function->chunk, parser, vm);
+
+    //define as global so it can be called
+    emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
+
+    //TODO: parse the body eventually
+    consume(T_LEFT_BRACE, "A class body was expected after a new class declaration, please use '{'.", "SYNTAX ERROR", parser);
+    //block(parser, checker, compiler, vm);
+    int braceCount = 1;
+    while (braceCount > 0 && !check(T_EOF, parser))
+    {
+        if (match(T_LEFT_BRACE, parser)) braceCount++;
+        else if (match(T_RIGHT_BRACE, parser)) braceCount--;
+        else advance(parser);
+    }
+}
+
+
 //newer stuff for the statements and variables
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm)
 {
     if (match(T_MAKE, parser))
     {
         //get / consume the declaraed type, and then name
-        ValueType type = getVarDeclarationType(parser);
+        ValueType type = getVarDeclarationType(parser, checker);
 
         //check for [] for arrays
         if (match(T_LEFT_BRACKET, parser))
@@ -1124,6 +1197,10 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
     {
         nativeFunction(parser, checker, compiler, vm);
     }
+    else if (match(T_CLASS, parser))
+    {
+        classDeclaration(parser, checker, compiler, vm);
+    }
     else
     {
         statement(parser, checker, compiler, vm);
@@ -1133,7 +1210,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 {
     if (match(T_MAKE, parser))
     {
-        ValueType type = getVarDeclarationType(parser);
+        ValueType type = getVarDeclarationType(parser, checker);
         if (check(T_IDENTIFIER, parser)) {consume(T_IDENTIFIER, "You must name your variables and functions, they get sad if you dont.", "SYNTAX ERROR", parser);}
         else if (check(T_LEFT_BRACKET, parser))
         {
@@ -1156,7 +1233,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 
             while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
             {
-                ValueType paramType = getVarDeclarationType(parser);
+                ValueType paramType = getVarDeclarationType(parser, checker);
                 consume(T_IDENTIFIER, "A parameter is expected after a type definition in your function", "SYNTAX ERROR", parser);
 
                 const char* paramName = parser->previous.lexemeStart;
@@ -1226,9 +1303,28 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         else if (strncmp(library, "utils", length) == 0){ registerUtilsSymbols(checker, parser, vm); }
         return;
     }
+    else if (match(T_CLASS, parser))
+    {
+        consume(T_IDENTIFIER, "Please name your classes, they get lonely if you dont.", "SYNTAX ERROR", parser);
+        const char* name = parser->previous.lexemeStart;
+        int nameLength = parser->previous.length;
+        addSymbol(checker, name, nameLength, 0, VALUE_CLASS, NULL, parser);
+
+        if (check(T_LEFT_BRACE, parser))
+        {
+            //TODO: add in body later
+            int braceCount = 1;
+            while (braceCount > 0 && !check(T_EOF, parser))
+            {
+                if (match(T_LEFT_BRACE, parser)) braceCount++;
+                else if (match(T_RIGHT_BRACE, parser)) braceCount--;
+                else advance(parser);
+            }
+        }
+    }
 
     //skip to next function declaration
-    while (!check(T_EOF, parser) && !check(T_MAKE, parser) && !check(T_HASH_PULLF, parser))
+    while (!check(T_EOF, parser) && !check(T_MAKE, parser) && !check(T_HASH_PULLF, parser) && !check(T_CLASS, parser))
     {
         advance(parser);
     }

@@ -236,6 +236,13 @@ static bool callValue(Value callee, int argCount, Vm* vm)
                 push(vm, result);
                 return true;
             }
+            case OBJ_CLASS:
+            {
+                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(callee);
+                ObjInstance* instance = newInstance(class, vm);
+                vm->stackTop[-argCount - 1] = CREATE_OBJECT_VAL((Obj*)instance);
+                return true;
+            }
             default:
             {
                 runtimeError(vm, "Undefined calling object, how did you get here?", "SYNTAX ERROR");
@@ -820,6 +827,15 @@ static vmResult run(Vm* vm)
                 *frame->closure->upValues[slot]->location = peek(vm, 0);
                 break;
             }
+
+            case OP_CLASS:
+            {
+                Value name = READ_CONSTANT();
+                ObjClass* class = newClass(AS_STRING(name)->chars, AS_STRING(name)->length, vm);
+                push(vm, CREATE_OBJECT_VAL((Obj*)class));
+                break;
+            }
+
 
             default:
                 runtimeError(vm, "Unknown opcode encountered.", "RUNTIME ERROR");

@@ -386,6 +386,8 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].depth = depth;
     checker->symbols[index].function = function;
     checker->symbols[index].isTemp = false;
+    checker->symbols[index].className = NULL;
+    checker->symbols[index].classNameLength = 0;
 }
 ValueType checkVariable(TypeChecker* checker, ASTparser* parser, Expr* expr)
 {
@@ -463,6 +465,19 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
         case EXPR_CALL:
         {
             Symbol* symbol = lookUpSymbol(checker, expr->objectCall.callee->variable.name, expr->objectCall.callee->variable.length);
+
+            //check for classes
+            if (symbol->type == VALUE_CLASS)
+            {
+                if (expr->objectCall.argCount != 0)
+                {
+                    typeError(checker, parser, expr, "Class constructors don't take arguments yet.", "TYPE ERROR");
+                    return VALUE_ERROR;
+                }
+                result = VALUE_INSTANCE;
+                break;
+            }
+
             //checking callee
             if (symbol == NULL || symbol->function == NULL)
             {

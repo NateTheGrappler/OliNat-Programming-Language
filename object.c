@@ -131,3 +131,19 @@ ObjClosure* newClosure(ObjFunction* function, struct Vm* vm)
 
     return closure;
 }
+
+ObjClass* newClass(const char* name, int nameLength, struct Vm* vm)
+{
+    //different name for porting to another language like c++ or something
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS, vm);
+    klass->name = name;
+    klass->nameLength = nameLength;
+    return klass;
+}
+ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
+{
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE, vm);
+    instance->class = klass;
+    return instance;
+}
+

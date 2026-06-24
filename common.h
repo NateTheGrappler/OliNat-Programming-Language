@@ -20,6 +20,8 @@ typedef enum {
     VALUE_OBJECT,
     VALUE_DOUBLE,
     VALUE_FLOAT,
+    VALUE_CLASS,
+    VALUE_INSTANCE,
     VALUE_EMPTY,
     //arrays
     VALUE_BOOL_ARRAY,
