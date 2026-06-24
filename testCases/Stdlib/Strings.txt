@@ -1,0 +1,15 @@
+#pullf String
+#pullf io
+#pullf utils
+
+//string tests
+make string str = "Hello World";
+assert(strLength(str) == 11, "length should be 11");
+assert(strContains(str, "World") == true, "should contain World");
+assert(strContains(str, "xyz") == false, "should not contain xyz");
+assert(strSlice(str, 0, 5) == "Hello", "slice should be Hello");
+assert(strToUpper(str) == "HELLO WORLD", "should be uppercase");
+assert(strToLower(str) == "hello world", "should be lowercase");
+assert(strReplace(str, "World", "Oli-Nat") == "Hello Oli-Nat", "should replace");
+
+println("all tests passed!");

@@ -1,0 +1,18 @@
+#pullf io
+#pullf utils
+
+//and tests
+make bool a = true;
+make bool b = false;
+assert(a && a == true, "true && true should be true");
+assert(a && b == false, "true && false should be false"); //should stop
+assert(b && a == false, "false && true should be false"); //should stop
+
+//or tests
+assert(a || b == true, "true || false should be true");
+assert(b || a == true, "false || true should be true");
+assert(b || b == false, "false || false should be false");
+
+//test order of parser
+make bool c = false || true;
+assert(c == true, "false || true should be true");

@@ -21,7 +21,9 @@ typedef enum
     OBJ_STATIC_ARRAY,
     OBJ_NATIVE,
     OBJ_CLOSURE,
-    OBJ_UPVALUE
+    OBJ_UPVALUE,
+    OBJ_CLASS,
+    OBJ_INSTANCE
 } ObjType;
 
 //set up object class to be stored inside of value struct
@@ -52,6 +54,7 @@ typedef struct ParamInfo
     bool isOptional;
 } ParamInfo;
 
+//functions
 typedef struct ObjFunction
 {
     Obj obj;
@@ -63,7 +66,6 @@ typedef struct ObjFunction
     int nameLength;
     int upValueCount;
 } ObjFunction;
-
 typedef struct ObjUpValue
 {
     Obj obj;
@@ -71,7 +73,6 @@ typedef struct ObjUpValue
     struct ObjUpValue* next;
     Value closed;
 } ObjUpValue;
-
 typedef struct ObjClosure
 {
     Obj obj;
@@ -80,6 +81,15 @@ typedef struct ObjClosure
     int upValueCount;
 } ObjClosure;
 
+//classes
+typedef struct ObjClass
+{
+
+} ObjClass;
+typedef struct ObjInstance
+{
+
+} ObjInstance;
 
 
 //static array literals
