@@ -81,12 +81,14 @@ static void freeObject(Obj* obj, struct Vm* vm)
         case OBJ_CLASS:
         {
             ObjClass* klass = (ObjClass*)obj;
+            freeMap(&klass->methods, vm);
             FREE(ObjClass, obj, vm);
             break;
         }
         case OBJ_INSTANCE:
         {
             ObjInstance* instance = (ObjInstance*)obj;
+            FREE_ARRAY(Value, instance->fields, instance->fieldCount, vm);
             FREE(ObjInstance, obj, vm);
             break;
         }
@@ -216,6 +218,27 @@ static void blackenObject(Obj* object, struct Vm* vm)
         case OBJ_UPVALUE:
         {
             markValue(((ObjUpValue*)object)->closed, vm); //mark value internally held in upvalue
+            break;
+        }
+        case OBJ_CLASS:
+        {
+            ObjClass* klass = (ObjClass*)object;
+            markHashmap(&klass->methods, vm);
+            for (int i = 0; i < klass->fieldCount; i++)
+            {
+                markObject((Obj*)klass->fields[i].name, vm);
+                markValue(klass->fields[i].defaultValue, vm);
+            }
+            break;
+        }
+        case OBJ_INSTANCE:
+        {
+            ObjInstance* instance = (ObjInstance*)object;
+            markObject((Obj*)instance->class, vm);
+            for (int i = 0; i < instance->fieldCount; i++)
+            {
+                markValue(instance->fields[i], vm);
+            }
             break;
         }
         case OBJ_STRING:

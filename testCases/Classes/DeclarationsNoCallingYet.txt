@@ -1,0 +1,66 @@
+//TEST 1: Basic set up, no methods, declared values
+class Player
+{
+    make int health = 100;
+    make double speed = 1.5;
+    make bool alive = true;
+    make string name = "hero";
+}
+make Player p = Player();
+
+
+
+//TEST 2: A class with no set values, only defaults
+class Enemy
+{
+    make int health;
+    make double speed;
+    make bool active;
+    make string tag;
+}
+make Enemy e = Enemy();
+
+
+
+//TEST 3: Arrays;
+class Data
+{
+    make int[] scores = [1, 2, 3, 4];
+    make string[] names;
+}
+make Data d = Data();
+
+
+
+
+//TEST 4: A method this time
+class Counter
+{
+    make int count = 0;
+
+    make empty increment()
+    {
+        // body
+    }
+}
+make Counter c = Counter();
+
+//TEST 6: A method twith a body
+class Counter
+{
+    make int count = 0;
+
+    make int add(int a, int b)
+    {
+        return a + b;
+    }
+}
+make Counter c = Counter();
+
+// TEST 5: multiple instances
+class Box
+{
+    make int value = 10;
+}
+make Box a = Box();
+make Box b = Box();

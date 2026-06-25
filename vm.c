@@ -835,6 +835,81 @@ static vmResult run(Vm* vm)
                 push(vm, CREATE_OBJECT_VAL((Obj*)class));
                 break;
             }
+            case OP_CLASS_METHOD:
+            {
+                //stack holds the class object and then the method, so get it off the stack and append it to class's inner hashmap
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                Value method = pop(vm);
+                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 0));
+                MapSet(&class->methods, name, method, vm);
+                break;
+            }
+            case OP_CLASS_FIELD:
+            {
+                //stack holds class, and then whatever default value the field has
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                ValueType type = (ValueType)READ_BYTE();
+
+                Value defaultVal = pop(vm);
+                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 0));
+
+
+                //populate the default value at given index inside of class's field metadata array
+                //given that classes only store information on their fields, not their values, as instances take that role
+                int slot = class->fieldCount;
+                if (slot >= MAX_FIELDS)
+                {
+                    runtimeError(vm, "You have too many fields in a single class declaration, there is a maximum of 256.", "MEMORY ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                //store the actual data in field
+                class->fields[slot].name = name;
+                class->fields[slot].length = name->length;
+                class->fields[slot].type = type;
+                class->fields[slot].defaultValue = defaultVal;
+                class->fieldCount++;
+                break;
+            }
+            case OP_FIELD_DEFAULT:
+            {
+                ValueType type = (ValueType)READ_BYTE();
+                switch (type)
+                {
+                    case VALUE_INT: push(vm, CREATE_INT_VAL(0)); break;
+                    case VALUE_FLOAT: push(vm, CREATE_FLOAT_VAL(0.0f)); break;
+                    case VALUE_DOUBLE: push(vm, CREATE_DOUBLE_VAL(0.0)); break;
+                    case VALUE_BOOL: push(vm, CREATE_BOOL_VAL(false)); break;
+                    case VALUE_STRING:
+                    {
+                        ObjString* empty = copyString("", 0, vm);
+                        push(vm, CREATE_OBJECT_VAL((Obj*)empty));
+                        break;
+                    }
+                    case VALUE_INT_ARRAY:
+                    case VALUE_FLOAT_ARRAY:
+                    case VALUE_DOUBLE_ARRAY:
+                    case VALUE_BOOL_ARRAY:
+                    case VALUE_STRING_ARRAY:
+                    case VALUE_OBJECT_ARRAY:
+                    case VALUE_EMPTY_ARRAY:
+                    {
+                        ValueType elementType = toElementType(type);
+                        ObjStaticArray* empty = newStaticArray(0, elementType, vm);
+                        push(vm, CREATE_OBJECT_VAL((Obj*)empty));
+                        break;
+                    }
+                    default:
+                    {
+                        push(vm,CREATE_INT_VAL(0)); //fallback
+                        break;
+                    }
+
+                }
+                break;
+            }
 
 
             default:

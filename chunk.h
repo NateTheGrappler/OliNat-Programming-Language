@@ -46,7 +46,12 @@ typedef enum
     OP_CLOSE_UPVALUE,
     OP_GET_UPVALUE,
     OP_SET_UPVALUE,
-    OP_CLASS
+    OP_CLASS,
+    OP_CLASS_METHOD,
+    OP_CLASS_FIELD,
+    OP_SET_FIELD,
+    OP_GET_FIELD,
+    OP_FIELD_DEFAULT
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

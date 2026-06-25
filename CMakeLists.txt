@@ -32,8 +32,9 @@ add_executable(Oli_Nat main.c
         common.c
         natives.h
         natives.c
+        hashmap_types.h
 )
 target_link_libraries(Oli_Nat m)
 
-#target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)
-#target_link_options(Oli_Nat PRIVATE -fsanitize=address)
+target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)
+target_link_options(Oli_Nat PRIVATE -fsanitize=address)

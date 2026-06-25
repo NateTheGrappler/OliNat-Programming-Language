@@ -5,23 +5,13 @@
 #ifndef OLI_NAT_HASHMAP_H
 #define OLI_NAT_HASHMAP_H
 
-#include "object.h"
+#include "hashmap_types.h"
+
 
 typedef struct Vm vm;
 
 //struct for each bucket inside of the hashmap
-typedef struct
-{
-    ObjString* key;
-    Value value;
-} Bucket;
 
-typedef struct
-{
-    int count;
-    int capacity;
-    Bucket* buckets;
-} Hashmap;
 
 void initMap(Hashmap* hashmap);
 void freeMap(Hashmap* hashmap, struct Vm* vm);

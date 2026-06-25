@@ -138,12 +138,16 @@ ObjClass* newClass(const char* name, int nameLength, struct Vm* vm)
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS, vm);
     klass->name = name;
     klass->nameLength = nameLength;
+    klass->fieldCount = 0;
+    initMap(&klass->methods);
     return klass;
 }
 ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
 {
     ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE, vm);
     instance->class = klass;
+    instance->fields = ALLOCATE(Value, klass->fieldCount, vm);
+    instance->fieldCount = klass->fieldCount;
     return instance;
 }
 

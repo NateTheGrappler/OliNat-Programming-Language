@@ -306,6 +306,53 @@ static int arrayInstruction(const char* name, Chunk* chunk, int offset)
     printf("%-16s %4d elements  type: %s\n", name, count, typeName);
     return offset + 3;
 }
+static int classFieldInstruction(const char* name, Chunk* chunk, int offset)
+{
+    uint8_t nameIndex = chunk->byteCode[offset + 1];
+    uint8_t type      = chunk->byteCode[offset + 2];
+
+    const char* typeName;
+    switch ((ValueType)type)
+    {
+        case VALUE_INT:          typeName = "int";      break;
+        case VALUE_FLOAT:        typeName = "float";    break;
+        case VALUE_DOUBLE:       typeName = "double";   break;
+        case VALUE_STRING:       typeName = "string";   break;
+        case VALUE_BOOL:         typeName = "bool";     break;
+        case VALUE_INT_ARRAY:    typeName = "int[]";    break;
+        case VALUE_FLOAT_ARRAY:  typeName = "float[]";  break;
+        case VALUE_DOUBLE_ARRAY: typeName = "double[]"; break;
+        case VALUE_STRING_ARRAY: typeName = "string[]"; break;
+        case VALUE_BOOL_ARRAY:   typeName = "bool[]";   break;
+        default:                 typeName = "unknown";  break;
+    }
+
+    printf("%-16s %4d '", name, nameIndex);
+    printValue(chunk->constants.values[nameIndex]);
+    printf("' type: %s\n", typeName);
+    return offset + 3;
+}
+static int fieldDefaultInstruction(const char* name, Chunk* chunk, int offset)
+{
+    uint8_t type = chunk->byteCode[offset + 1];
+    const char* typeName;
+    switch ((ValueType)type)
+    {
+        case VALUE_INT:          typeName = "int";      break;
+        case VALUE_FLOAT:        typeName = "float";    break;
+        case VALUE_DOUBLE:       typeName = "double";   break;
+        case VALUE_STRING:       typeName = "string";   break;
+        case VALUE_BOOL:         typeName = "bool";     break;
+        case VALUE_INT_ARRAY:    typeName = "int[]";    break;
+        case VALUE_FLOAT_ARRAY:  typeName = "float[]";  break;
+        case VALUE_DOUBLE_ARRAY: typeName = "double[]"; break;
+        case VALUE_STRING_ARRAY: typeName = "string[]"; break;
+        case VALUE_BOOL_ARRAY:   typeName = "bool[]";   break;
+        default:                 typeName = "unknown";  break;
+    }
+    printf("%-16s type: %s\n", name, typeName);
+    return offset + 2;
+}
 
 
 //actually main printing function
@@ -394,5 +441,15 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_CLOSURE", offset);
         case OP_CLASS:
             return constantInstruction("OP_CLASS", chunk, offset);
+        case OP_CLASS_FIELD:
+            return classFieldInstruction("OP_CLASS_FIELD", chunk, offset);
+        case OP_CLASS_METHOD:
+            return constantInstruction("OP_CLASS_METHOD", chunk, offset);
+        case OP_FIELD_DEFAULT:
+            return fieldDefaultInstruction("OP_FIELD_DEFAULT", chunk, offset);
+        case OP_GET_FIELD:
+            return constantInstruction("OP_GET_FIELD", chunk, offset);
+        case OP_SET_FIELD:
+            return constantInstruction("OP_SET_FIELD", chunk, offset);
     }
 }

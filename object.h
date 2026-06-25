@@ -6,13 +6,17 @@
 #define OLI_NAT_OBJECT_H
 
 #define MAX_PARAMS 255
+#define MAX_FIELDS 256
 
 #include "memory.h"
 #include "common.h"
 #include "Value.h"
 #include "chunk.h"
+#include "Hashmap.h"
+
 
 typedef struct Vm vm;
+typedef struct Hashmap hashmap;
 
 typedef enum
 {
@@ -82,16 +86,33 @@ typedef struct ObjClosure
 } ObjClosure;
 
 //classes
+typedef struct
+{
+    ValueType type;
+    ObjString* name;
+    int length;
+    Value defaultValue;
+} FieldInfo;
 typedef struct ObjClass
 {
+    //basic stuff
     Obj obj;
     const char* name;
     int nameLength;
+
+    //inner class fields
+    FieldInfo fields[MAX_FIELDS];
+    int fieldCount;
+
+    Hashmap methods;
+
 } ObjClass;
 typedef struct ObjInstance
 {
     Obj obj;
     ObjClass* class;
+    Value* fields; //a somewhat static field since instances cannot create new fields
+    int fieldCount;
 } ObjInstance;
 
 

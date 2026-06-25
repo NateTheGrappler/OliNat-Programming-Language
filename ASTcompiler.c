@@ -877,7 +877,7 @@ static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser
     emitReturn(&function->chunk, parser, vm);
     return function;
 }
-static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompiler* compiler, Vm* vm, ValueType type)
+static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompiler* compiler, Vm* vm, ValueType type, bool isMethod)
 {
     //function name
 
@@ -952,7 +952,10 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     }
     else
     {
-        emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm); //after resolving the closure and function, then define it as a new global var
+        if (!isMethod)
+        {
+            emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm); //after resolving the closure and function, then define it as a new global var
+        }
     }
 }
 static Expr* functionCall(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm)
@@ -1149,19 +1152,84 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
     uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)nameString), vm);
     emitByte(nameIndex, &compiler->function->chunk, parser, vm);
 
+
+    consume(T_LEFT_BRACE, "A class body was expected after a new class declaration, please use '{'.", "SYNTAX ERROR", parser);
+    while (!check(T_RIGHT_BRACE, parser) && !check(T_EOF, parser))
+    {
+        if (match(T_MAKE, parser))
+        {
+            //consume the identifer
+            ValueType type = getVarDeclarationType(parser, checker);
+            consume(T_IDENTIFIER, "Even inner class methods or fields have feelings, have some heart and give them a name.", "SYNTAX ERROR", parser);
+            const char* name = parser->previous.lexemeStart;
+            int nameLength = parser->previous.length;
+
+            if (check(T_LEFT_PAREN, parser))
+            {
+                 //method dispatch the call to append a new method to the class
+                functionDeclaration(parser, checker, compiler, vm, type, true);
+
+                //after function gets declared and is on top of stack in bytecode, you add in the class method opcode to
+                //make sure that that closure gets attached over to the class
+                ObjString* methodName = copyString(name, nameLength, vm);
+                uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)methodName), vm);
+                emitByte(OP_CLASS_METHOD, &compiler->function->chunk, parser, vm);
+                emitByte(nameIndex, &compiler->function->chunk, parser, vm);
+            }
+            else
+            {
+                //its just a field so store it's metadata
+
+                Expr* initializer = NULL;
+                if (match(T_EQUAL, parser)) //initialized with value
+                {
+                    initializer = astExpression(parser, compiler, vm);
+                }
+                consume(T_SEMICOLON, "Expected a ';' after a field declaration in class body.", "SYNTAX ERROR", parser);
+
+                if (initializer != NULL)
+                {
+                    ValueType exprType = checkExpression(checker, initializer, parser);
+                    if (exprType == type)
+                    {
+                        //compile the field
+                        compileBytecode(initializer, parser, &compiler->function->chunk, compiler, vm);
+                        freeExpr(initializer, vm);
+                    }
+                    else
+                    {
+                        //error if its the wrong type
+                        error("Please make sure inner class field declarations match their explict type.", "TYPE ERROR", parser);
+                        freeExpr(initializer, vm);
+                    }
+                }
+                else
+                {
+                    //set up some default value based on the type if nothing was declared
+                    emitByte(OP_FIELD_DEFAULT, &compiler->function->chunk, parser, vm);
+                    emitByte((uint8_t)type, &compiler->function->chunk, parser, vm);
+                }
+
+                //compile the name as well
+                ObjString* fieldName = copyString(name, nameLength, vm);
+                uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)fieldName), vm);
+
+                emitByte(OP_CLASS_FIELD, &compiler->function->chunk, parser, vm); //output the field instruction
+                emitByte(nameIndex, &compiler->function->chunk, parser, vm);      //output index for name rightafter
+                emitByte((uint8_t)type, &compiler->function->chunk, parser, vm);  //output the TYPE of the field for book keeping inside class
+            }
+        }
+        else
+        {
+            error("Please only include either field or method declarations inside of a class declaration body.", "SYNTAX ERROR", parser);
+            advance(parser);
+        }
+    }
+    consume(T_RIGHT_BRACE, "A complete class body was expected after a new class declaration, please use '}'.", "SYNTAX ERROR", parser);
+
+
     //define as global so it can be called
     emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
-
-    //TODO: parse the body eventually
-    consume(T_LEFT_BRACE, "A class body was expected after a new class declaration, please use '{'.", "SYNTAX ERROR", parser);
-    //block(parser, checker, compiler, vm);
-    int braceCount = 1;
-    while (braceCount > 0 && !check(T_EOF, parser))
-    {
-        if (match(T_LEFT_BRACE, parser)) braceCount++;
-        else if (match(T_RIGHT_BRACE, parser)) braceCount--;
-        else advance(parser);
-    }
 }
 
 
@@ -1186,7 +1254,7 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
 
         if (check(T_LEFT_PAREN, parser))
         {
-            functionDeclaration(parser, checker, compiler, vm, type);
+            functionDeclaration(parser, checker, compiler, vm, type, false);
         }
         else
         {
