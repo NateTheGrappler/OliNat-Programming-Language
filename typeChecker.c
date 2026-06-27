@@ -551,6 +551,25 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
         }
         case EXPR_CALL:
         {
+            //------------handling for actual method calls inside of classes------------//
+            // if (expr->objectCall.callee->type == EXPR_GET_FIELD)
+            // {
+            //     //TODO: update this abhorrent code whenever I want to add the this keyword
+            //     //check the type of the call expressions calle which is the get field expression which holds it's own
+            //     //expr which is actually just the ValueInstance (very confusing I know)
+            //     ValueType objectType = checkExpression(checker, expr->objectCall.callee->getField.callee, parser);
+            //     if (objectType != VALUE_INSTANCE)
+            //     {
+            //         typeError(checker, parser, expr, "Only class instances have methods that you are able to call.", "TYPE ERROR");
+            //         return VALUE_ERROR;
+            //     }
+            //     //TODO: look up method signature for proper arg type checking
+            //     result = VALUE_ANY;  // placeholder until method signatures are stored
+            //     break;
+            // }
+
+
+            //------------plain function handling-------------//
             Symbol* symbol = lookUpSymbol(checker, expr->objectCall.callee->variable.name, expr->objectCall.callee->variable.length);
 
             //check for classes
