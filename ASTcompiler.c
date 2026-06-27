@@ -19,6 +19,7 @@ static Expr* string(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm
 static Expr* unary(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr*  grouping(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* binary(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
+static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
 static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* _and(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* acesssArray(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
@@ -64,7 +65,7 @@ ParseRule rules[] = {
   [T_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [T_LEFT_BRACKET]   = {Array,acesssArray,PREC_CALL},
   [T_COMMA]         = {NULL,     NULL,   PREC_NONE},
-  [T_DOT]           = {NULL,     NULL,   PREC_CALL},
+  [T_DOT]           = {NULL,      dot,   PREC_CALL},
   [T_MINUS]         = {unary,     binary,PREC_TERM},
   [T_PLUS]          = {NULL,     binary, PREC_TERM},
   [T_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
@@ -422,6 +423,76 @@ static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr*
     Expr* right = parserPrecedence(PREC_AND, parser, compiler, vm);
     return createOr(left, right, parser->previous.line, vm);
 }
+static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm)
+{
+    consume(T_IDENTIFIER, "The dot operator must be calling some field or method from a class instance", "SYNTAX ERROR", parser);
+    const char* fieldName = parser->previous.lexemeStart;
+    int nameLength = parser->previous.length;
+    int line = parser->previous.line;
+
+    if (match(T_EQUAL, parser) && canAssign)
+    {
+        //you know there is an assignment call if there is an '='
+        Expr* value = astExpression(parser, compiler, vm);
+        return createSetField(left, value, fieldName, nameLength, line, vm);
+    }
+
+    //otherwise you know it is just a get call, sigh, also add in support for all the fancy syntax shortcuts
+    if (canAssign)
+    {
+        if (match(T_PLUS_EQUAL, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* value = astExpression(parser, compiler, vm);
+            Expr* binary = createBinary(get, value, "+", line, vm);
+            return createSetField(left, binary, fieldName, nameLength, line, vm);
+        }
+        if (match(T_MINUS_EQUAL, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* value = astExpression(parser, compiler, vm);
+            Expr* binary = createBinary(get, value, "-", line, vm);
+            return createSetField(left, binary, fieldName, nameLength, line, vm);
+        }
+        if (match(T_STAR_EQUAL, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* value = astExpression(parser, compiler, vm);
+            Expr* binary = createBinary(get, value, "*", line, vm);
+            return createSetField(left, binary, fieldName, nameLength, line, vm);
+        }
+        if (match(T_SLASH_EQUAL, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* value = astExpression(parser, compiler, vm);
+            Expr* binary = createBinary(get, value, "/", line, vm);
+            return createSetField(left, binary, fieldName, nameLength, line, vm);
+        }
+        if (match(T_PLUS_PLUS, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* one = createLiteralInt(1, line, vm);
+            Expr* binary = createBinary(get, one, "+", line, vm);
+            //create a copy of left since it would get shared between binary and this and get freed twice
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
+        }
+        if (match(T_MINUS_MINUS, parser))
+        {
+            Expr* get = createGetField(left, fieldName, nameLength, line, vm);
+            Expr* one = createLiteralInt(1, line, vm);
+            Expr* binary = createBinary(get, one, "-", line, vm);
+            //create a copy of left since it would get shared between binary and this and get freed twice
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
+        }
+    }
+    //basic plane call
+    return createGetField(left, fieldName, nameLength, line, vm);
+}
+
 
 //actual parser precedence stuff
 static ParseRule* getRule(TokenType type)
@@ -681,7 +752,7 @@ static void ifStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* co
         error("If condition must be a boolean.", "TYPE MISMATCH ERROR", parser);
     }
     compileBytecode(condition, parser, &compiler->function->chunk, compiler, vm);
-
+    freeExpr(condition, vm); //forgot to free condition expr haha
 
     //emit a jump instruction with then two supplementary bytes to store how large the jump is
     short jumpIndex = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser, vm);
@@ -729,6 +800,7 @@ static void whileStatement(ASTparser* parser, TypeChecker* checker, AstCompiler*
         error("While condition must be a boolean.", "TYPE MISMATCH", parser);
     }
     compileBytecode(condition, parser, &compiler->function->chunk, compiler, vm);
+    freeExpr(condition, vm); //forgot to free condition expr haha
 
     int exitJump = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser, vm);
     emitByte(OP_POP, &compiler->function->chunk, parser, vm);
@@ -771,9 +843,11 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 
         compileBytecode(expr, parser, &compiler->function->chunk, compiler, vm);
         consume(T_SEMICOLON, "The code expects ';' after a for loop conditional.", "SYNTAX ERROR", parser);
+        freeExpr(expr, vm); //forgot to free condition expr haha
 
         exitJump = emitJump(OP_JUMP_IF_FALSE, &compiler->function->chunk, parser, vm);
         emitByte(OP_POP, &compiler->function->chunk, parser, vm);
+
     }
 
     int bodyJump = -1;
@@ -786,6 +860,7 @@ static void forStatement(ASTparser* parser, TypeChecker* checker, AstCompiler* c
 
         Expr* expr = astExpression(parser, compiler, vm);
         compileBytecode(expr,parser, &compiler->function->chunk, compiler, vm);
+        freeExpr(expr, vm); //forgot to free condition expr haha
 
         emitByte(OP_POP, &compiler->function->chunk, parser, vm);
         consume(T_RIGHT_PAREN, "Expect ')' after for loop clauses", "SYNTAX ERROR", parser);
@@ -1143,8 +1218,12 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
-    //add into symbol table
-    addSymbol(checker, name, nameLength, compiler->scopeDepth, VALUE_CLASS, NULL, parser);
+    //add into symbol table, if it hasnt already gotten added in the first look through
+    Symbol* existing = lookUpSymbol(checker, name, nameLength);
+    if(existing == NULL)
+    {
+        addSymbol(checker, name, nameLength, compiler->scopeDepth, VALUE_CLASS, NULL, parser);
+    }
 
     //emit onto the stack (OP_CLASS CODE, INDEX FOR NAME)
     emitByte(OP_CLASS, &compiler->function->chunk, parser, vm);
@@ -1376,18 +1455,75 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         consume(T_IDENTIFIER, "Please name your classes, they get lonely if you dont.", "SYNTAX ERROR", parser);
         const char* name = parser->previous.lexemeStart;
         int nameLength = parser->previous.length;
+
+        //add in symbol and then get it for editing fields
         addSymbol(checker, name, nameLength, 0, VALUE_CLASS, NULL, parser);
+        Symbol* classSymbol = lookUpSymbol(checker, name, nameLength);
 
         if (check(T_LEFT_BRACE, parser))
         {
-            //TODO: add in body later
-            int braceCount = 1;
-            while (braceCount > 0 && !check(T_EOF, parser))
+            consume(T_LEFT_BRACE, "", "", parser); //consume the brace if it was found
+            while (!check(T_RIGHT_BRACE, parser) && !check(T_EOF, parser))
             {
-                if (match(T_LEFT_BRACE, parser)) braceCount++;
-                else if (match(T_RIGHT_BRACE, parser)) braceCount--;
-                else advance(parser);
+                if (match(T_MAKE, parser))
+                {
+                    //get the stuff fields and methods have in common
+                    ValueType fieldType = getVarDeclarationType(parser, checker);
+                    consume(T_IDENTIFIER, "Please name your inner class methods and variables, they get sad if you dont ;(.", "SYNTAX ERROR", parser);
+                    const char* fieldName = parser->previous.lexemeStart;
+                    int fieldNameLength = parser->previous.length;
+
+                    if (check(T_LEFT_PAREN, parser))
+                    {
+                        //do methods
+                        // TODO: store method signature for type checking later
+                        int braceCount = 1;
+                        advance(parser);
+                        while (!check(T_EOF, parser))
+                        {
+                            if (match(T_LEFT_BRACE, parser)) braceCount++;
+                            else if (match(T_RIGHT_BRACE, parser)) { braceCount--; if (braceCount == 0) break; }
+                            else advance(parser);
+                        }
+                    }
+                    else
+                    {
+                        //do fields
+                        printf("DEBUG first pass: found field '%.*s' type %d\n", fieldNameLength, fieldName, fieldType);
+                        if (classSymbol->fieldCount >= classSymbol->fieldCapacity)
+                        {
+                            int newCap = classSymbol->fieldCapacity == 0 ? 4 : classSymbol->fieldCapacity * 2;
+                            classSymbol->fieldsInfo = realloc(classSymbol->fieldsInfo,
+                                                              newCap * sizeof(CheckerFieldInfo));
+                            classSymbol->fieldCapacity = newCap;
+                        }
+
+                        //store it all directly in the class symbol array for that symbol
+                        int slot = classSymbol->fieldCount++;
+                        classSymbol->fieldsInfo[slot].type = fieldType;
+                        classSymbol->fieldsInfo[slot].name = fieldName;
+                        classSymbol->fieldsInfo[slot].length = fieldNameLength;
+                        classSymbol->fieldsInfo[slot].className = NULL;
+                        classSymbol->fieldsInfo[slot].classNameLength = 0;
+
+                        //if the field is an instance then store it's class name it belongs to for type checking later
+                        if (fieldType == VALUE_INSTANCE)
+                        {
+                            classSymbol->fieldsInfo[slot].className = checker->lastClassName;
+                            classSymbol->fieldsInfo[slot].classNameLength = checker->lastClassNameLength;
+                        }
+
+                        //skip the other stuff
+                        while (!check(T_SEMICOLON, parser) && !check(T_EOF, parser)) advance(parser);
+                        consume(T_SEMICOLON, "", "", parser);
+                    }
+                }
+                else
+                {
+                    advance(parser);
+                }
             }
+            consume(T_RIGHT_BRACE, "", "", parser);
         }
     }
 

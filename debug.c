@@ -149,6 +149,7 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf(" ");
             printExpression(expr->andExpr.right);
             printf(")");
+            break;
         }
         case EXPR_OR:
         {
@@ -157,7 +158,25 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf(" ");
             printExpression(expr->orExpr.right);
             printf(")");
+            break;
         }
+        case EXPR_GET_FIELD:
+        {
+            printf("( GET-F ");
+            printExpression(expr->getField.callee);
+            printf(" )");
+            break;
+        }
+        case EXPR_SET_FIELD:
+        {
+            printf("( SET-F ");
+            printExpression(expr->setField.callee);
+            printf(" ");
+            printExpression(expr->setField.newValue);
+            printf(")");
+            break;
+        }
+
 
     }
     //printf("\n");

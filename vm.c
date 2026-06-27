@@ -910,6 +910,87 @@ static vmResult run(Vm* vm)
                 }
                 break;
             }
+            case OP_SET_FIELD:
+            {
+                //read the name of val
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+
+                //grab the new value to set
+                Value newValue = pop(vm);
+
+                //grab instance storing the val to be changed
+                Value instanceVal = pop(vm);
+
+                //check to see that youre getting a call from an instance
+                if (!IS_OBJECT(instanceVal) || GET_OBJECT_VAL(instanceVal)->type != OBJ_INSTANCE)
+                {
+                    runtimeError(vm, "Only instances have fields.", "TYPE ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
+
+
+                for (int i = 0; i < instance->class->fieldCount; i++)
+                {
+                    //check to see if you even have that given field
+                    if (name == instance->class->fields[i].name)
+                    {
+                        //make sure the type youre seeting is good and then set it
+                        if (newValue.type != instance->class->fields[i].type)
+                        {
+                            runtimeError(vm, "Cannot assign a value of a different type to a field.", "TYPE MISMATCH ERROR");
+                            return INTERPRET_RUNTIME_ERROR;
+                        }
+                        instance->fields[i] = newValue;
+                        push(vm, newValue);
+
+                        goto done_set_field; //not the cleanest but what can you do
+                    }
+                }
+                //if you didnt find the field toss an error
+                runtimeError(vm, "Undefined field.", "RUNTIME ERROR");
+                return INTERPRET_RUNTIME_ERROR;
+
+                done_set_field:
+                break;
+            }
+            case OP_GET_FIELD:
+            {
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                Value instanceVal = pop(vm);
+
+                if (!IS_OBJECT(instanceVal) || GET_OBJECT_VAL(instanceVal)->type != OBJ_INSTANCE)
+                {
+                    runtimeError(vm, "Only instances of classes have fields man.", "LOGIC ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
+
+                //check to see if the name is a field
+                for (int i = 0; i < instance->class->fieldCount; i++)
+                {
+                    if (name == instance->class->fields[i].name)
+                    {
+                        push(vm, instance->fields[i]); //push value of instance's field onto stack
+                        goto done_get_field;
+                    }
+                }
+
+                Value method;
+                if (MapGet(&instance->class->methods, name, &method))
+                {
+                    push(vm, method);
+                    goto done_get_field;
+                }
+
+                runtimeError(vm, "Please only use defined method or field calls in your classes, no calling what doesnt exist am I right?", "RUNTIME ERROR");
+                return INTERPRET_RUNTIME_ERROR;
+
+                done_get_field:
+                break;
+            }
 
 
             default:

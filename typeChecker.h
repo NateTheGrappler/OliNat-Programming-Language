@@ -4,7 +4,8 @@
 
 #ifndef OLI_NAT_TYPECHECKER_H
 #define OLI_NAT_TYPECHECKER_H
-#define MAX_SYMBOLS 65536
+//#define LARGE_MAX_SYMBOLS 65536
+#define MAX_SYMBOLS 4096
 
 
 #include "Expr.h"
@@ -14,16 +15,33 @@
 
 typedef struct ASTparser;
 
+typedef struct  CheckerFieldInfo
+{
+    ValueType type;
+    const char* name;
+    int length;
+    const char* className;
+    int classNameLength;
+} CheckerFieldInfo;
 typedef struct
 {
     const char* name;
     int length;
     ValueType   type;
     int depth;
+
+    //for actual functions and the temp for native initialization
     ObjFunction* function;
     bool isTemp;
+
+    //for classes
     const char* className;
     int classNameLength;
+
+    //for class instances
+    CheckerFieldInfo* fieldsInfo;
+    int fieldCount;
+    int fieldCapacity;
 } Symbol;
 
 

@@ -351,6 +351,90 @@ ValueType checkBinary(TypeChecker* checker, Expr* expr, ASTparser* parser)
     return VALUE_ERROR;
 
 }
+ValueType checkClassField(TypeChecker* checker, Expr* expr, ASTparser* parser)
+{
+    Expr* callee;
+    const char* fieldName;
+    int fieldLength;
+
+    //determine if its called in get or set field case
+    if (expr->type == EXPR_GET_FIELD)
+    {
+        callee = expr->getField.callee;
+        fieldName = expr->getField.fieldName;
+        fieldLength = expr->getField.fieldLenght;
+    }
+    else //set field only other option
+    {
+        callee = expr->setField.callee;
+        fieldName = expr->setField.fieldName;
+        fieldLength = expr->setField.fieldLenght;
+    }
+
+
+    //check that the callee is a instance of a class
+    ValueType objectType = checkExpression(checker, callee, parser);
+    if (objectType != VALUE_INSTANCE)
+    {
+        typeError(checker, parser, expr, "You can only try and get a field value from a class instance.", "TYPE ERROR");
+        return VALUE_ERROR;
+
+    }
+
+    //populate the knowledge of what class the call is coming from
+    const char* className = NULL;
+    int classNameLength = 0;
+    if (callee->type == EXPR_VARIABLE)
+    {
+        //simple case of someInstance.value;
+        Symbol* instanceSymbol = lookUpSymbol(checker, callee->variable.name, callee->variable.length);
+        if (instanceSymbol != NULL)
+        {
+            //populate the class the var was gotten from;
+            className = instanceSymbol->className;
+            classNameLength = instanceSymbol->classNameLength;
+        }
+    }
+    else
+    {
+        //chained call //someInstance1.someInstance2.value;
+        className = checker->lastClassName;
+        classNameLength = checker->lastClassNameLength;
+    }
+
+    //check to see if the name was actually populated
+    if (className == NULL)
+    {
+        typeError(checker, parser, expr, "Unknown class type.", "TYPE ERROR");
+        return VALUE_ERROR;
+    }
+
+    //get the last accessed class in the checker's metadata from earlier, check to see if it exists obviously
+    Symbol* classSymbol = lookUpSymbol(checker, className, classNameLength);
+    if (classSymbol == NULL)
+    {
+        typeError(checker, parser, expr, "Unknown or undefined class type was attempted to be called.", "TYPE ERROR");
+        return VALUE_ERROR;
+    }
+
+
+    //now check to see if the field they want to access exists, and return that inner fields type
+    for (int i = 0; i < classSymbol->fieldCount; i++)
+    {
+        if (classSymbol->fieldsInfo[i].length == fieldLength
+            && memcmp(classSymbol->fieldsInfo[i].name, fieldName, fieldLength) == 0)
+        {
+            if (classSymbol->fieldsInfo[i].type == VALUE_INSTANCE)
+            {
+                checker->lastClassName = classSymbol->fieldsInfo[i].className;
+                checker->lastClassNameLength = classSymbol->fieldsInfo[i].classNameLength;
+            }
+            return classSymbol->fieldsInfo[i].type;
+        }
+    }
+    typeError(checker, parser, expr, "Undefined field.", "TYPE ERROR");
+    return VALUE_ERROR;
+}
 
 Symbol* lookUpSymbol(TypeChecker* checker, const char* name, int length)
 {
@@ -388,6 +472,9 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].isTemp = false;
     checker->symbols[index].className = NULL;
     checker->symbols[index].classNameLength = 0;
+    checker->symbols[index].fieldsInfo = NULL;
+    checker->symbols[index].fieldCount = 0;
+    checker->symbols[index].fieldCapacity = 0;
 }
 ValueType checkVariable(TypeChecker* checker, ASTparser* parser, Expr* expr)
 {
@@ -631,6 +718,26 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             result = VALUE_ERROR;
             break;
         }
+        case EXPR_GET_FIELD:
+        {
+            result = checkClassField(checker, expr, parser);
+            break;
+        }
+        case EXPR_SET_FIELD:
+        {
+            ValueType classFieldType = checkClassField(checker, expr, parser);
+            ValueType newValueType = checkExpression(checker, expr->setField.newValue, parser);
+
+            if (classFieldType == newValueType && classFieldType != VALUE_ERROR)
+            {
+                result = newValueType;
+                break;
+            }
+            typeError(checker, parser, expr, "Mismatch typing when attempting to assign a new value to a  class instance's field", "TYPE ERROR");
+            result = VALUE_ERROR;
+            break;
+
+        }
         default:
             result =  VALUE_ERROR;
             break;
@@ -650,6 +757,11 @@ void freeTypeChecker(TypeChecker* checker)
         {
             free(checker->symbols[i].function);
             checker->symbols[i].function = NULL;
+        }
+        if (checker->symbols[i].fieldsInfo != NULL)
+        {
+            free(checker->symbols[i].fieldsInfo);
+            checker->symbols[i].fieldsInfo = NULL;
         }
 
     }

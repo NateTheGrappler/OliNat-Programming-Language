@@ -192,6 +192,30 @@ Expr* createArrayGet(Expr* left, Expr* index, int line, struct Vm* vm)
     return expr;
 }
 
+Expr* createGetField(Expr* callee, const char* fieldName, int fieldLength, int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_GET_FIELD;
+    expr->line = line;
+
+    expr->getField.callee = callee;
+    expr->getField.fieldLenght = fieldLength;
+    expr->getField.fieldName = fieldName;
+    return expr;
+}
+Expr* createSetField(Expr* callee, Expr* newValue, const char* fieldName, int fieldLength, int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_SET_FIELD;
+    expr->line = line;
+
+    expr->setField.callee = callee;
+    expr->setField.newValue = newValue;
+    expr->setField.fieldLenght = fieldLength;
+    expr->setField.fieldName = fieldName;
+    return expr;
+}
+
 
 void freeExpr(Expr* expr, struct Vm* vm)
 {
@@ -275,6 +299,17 @@ void freeExpr(Expr* expr, struct Vm* vm)
             freeExpr(expr->setArray.index, vm);
             freeExpr(expr->setArray.left, vm);
             freeExpr(expr->setArray.value, vm);
+            break;
+        }
+        case EXPR_SET_FIELD:
+        {
+            freeExpr(expr->setField.newValue, vm);
+            freeExpr(expr->setField.callee, vm);
+            break;
+        }
+        case EXPR_GET_FIELD:
+        {
+            freeExpr(expr->getField.callee, vm);
             break;
         }
     }

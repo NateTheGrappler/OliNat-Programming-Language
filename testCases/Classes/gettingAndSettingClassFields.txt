@@ -1,0 +1,126 @@
+//===================TEST ONE: basic getting of defined fields=====================//
+
+#pullf io
+class Player
+{
+    make int health = 100;
+    make string name = "hero";
+}
+make Player p = Player();
+println(p.health);
+println(p.name);
+
+
+
+
+//===================TEST TWO: basic setting of defined fields=====================//
+
+#pullf io
+class Player {
+    make int health = 100;
+}
+make Player p = Player();
+p.health = 50;
+println(p.health);
+
+
+
+//===================TEST THREE: using fields in actual expressions=====================//
+#pullf io
+#pullf math
+class Circle
+{
+    make double radius = 5.0;
+}
+make Circle c = Circle();
+make double area = c.radius * c.radius;
+println(area);
+
+
+
+//===================TEST FOUR: values are tied to specific instances=====================//
+#pullf io
+class Box
+{
+    make int value = 10;
+}
+make Box a = Box();
+make Box b = Box();
+a.value = 99;
+println(a.value);
+println(b.value);
+
+//===================TEST FIVE: using class fields inside of conditions=====================//
+#pullf io
+class Enemy
+{
+    make bool alive = true;
+    make int health = 50;
+}
+make Enemy e = Enemy();
+if (e.alive)
+{
+    println(e.health);
+}
+
+//===================TEST SIX: field modification in loop=====================//
+#pullf io
+class Counter
+{
+    make int count = 0;
+}
+make Counter c = Counter();
+make int i = 0;
+for (make int i = 0; i < 5; i++)
+{
+    c.count++; //also test ++ works for these
+    println(c.count);
+}
+
+//===================TEST SEVEN: fields when used in natives=====================//
+#pullf io
+#pullf types
+class Wrapper
+{
+    make int value = 42;
+}
+make Wrapper w = Wrapper();
+make string s = intToStr(w.value);
+println(s);
+
+//===================TEST EIGHT: check that type checking works for field setting=====================// (should crash)
+#pullf io
+class Box
+{
+    make int value = 10;
+}
+make Box b = Box();
+b.value = "hello";
+
+//===================TEST NINE: Calling default values=====================//
+#pullf io
+class Empty
+{
+    make int x;
+    make bool flag;
+    make string label;
+}
+make Empty e = Empty();
+println(e.x);
+println(e.flag);
+println(e.label);
+
+//===================TEST TEN: Classes intermingling (ooooo, k-i-s-s-i-n-g)=====================//
+#pullf io
+class Weapon
+{
+    make int damage = 25;
+}
+class Player
+{
+    make int health = 100;
+}
+make Player p = Player();
+make Weapon w = Weapon();
+p.health = p.health - w.damage;
+println(p.health);

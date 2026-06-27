@@ -148,6 +148,13 @@ ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
     instance->class = klass;
     instance->fields = ALLOCATE(Value, klass->fieldCount, vm);
     instance->fieldCount = klass->fieldCount;
+
+    //copy over the fields from the class to the instance after they have been allocated for
+    for (int i = 0; i < klass->fieldCount; i++)
+    {
+        instance->fields[i] = klass->fields[i].defaultValue;
+    }
+
     return instance;
 }
 

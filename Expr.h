@@ -22,10 +22,25 @@ typedef enum {
     EXPR_GET_ARRAY_INDEX,
     EXPR_SET_ARRAY_INDEX,
     EXPR_OR,
-    EXPR_AND
+    EXPR_AND,
+    EXPR_SET_FIELD,
+    EXPR_GET_FIELD
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    struct Expr* callee;
+    const char* fieldName;
+    int fieldLenght;
+    struct Expr* newValue;
+} SetField;
+typedef struct
+{
+    struct Expr* callee;
+    const char* fieldName;
+    int fieldLenght;
+} GetField;
 typedef struct
 {
     struct Expr* left;
@@ -118,7 +133,8 @@ typedef struct Expr {
         SetArray setArray;
         AndExpr andExpr;
         OrExpr orExpr;
-
+        SetField setField;
+        GetField getField;
     };
 } Expr;
 
@@ -138,6 +154,8 @@ Expr* createAnd          (Expr* left, Expr* right, int line, struct Vm* vm);
 Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line, struct Vm* vm);
 Expr* createGrouping     (Expr* expr, int line, struct Vm* vm);
 Expr* createVariable(const char* name, int length, int line, struct Vm* vm);
+Expr* createGetField(Expr* callee, const char* fieldName, int fieldLength, int line, struct Vm* vm);
+Expr* createSetField(Expr* callee, Expr* newValue, const char* fieldName, int fieldLength, int line, struct Vm* vm);
 
 void freeExpr(Expr* expr, struct Vm* vm);
 

@@ -262,6 +262,23 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             patchJump(endJump, vmChunk, parser);
             break;
         }
+        case EXPR_GET_FIELD:
+        {
+            compileBytecode(expr->getField.callee, parser, vmChunk, compiler, vm);
+            ObjString* name = copyString(expr->getField.fieldName, expr->getField.fieldLenght, vm);
+            uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
+            emitBytes(OP_GET_FIELD, nameIndex, vmChunk, parser, vm);
+            break;
+        }
+        case EXPR_SET_FIELD:
+        {
+            compileBytecode(expr->setField.callee, parser, vmChunk, compiler, vm);
+            compileBytecode(expr->setField.newValue, parser, vmChunk, compiler, vm);
+            ObjString* name = copyString(expr->setField.fieldName, expr->setField.fieldLenght, vm);
+            uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
+            emitBytes(OP_SET_FIELD, nameIndex, vmChunk, parser, vm);
+            break;
+        }
 
     }
 }
