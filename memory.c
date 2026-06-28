@@ -224,6 +224,7 @@ static void blackenObject(Obj* object, struct Vm* vm)
         {
             ObjClass* klass = (ObjClass*)object;
             markHashmap(&klass->methods, vm);
+            markObject((Obj*)klass->constructor, vm);
             for (int i = 0; i < klass->fieldCount; i++)
             {
                 markObject((Obj*)klass->fields[i].name, vm);

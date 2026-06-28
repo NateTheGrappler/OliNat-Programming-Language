@@ -52,10 +52,10 @@ typedef enum
     OP_SET_FIELD,
     OP_GET_FIELD,
     OP_FIELD_DEFAULT,
-    OP_INVOKE
+    OP_INVOKE,
+    OP_CONSTRUCTOR
 } OpCode;
 
-//TODO: add in more stack space, or at least bytecode value space
 typedef struct
 {
     int count;

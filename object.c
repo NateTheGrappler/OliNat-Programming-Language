@@ -88,6 +88,7 @@ ObjFunction* newFunction(const char* name, int nameLength, ValueType returnType,
     function->upValueCount = 0;
     initChunk(&function->chunk);
     function->returnType = returnType;
+    function->isConstructor = false;
     return function;
 }
 ObjStaticArray* newStaticArray(int count, ValueType type, struct Vm* vm)
@@ -139,6 +140,7 @@ ObjClass* newClass(const char* name, int nameLength, struct Vm* vm)
     klass->name = name;
     klass->nameLength = nameLength;
     klass->fieldCount = 0;
+    klass->constructor = NULL;
     initMap(&klass->methods);
     return klass;
 }
@@ -146,6 +148,13 @@ ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
 {
     ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE, vm);
     instance->class = klass;
+    instance->fields = NULL;
+    instance->fieldCount = 0;
+
+    //push instance onto stack so gc can see it
+    push(vm, CREATE_OBJECT_VAL((Obj*)instance));
+
+    //initalize after the gc can safely read it
     instance->fields = ALLOCATE(Value, klass->fieldCount, vm);
     instance->fieldCount = klass->fieldCount;
 
@@ -155,6 +164,7 @@ ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
         instance->fields[i] = klass->fields[i].defaultValue;
     }
 
+    pop(vm); //remove instance off stack
     return instance;
 }
 

@@ -69,6 +69,7 @@ typedef struct ObjFunction
     const char* name;
     int nameLength;
     int upValueCount;
+    bool isConstructor;
 } ObjFunction;
 typedef struct ObjUpValue
 {
@@ -105,6 +106,7 @@ typedef struct ObjClass
     int fieldCount;
 
     Hashmap methods;
+    ObjClosure* constructor;
 
 } ObjClass;
 typedef struct ObjInstance

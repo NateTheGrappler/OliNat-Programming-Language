@@ -652,6 +652,7 @@ static void varDeclaration(ASTparser* parser, TypeChecker* checker, AstCompiler*
     {
         error("A variable expression's type must be the same as it's declared type.", "TYPE MISMATCH ERROR", parser);
         freeExpr(varInitializer, vm); //fix possible leak on error
+        return;
     }
 
 
@@ -962,7 +963,7 @@ static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosin
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
     push(vm, CREATE_OBJECT_VAL((Obj*)newCompiler->function)); //push onto stack to protect from gc
 
-    if (!isTopLevel) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
+    if (!isTopLevel && !isMethod) { addSymbol(checker, name, nameLength, newCompiler->scopeDepth, returnType, newCompiler->function, parser); }
 
 }
 static ObjFunction* endFunctionCompiler(AstCompiler* compiler, ASTparser* parser, Vm* vm)
@@ -984,6 +985,12 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
 
     AstCompiler newCompiler;
     initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, isMethod, vm, checker, parser);
+
+    //check to see if the function is a constructor of a class object
+    if (isMethod && checker->currentClassName != NULL && strncmp(name, checker->currentClassName, nameLength) == 0)
+    {
+        newCompiler.function->isConstructor = true;
+    }
 
     //params
     consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
@@ -1279,8 +1286,19 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
                 //make sure that that closure gets attached over to the class
                 ObjString* methodName = copyString(name, nameLength, vm);
                 uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)methodName), vm);
-                emitByte(OP_CLASS_METHOD, &compiler->function->chunk, parser, vm);
-                emitByte(nameIndex, &compiler->function->chunk, parser, vm);
+
+                //check for constructor
+                if (strncmp(name, checker->currentClassName, checker->currentClassNameLength) == 0)
+                {
+                    //constructor has been found
+                    emitByte(OP_CONSTRUCTOR, &compiler->function->chunk, parser, vm);
+                }
+                else
+                {
+                    //regular class method
+                    emitByte(OP_CLASS_METHOD, &compiler->function->chunk, parser, vm);
+                    emitByte(nameIndex, &compiler->function->chunk, parser, vm);
+                }
             }
             else
             {

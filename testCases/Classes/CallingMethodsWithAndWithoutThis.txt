@@ -135,7 +135,6 @@ println(e.isAlive());
 println(e.health);
 
 
-
 //===================TEST SEVEN: Chained method calls=====================//
 #pullf io
 class Accumulator

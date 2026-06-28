@@ -239,8 +239,23 @@ static bool callValue(Value callee, int argCount, Vm* vm)
             case OBJ_CLASS:
             {
                 ObjClass* class = (ObjClass*)GET_OBJECT_VAL(callee);
+                push(vm, CREATE_OBJECT_VAL((Obj*)class)); //anchor against gc (istg)
                 ObjInstance* instance = newInstance(class, vm);
+                pop(vm); //pop off stack
                 vm->stackTop[-argCount - 1] = CREATE_OBJECT_VAL((Obj*)instance);
+
+                if (class->constructor != NULL)
+                {
+                    return call(class->constructor, argCount, vm);
+                }
+                else
+                {
+                    if (argCount != 0)
+                    {
+                        runtimeError(vm, "This class has no constructor but arguments were passed.", "RUNTIME ERROR");
+                        return false;
+                    }
+                }
                 return true;
             }
             default:
@@ -323,6 +338,13 @@ static vmResult run(Vm* vm)
                 #endif
 
                 Value functionReturn = pop(vm);
+
+                //instead of returning whatever the return is for a constructor, return the class instance instead
+                if (frame->closure->function->isConstructor)
+                {
+                    functionReturn = frame->slots[0];
+                }
+
                 closeUpvalues(vm, frame->slots);
                 vm->frameCount--;
 
@@ -840,9 +862,10 @@ static vmResult run(Vm* vm)
                 //stack holds the class object and then the method, so get it off the stack and append it to class's inner hashmap
                 Value nameVal = READ_CONSTANT();
                 ObjString* name = AS_STRING(nameVal);
-                Value method = pop(vm);
-                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 0));
+                Value method = peek(vm, 0);
+                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 1));
                 MapSet(&class->methods, name, method, vm);
+                pop(vm);
                 break;
             }
             case OP_CLASS_FIELD:
@@ -937,7 +960,31 @@ static vmResult run(Vm* vm)
                     if (name == instance->class->fields[i].name)
                     {
                         //make sure the type youre seeting is good and then set it
-                        if (newValue.type != instance->class->fields[i].type)
+                        bool typeMatch = (newValue.type == instance->class->fields[i].type);
+                        if (!typeMatch && IS_OBJECT(newValue))
+                        {
+                            Obj* obj = GET_OBJECT_VAL(newValue);
+                            ValueType fieldType = instance->class->fields[i].type;
+
+                            if (fieldType == VALUE_STRING && obj->type == OBJ_STRING) {typeMatch = true;}
+                            else if (obj->type == OBJ_STATIC_ARRAY)
+                            {
+                                ObjStaticArray* array = (ObjStaticArray*)obj;
+                                printf("DEBUG: fieldType=%d arrayType=%d\n", fieldType, array->arrayType);
+                                switch (fieldType)
+                                {
+                                    case VALUE_INT_ARRAY:    typeMatch = (array->arrayType == VALUE_INT);    break;
+                                    case VALUE_FLOAT_ARRAY:  typeMatch = (array->arrayType == VALUE_FLOAT);  break;
+                                    case VALUE_DOUBLE_ARRAY: typeMatch = (array->arrayType == VALUE_DOUBLE); break;
+                                    case VALUE_BOOL_ARRAY:   typeMatch = (array->arrayType == VALUE_BOOL);   break;
+                                    case VALUE_STRING_ARRAY: typeMatch = (array->arrayType == VALUE_STRING); break;
+                                    case VALUE_EMPTY_ARRAY:  typeMatch = true;                               break;
+                                    default: break;
+                                }
+                            }
+                        }
+
+                        if (!typeMatch)
                         {
                             runtimeError(vm, "Cannot assign a value of a different type to a field.", "TYPE MISMATCH ERROR");
                             return INTERPRET_RUNTIME_ERROR;
@@ -1039,6 +1086,13 @@ static vmResult run(Vm* vm)
                 newFrame->slots = vm->stackTop - argCount - 1;
 
                 frame = &vm->frames[vm->frameCount - 1];
+                break;
+            }
+            case OP_CONSTRUCTOR:
+            {
+                ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 1));
+                class->constructor = (ObjClosure*)GET_OBJECT_VAL(peek(vm, 0));
+                pop(vm);
                 break;
             }
 

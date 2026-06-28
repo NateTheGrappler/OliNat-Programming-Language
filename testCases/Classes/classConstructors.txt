@@ -1,0 +1,169 @@
+//===================TEST ONE: basic constructor setting fields=====================//
+#pullf io
+class Player
+{
+    make int health = 100;
+    make string name = "hero";
+
+    make empty Player(int newHealth, string newName)
+    {
+        this.health = newHealth;
+        this.name = newName;
+    }
+}
+make Player p = Player(50, "warrior");
+println(p.health);
+println(p.name);
+// expected: 50
+// expected: warrior
+
+
+//===================TEST TWO: constructor with default fields unchanged=====================//
+#pullf io
+class Box
+{
+    make int width = 10;
+    make int height = 20;
+    make int depth = 30;
+
+    make empty Box(int newWidth)
+    {
+        this.width = newWidth;
+    }
+}
+make Box b = Box(99);
+println(b.width);
+println(b.height);
+println(b.depth);
+// expected: 99
+// expected: 20
+// expected: 30
+
+
+//===================TEST THREE: constructor then method call=====================//
+#pullf io
+class Counter
+{
+    make int count = 0;
+
+    make empty Counter(int startVal)
+    {
+        this.count = startVal;
+    }
+    make int getCount()
+    {
+        return this.count;
+    }
+    make empty increment()
+    {
+        this.count += 1;
+    }
+}
+make Counter c = Counter(10);
+c.increment();
+c.increment();
+c.increment();
+println(c.getCount());
+// expected: 13
+
+
+//===================TEST FOUR: multiple instances with different constructor args=====================//
+#pullf io
+class Vector
+{
+    make int x = 0;
+    make int y = 0;
+
+    make empty Vector(int newX, int newY)
+    {
+        this.x = newX;
+        this.y = newY;
+    }
+}
+make Vector v1 = Vector(1, 2);
+make Vector v2 = Vector(10, 20);
+make Vector v3 = Vector(100, 200);
+println(v1.x);
+println(v2.y);
+println(v3.x);
+// expected: 1
+// expected: 20
+// expected: 100
+
+
+//===================TEST FIVE: constructor using math on args=====================//
+#pullf io
+class Circle
+{
+    make int radius = 0;
+    make int diameter = 0;
+
+    make empty Circle(int r)
+    {
+        this.radius = r;
+        this.diameter = r * 2;
+    }
+}
+make Circle c = Circle(7);
+println(c.radius);
+println(c.diameter);
+// expected: 7
+// expected: 14
+
+
+//===================TEST SIX: constructor args used in method=====================//
+#pullf io
+class BankAccount
+{
+    make int balance = 0;
+    make string owner = "unknown";
+
+    make empty BankAccount(int startBalance, string ownerName)
+    {
+        this.balance = startBalance;
+        this.owner = ownerName;
+    }
+    make empty deposit(int amount)
+    {
+        this.balance += amount;
+    }
+    make empty withdraw(int amount)
+    {
+        this.balance -= amount;
+    }
+    make int getBalance()
+    {
+        return this.balance;
+    }
+}
+make BankAccount acc = BankAccount(1000, "Nate");
+acc.deposit(500);
+acc.withdraw(200);
+println(acc.getBalance());
+println(acc.owner);
+// expected: 1300
+// expected: Nate
+
+
+//===================TEST SEVEN: constructor with bool field=====================//
+#pullf io
+class Light
+{
+    make bool on = false;
+    make string color = "white";
+
+    make empty Light(bool startState, string startColor)
+    {
+        this.on = startState;
+        this.color = startColor;
+    }
+    make bool isOn()
+    {
+        return this.on;
+    }
+}
+make Light l = Light(true, "red");
+println(l.isOn());
+println(l.color);
+// expected: true
+// expected: red

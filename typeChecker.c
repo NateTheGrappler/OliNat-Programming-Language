@@ -671,11 +671,8 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             //check for classes
             if (symbol->type == VALUE_CLASS)
             {
-                if (expr->objectCall.argCount != 0)
-                {
-                    typeError(checker, parser, expr, "Class constructors don't take arguments yet.", "TYPE ERROR");
-                    return VALUE_ERROR;
-                }
+                checker->lastClassName = symbol->name;
+                checker->lastClassNameLength = symbol->length;
                 result = VALUE_INSTANCE;
                 break;
             }
