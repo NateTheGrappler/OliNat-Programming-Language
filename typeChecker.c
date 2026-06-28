@@ -11,6 +11,10 @@ void initTypeChecker(TypeChecker* checker)
     checker->hadError = false;
     checker->errorCount = 0;
     checker->varCount = 0;
+    checker->lastClassName = NULL;
+    checker->lastClassNameLength = 0;
+    checker->currentClassName = NULL;
+    checker->currentClassNameLength = 0;
 }
 
 
@@ -475,6 +479,9 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].fieldsInfo = NULL;
     checker->symbols[index].fieldCount = 0;
     checker->symbols[index].fieldCapacity = 0;
+    checker->symbols[index].methodInfo = NULL;
+    checker->symbols[index].methodCount = 0;
+    checker->symbols[index].methodCapcaity = 0;
 }
 ValueType checkVariable(TypeChecker* checker, ASTparser* parser, Expr* expr)
 {
@@ -552,25 +559,114 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
         case EXPR_CALL:
         {
             //------------handling for actual method calls inside of classes------------//
-            // if (expr->objectCall.callee->type == EXPR_GET_FIELD)
-            // {
-            //     //TODO: update this abhorrent code whenever I want to add the this keyword
-            //     //check the type of the call expressions calle which is the get field expression which holds it's own
-            //     //expr which is actually just the ValueInstance (very confusing I know)
-            //     ValueType objectType = checkExpression(checker, expr->objectCall.callee->getField.callee, parser);
-            //     if (objectType != VALUE_INSTANCE)
-            //     {
-            //         typeError(checker, parser, expr, "Only class instances have methods that you are able to call.", "TYPE ERROR");
-            //         return VALUE_ERROR;
-            //     }
-            //     //TODO: look up method signature for proper arg type checking
-            //     result = VALUE_ANY;  // placeholder until method signatures are stored
-            //     break;
-            // }
+            if (expr->objectCall.callee->type == EXPR_GET_FIELD)
+            {
+                //TODO: update this abhorrent code whenever I want to add the this keyword
+                //check the type of the call expressions calle which is the get field expression which holds it's own
+                //expr which is actually just the ValueInstance (very confusing I know)
+                ValueType objectType = checkExpression(checker, expr->objectCall.callee->getField.callee, parser);
+                if (objectType != VALUE_INSTANCE)
+                {
+                    typeError(checker, parser, expr, "Only class instances have methods that you are able to call.", "TYPE ERROR");
+                    return VALUE_ERROR;
+                }
+
+                ///look up which class the method that you are trying to call belongs to, and then check out it's args
+                const char* className = NULL;
+                int classNameLength = 0;
+                //populate the class name information
+                if (expr->objectCall.callee->getField.callee->type == EXPR_VARIABLE) //basic class calls
+                {
+                    //get the instance call in look up, and then populated it with the stored class information there
+                    Symbol* instanceSymbol = lookUpSymbol(checker, expr->objectCall.callee->getField.callee->variable.name, expr->objectCall.callee->getField.callee->variable.length);
+                    if (instanceSymbol != NULL)
+                    {
+                        className = instanceSymbol->className;
+                        classNameLength = instanceSymbol->classNameLength;
+                    }
+                }
+                else if (expr->objectCall.callee->getField.callee->type == EXPR_THIS) //incase we are called inside of a class
+                {
+                    className = checker->currentClassName;
+                    classNameLength = checker->currentClassNameLength;
+                }
+                else //more complicated in case of multiple calls
+                {
+                    //otherwise just get the last one stored in checker
+                    className = checker->lastClassName;
+                    classNameLength = checker->lastClassNameLength;
+                }
+
+                //error check for no class name being found
+                if (className == NULL)
+                {
+                    typeError(checker, parser, expr, "Unknown class type called.", "TYPE ERROR");
+                    result = VALUE_ERROR;
+                    break;
+                }
+
+                //otherwise get the symbol for the class based on the gotten name so you can access the data there
+                Symbol* classSymbol = lookUpSymbol(checker, className, classNameLength);
+                if (classSymbol == NULL)
+                {
+                    typeError(checker, parser, expr, "Unknown class type called.", "TYPE ERROR");
+                    result = VALUE_ERROR;
+                    break;
+                }
+
+                //actually find the method inside of the class symbol as set up in functionDecalation in astcompiler.c
+                const char* methodName = expr->objectCall.callee->getField.fieldName;
+                int methodLength = expr->objectCall.callee->getField.fieldLenght;
+                bool methodFound = false;
+                for (int i = 0; i < classSymbol->methodCount; i++)
+                {
+                    //actually check to find the right method
+                    if (classSymbol->methodInfo[i].length == methodLength && memcmp(classSymbol->methodInfo[i].name, methodName, methodLength) == 0)
+                    {
+                        //check the arg count
+                        if (expr->objectCall.argCount != classSymbol->methodInfo[i].paramCount)
+                        {
+                            typeError(checker, parser, expr, "A different number of arguements was passed into class method call than defined in method's declaration.", "SYNTAX ERROR");
+                            result = VALUE_ERROR;
+                            methodFound = true;
+                            break;
+                        }
+
+                        //check the argtypes of that method now
+                        for (int j = 0; j < expr->objectCall.argCount; j++)
+                        {
+                            ValueType argType = checkExpression(checker, expr->objectCall.args[j], parser);
+                            if (classSymbol->methodInfo[i].param[j].type != VALUE_ANY && argType != classSymbol->methodInfo[i].param[j].type)
+                            {
+                                typeError(checker, parser, expr, "Instance method call was found with an arguement different from declared parameter type", "TYPE MISMATCH ERROR");
+                                result=VALUE_ERROR;
+                                methodFound = true;
+                                break;
+                            }
+                        }
+                        result = classSymbol->methodInfo[i].returnType;
+                        methodFound = true;
+                        break;
+                    }
+                }
+                if (!methodFound)
+                {
+                    typeError(checker, parser, expr, "Undefined method.", "TYPE ERROR");
+                    result = VALUE_ERROR;
+                }
+                break;
+            }
 
 
             //------------plain function handling-------------//
             Symbol* symbol = lookUpSymbol(checker, expr->objectCall.callee->variable.name, expr->objectCall.callee->variable.length);
+
+            //basic null check
+            if (symbol == NULL)
+            {
+                typeError(checker, parser, expr, "The object you are calling must be an existing function or class instance.", "UNDEFINED ERROR");
+                return VALUE_ERROR;
+            }
 
             //check for classes
             if (symbol->type == VALUE_CLASS)
@@ -585,7 +681,7 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             }
 
             //checking callee
-            if (symbol == NULL || symbol->function == NULL)
+            if (symbol->function == NULL)
             {
                 typeError(checker, parser, expr, "The object you are calling must be an existing function or class instance.", "UNDEFINED ERROR");
                 return VALUE_ERROR;
@@ -757,6 +853,21 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             break;
 
         }
+        case EXPR_THIS:
+        {
+            //check to make sure that 'this' is used inside of a class context
+            if (checker->currentClassName == NULL)
+            {
+                typeError(checker, parser, expr, "You may not use 'this' outside of a class method, there would be no 'this' to call.", "LOGIC ERROR");
+                result = VALUE_ERROR;
+                break;
+            }
+            //update lastClassName so that way chained calls using this would work as well
+            checker->lastClassName = checker->currentClassName;
+            checker->lastClassNameLength = checker->currentClassNameLength;
+            result = VALUE_INSTANCE; //since this is basically the clas s itself
+            break;
+        }
         default:
             result =  VALUE_ERROR;
             break;
@@ -781,6 +892,11 @@ void freeTypeChecker(TypeChecker* checker)
         {
             free(checker->symbols[i].fieldsInfo);
             checker->symbols[i].fieldsInfo = NULL;
+        }
+        if (checker->symbols[i].methodInfo != NULL)
+        {
+            free(checker->symbols[i].methodInfo);
+            checker->symbols[i].methodInfo = NULL;
         }
 
     }

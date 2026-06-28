@@ -51,7 +51,8 @@ typedef enum
     OP_CLASS_FIELD,
     OP_SET_FIELD,
     OP_GET_FIELD,
-    OP_FIELD_DEFAULT
+    OP_FIELD_DEFAULT,
+    OP_INVOKE
 } OpCode;
 
 //TODO: add in more stack space, or at least bytecode value space

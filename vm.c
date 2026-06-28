@@ -991,6 +991,56 @@ static vmResult run(Vm* vm)
                 done_get_field:
                 break;
             }
+            case OP_INVOKE:
+            {
+                //read the name of the method and then the argcount for it as well
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                uint8_t argCount = READ_BYTE();
+
+                //get the instance value as it sits below all the above items
+                Value instanceVal = peek(vm, argCount);
+
+                //checks
+                if (!IS_OBJECT(instanceVal) || GET_OBJECT_VAL(instanceVal)->type != OBJ_INSTANCE)
+                {
+                    runtimeError(vm, "You may only call a method from a class instance owning said method", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                //otherwise get the instance
+                ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
+
+                //look it up in the class hashmap
+                Value method;
+                if (!MapGet(&instance->class->methods, name, &method))
+                {
+                    runtimeError(vm, "Undefined method called.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+               //Move yourself towards the actual method
+                ObjClosure* closure = (ObjClosure*)GET_OBJECT_VAL(method);
+                if (vm->frameCount == FRAMES_MAX)
+                {
+                    runtimeError(vm, "Too many function calls deep.", "STACK OVERFLOW ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                if (argCount != closure->function->arity)
+                {
+                    runtimeError(vm, "Method was called with a different number of arguements than it had expected.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                //set up the callframe for that method to start running there
+                CallFrame* newFrame = &vm->frames[vm->frameCount++];
+                newFrame->closure = closure;
+                newFrame->ip = closure->function->chunk.byteCode;
+                newFrame->slots = vm->stackTop - argCount - 1;
+
+                frame = &vm->frames[vm->frameCount - 1];
+                break;
+            }
 
 
             default:

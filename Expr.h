@@ -24,10 +24,15 @@ typedef enum {
     EXPR_OR,
     EXPR_AND,
     EXPR_SET_FIELD,
-    EXPR_GET_FIELD
+    EXPR_GET_FIELD,
+    EXPR_THIS
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    //hold nothing, just an expr to showcase a this operation
+} Exprthis;
 typedef struct
 {
     struct Expr* callee;
@@ -135,6 +140,7 @@ typedef struct Expr {
         OrExpr orExpr;
         SetField setField;
         GetField getField;
+        Exprthis _this;
     };
 } Expr;
 
@@ -153,9 +159,10 @@ Expr* createOr           (Expr* left, Expr* right, int line, struct Vm* vm);
 Expr* createAnd          (Expr* left, Expr* right, int line, struct Vm* vm);
 Expr* createCall         (Expr* callee, Expr** args, int argCount,  int line, struct Vm* vm);
 Expr* createGrouping     (Expr* expr, int line, struct Vm* vm);
-Expr* createVariable(const char* name, int length, int line, struct Vm* vm);
-Expr* createGetField(Expr* callee, const char* fieldName, int fieldLength, int line, struct Vm* vm);
-Expr* createSetField(Expr* callee, Expr* newValue, const char* fieldName, int fieldLength, int line, struct Vm* vm);
+Expr* createVariable     (const char* name, int length, int line, struct Vm* vm);
+Expr* createGetField     (Expr* callee, const char* fieldName, int fieldLength, int line, struct Vm* vm);
+Expr* createSetField     (Expr* callee, Expr* newValue, const char* fieldName, int fieldLength, int line, struct Vm* vm);
+Expr* createThisExpr     (int line, struct Vm* vm);
 
 void freeExpr(Expr* expr, struct Vm* vm);
 

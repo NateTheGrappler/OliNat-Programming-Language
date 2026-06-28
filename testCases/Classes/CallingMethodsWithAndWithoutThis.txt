@@ -1,0 +1,230 @@
+//===================TEST ONE: basic call no 'this'=====================//
+#pullf io
+class Math
+{
+    make int add(int a, int b)
+    {
+        return a + b;
+    }
+    make int multiply(int a, int b)
+    {
+        return a * b;
+    }
+}
+make Math m = Math();
+make int sum = m.add(5, 3);
+make int product = m.multiply(4, 6);
+println(sum);
+println(product);
+
+
+//===================TEST TWO: changing inner values with 'this'=====================//
+#pullf io
+class Counter
+{
+    make int count = 0;
+    make empty increment(int amount)
+    {
+        this.count += amount;
+    }
+    make empty reset()
+    {
+        this.count = 0;
+    }
+}
+make Counter c = Counter();
+c.increment(5);
+c.increment(3);
+println(c.count);
+c.reset();
+println(c.count);
+
+
+//===================TEST THREE: returning with 'this'=====================//
+#pullf io
+class Player
+{
+    make int health = 100;
+    make int mana = 50;
+    make int getHealth()
+    {
+        return this.health;
+    }
+    make int getMana()
+    {
+        return this.mana;
+    }
+}
+make Player p = Player();
+make int h = p.getHealth();
+make int m = p.getMana();
+println(h);
+println(m);
+
+//===================TEST FOUR: using 'this' and regular params=====================//
+#pullf io
+class Player
+{
+    make int health = 100;
+    make empty takeDamage(int amount)
+    {
+        this.health -= amount;
+    }
+    make empty heal(int amount)
+    {
+        this.health += amount;
+    }
+    make int getHealth()
+    {
+        return this.health;
+    }
+}
+make Player p = Player();
+p.takeDamage(30);
+println(p.getHealth());
+p.heal(10);
+println(p.getHealth());
+
+//===================TEST FIVE: independ methods between instances=====================//
+#pullf io
+class Box
+{
+    make int value = 0;
+    make empty setValue(int v)
+    {
+        this.value = v;
+    }
+    make int getValue()
+    {
+        return this.value;
+    }
+}
+make Box a = Box();
+make Box b = Box();
+a.setValue(10);
+b.setValue(99);
+println(a.getValue());
+println(b.getValue());
+
+
+//===================TEST SIX: this values used as booleans=====================//
+#pullf io
+class Enemy
+{
+    make int health = 50;
+    make bool alive = true;
+    make empty takeDamage(int amount)
+    {
+        this.health -= amount;
+        if (this.health <= 0)
+        {
+            this.alive = false;
+        }
+    }
+    make bool isAlive()
+    {
+        return this.alive;
+    }
+}
+make Enemy e = Enemy();
+e.takeDamage(30);
+println(e.isAlive());
+println(e.health);
+e.takeDamage(30);
+println(e.isAlive());
+println(e.health);
+
+
+
+//===================TEST SEVEN: Chained method calls=====================//
+#pullf io
+class Accumulator
+{
+    make int total = 0;
+    make empty add(int n)
+    {
+        this.total = this.total + n;
+    }
+    make int getTotal()
+    {
+        return this.total;
+    }
+}
+make Accumulator acc = Accumulator();
+acc.add(10);
+acc.add(20);
+acc.add(30);
+println(acc.getTotal());
+
+//===================TEST EIGHT: pure 'this' access====================//
+#pullf io
+class Circle
+{
+    make double radius = 5.0;
+    make double doubled()
+    {
+        return this.radius + this.radius;
+    }
+}
+make Circle c = Circle();
+make double d = c.doubled();
+println(d);
+
+
+//===================TEST NINE: classes intermingling====================//
+#pullf io
+class Weapon
+{
+    make int damage = 25;
+    make int getDamage()
+    {
+        return this.damage;
+    }
+}
+class Player
+{
+    make int health = 100;
+    make empty takeDamage(int amount)
+    {
+        this.health = this.health - amount;
+    }
+    make int getHealth()
+    {
+        return this.health;
+    }
+}
+make Weapon w = Weapon();
+make Player p = Player();
+p.takeDamage(w.getDamage());
+println(p.getHealth());
+
+//===================TEST TEN: type mistmatch error====================//
+#pullf io
+class Adder
+{
+    make int add(int a, int b)
+    {
+        return a + b;
+    }
+}
+make Adder a = Adder();
+a.add(1.5, 2);
+
+//===================TEST ELEVEN: nested function calls with this====================//
+#pullf io
+class Accumulator
+{
+    make int total = 0;
+    make empty add(int n)
+    {
+        this.total = this.total + n;
+    }
+    make int addToTotal(int addAmount)
+    {
+        this.add(addAmount);
+        return this.total;
+    }
+}
+make Accumulator acc = Accumulator();
+println(acc.addToTotal(30));
+

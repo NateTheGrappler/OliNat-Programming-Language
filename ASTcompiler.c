@@ -17,13 +17,14 @@ static Expr* number(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm
 static Expr* boolean(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* string(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* unary(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
-static Expr*  grouping(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* grouping(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* binary(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
 static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm);
 static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* _and(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* acesssArray(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* variable(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* _this(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* functionCall(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
@@ -103,7 +104,7 @@ ParseRule rules[] = {
   [T_OR]            = {NULL,     _or,    PREC_OR},
   [T_RETURN]        = {NULL,     NULL,   PREC_NONE},
   [T_PULLF]         = {NULL,     NULL,   PREC_NONE},
-  [T_THIS]          = {NULL,     NULL,   PREC_NONE},
+  [T_THIS]          = {_this,     NULL,   PREC_NONE},
   [T_TRUE]          = {boolean,  NULL,   PREC_NONE},
   [T_MAKE]          = {NULL,     NULL,   PREC_NONE},
   [T_WHILE]         = {NULL,     NULL,   PREC_NONE},
@@ -122,6 +123,7 @@ void initAstCompiler(AstCompiler* compiler)
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->isTopLevel = false;
+    compiler->isClassMethod = false; //not really using this function no more, but for the memories ill add this
 }
 void initParser(ASTparser* parser, const char* source)
 {
@@ -423,6 +425,10 @@ static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr*
     Expr* right = parserPrecedence(PREC_AND, parser, compiler, vm);
     return createOr(left, right, parser->previous.line, vm);
 }
+static Expr* _this(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
+{
+    return createThisExpr(parser->previous.line, vm);
+}
 static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm)
 {
     consume(T_IDENTIFIER, "The dot operator must be calling some field or method from a class instance", "SYNTAX ERROR", parser);
@@ -445,28 +451,36 @@ static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr
             Expr* get = createGetField(left, fieldName, nameLength, line, vm);
             Expr* value = astExpression(parser, compiler, vm);
             Expr* binary = createBinary(get, value, "+", line, vm);
-            return createSetField(left, binary, fieldName, nameLength, line, vm);
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
         }
         if (match(T_MINUS_EQUAL, parser))
         {
             Expr* get = createGetField(left, fieldName, nameLength, line, vm);
             Expr* value = astExpression(parser, compiler, vm);
             Expr* binary = createBinary(get, value, "-", line, vm);
-            return createSetField(left, binary, fieldName, nameLength, line, vm);
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
         }
         if (match(T_STAR_EQUAL, parser))
         {
             Expr* get = createGetField(left, fieldName, nameLength, line, vm);
             Expr* value = astExpression(parser, compiler, vm);
             Expr* binary = createBinary(get, value, "*", line, vm);
-            return createSetField(left, binary, fieldName, nameLength, line, vm);
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
         }
         if (match(T_SLASH_EQUAL, parser))
         {
             Expr* get = createGetField(left, fieldName, nameLength, line, vm);
             Expr* value = astExpression(parser, compiler, vm);
             Expr* binary = createBinary(get, value, "/", line, vm);
-            return createSetField(left, binary, fieldName, nameLength, line, vm);
+            Expr* leftCopy = ALLOCATE(Expr, 1, vm);
+            *leftCopy = *left;
+            return createSetField(leftCopy, binary, fieldName, nameLength, line, vm);
         }
         if (match(T_PLUS_PLUS, parser))
         {
@@ -605,12 +619,10 @@ static ValueType getVarDeclarationType(ASTparser* parser, TypeChecker* checker)
             Symbol* symbol = lookUpSymbol(checker, name, length);
             if (symbol!=NULL && symbol->type == VALUE_CLASS)
             {
-                printf("Ran inside IF STATEMENT\n");
                 checker->lastClassName = name;
                 checker->lastClassNameLength = length;
                 return VALUE_INSTANCE;
             }
-            printf("Ran inside of T_IDENTIFER-3\n");
 
             error("Expected a type after 'make'", "SYNTAX ERROR", parser);
             return VALUE_ERROR;
@@ -925,15 +937,26 @@ int resolveUpvalue(AstCompiler* compiler, const char* name, int length)
     return -1;
 
 }
-static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, Vm* vm, TypeChecker* checker, ASTparser* parser)
+static void initFunctionCompiler(AstCompiler* newCompiler, AstCompiler* enclosing, const char* name, int nameLength, ValueType returnType, bool isTopLevel, bool isMethod, Vm* vm, TypeChecker* checker, ASTparser* parser)
 {
     memset(newCompiler, 0, sizeof(AstCompiler)); //zero out the compiler so it doesnt read garbage memory for an inner function and just die
 
     //zero out the compilers inner crap for locals
+    newCompiler->isClassMethod = isMethod;
     newCompiler->localCount = 1;
     newCompiler->scopeDepth = (enclosing == NULL) ? 0 : 1;
     newCompiler->enclosing = enclosing;
     newCompiler->isTopLevel = isTopLevel;
+
+    if (newCompiler->isClassMethod)
+    {
+        //tke up slot 0 for the 'this' keyword in the locals array instead of having it be the closure as normal
+        //at least for methods
+        Local* local = &newCompiler->locals[0];
+        local->name = "this";
+        local->length = 4;
+        local->depth = 1;
+    }
 
     //create the function compiler will fill and add to symbol table for recursive calls
     newCompiler->function = newFunction(name, nameLength, returnType, vm);
@@ -960,7 +983,7 @@ static void functionDeclaration(ASTparser* parser, TypeChecker* checker,AstCompi
     int nameLength = parser->previous.length;
 
     AstCompiler newCompiler;
-    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, vm, checker, parser);
+    initFunctionCompiler(&newCompiler, compiler, name, nameLength, type, false, isMethod, vm, checker, parser);
 
     //params
     consume(T_LEFT_PAREN, "Expected '(' after function name.", "SYNTAX ERROR", parser);
@@ -1225,6 +1248,10 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
         addSymbol(checker, name, nameLength, compiler->scopeDepth, VALUE_CLASS, NULL, parser);
     }
 
+    //set up current class context in checker so 'this' can be typechecked inside methods
+    checker->currentClassName = name;
+    checker->currentClassNameLength = nameLength;
+
     //emit onto the stack (OP_CLASS CODE, INDEX FOR NAME)
     emitByte(OP_CLASS, &compiler->function->chunk, parser, vm);
     ObjString* nameString = copyString(name, nameLength, vm);
@@ -1306,6 +1333,10 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
     }
     consume(T_RIGHT_BRACE, "A complete class body was expected after a new class declaration, please use '}'.", "SYNTAX ERROR", parser);
 
+
+    //clear the typechecker context after parsing the body is done for a class
+    checker->currentClassName = NULL;
+    checker->currentClassNameLength = 0;
 
     //define as global so it can be called
     emitDefineGlobal(name, nameLength, &compiler->function->chunk, parser, vm);
@@ -1475,21 +1506,59 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 
                     if (check(T_LEFT_PAREN, parser))
                     {
+                        advance(parser); //consume the '(' after seeing its there
+
                         //do methods
-                        // TODO: store method signature for type checking later
-                        int braceCount = 1;
-                        advance(parser);
-                        while (!check(T_EOF, parser))
+                        if (classSymbol->methodCount >= classSymbol->methodCapcaity)
                         {
-                            if (match(T_LEFT_BRACE, parser)) braceCount++;
-                            else if (match(T_RIGHT_BRACE, parser)) { braceCount--; if (braceCount == 0) break; }
-                            else advance(parser);
+                            //grow the methods array if needed
+                            int newCapacity = classSymbol->methodCapcaity == 0 ? 4 : classSymbol->methodCapcaity * 2;
+                            classSymbol->methodInfo = realloc(classSymbol->methodInfo, newCapacity * sizeof(CheckerMethodInfo));
+                            classSymbol->methodCapcaity = newCapacity;
+                        }
+
+                        int slot = classSymbol->methodCount++;
+                        classSymbol->methodInfo[slot].name = fieldName;
+                        classSymbol->methodInfo[slot].length = fieldNameLength;
+                        classSymbol->methodInfo[slot].name = fieldName;
+                        classSymbol->methodInfo[slot].returnType = fieldType;
+                        classSymbol->methodInfo[slot].paramCount = 0;
+
+                        //parse the actually params
+                        while (!check(T_RIGHT_PAREN, parser) && !check(T_EOF, parser))
+                        {
+                            ValueType paramType = getVarDeclarationType(parser, checker);
+                            consume(T_IDENTIFIER, "Expected parameter name.", "SYNTAX ERROR", parser);
+
+                            if (classSymbol->methodInfo[slot].paramCount < MAX_PARAMS)
+                            {
+                                ParamInfo* param = &classSymbol->methodInfo[slot].param[classSymbol->methodInfo[slot].paramCount++];
+                                param->type = paramType;
+                                param->name = parser->previous.lexemeStart;
+                                param->length = parser->previous.length;
+                            }
+
+                            if (check(T_RIGHT_PAREN, parser)) break;
+                            consume(T_COMMA, "Expected ',' between parameters inside of a class method declaration", "SYNTAX ERROR", parser);
+                        }
+                        consume(T_RIGHT_PAREN, "Expected a ')' to match every '(' in class method declarations", "SYNTAX ERROR", parser);
+
+                        //now you can skip the body because its gonna get parser later
+                        if (check(T_LEFT_BRACE, parser))
+                        {
+                            int braceCount = 1;
+                            consume(T_LEFT_BRACE, "", "", parser);
+                            while (braceCount > 0 && !check(T_EOF, parser))
+                            {
+                                if (match(T_LEFT_BRACE, parser)) braceCount++;
+                                else if (match(T_RIGHT_BRACE, parser)) braceCount--;
+                                else advance(parser);
+                            }
                         }
                     }
                     else
                     {
                         //do fields
-                        printf("DEBUG first pass: found field '%.*s' type %d\n", fieldNameLength, fieldName, fieldType);
                         if (classSymbol->fieldCount >= classSymbol->fieldCapacity)
                         {
                             int newCap = classSymbol->fieldCapacity == 0 ? 4 : classSymbol->fieldCapacity * 2;
@@ -1541,6 +1610,7 @@ ObjFunction* compile(const char* source, Vm* vm)
     ASTparser parser;
     initParser(&parser, source);
 
+    //second parser for the first pass through looking for declarations of classes and functions
     ASTparser parser2;
     initParser(&parser2, source);
 
@@ -1560,7 +1630,7 @@ ObjFunction* compile(const char* source, Vm* vm)
 
     //----------------------------Second pass--------------------//
     AstCompiler compiler;
-    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, true, vm, &checker, &parser);
+    initFunctionCompiler(&compiler, NULL, "<script>", 8, VALUE_EMPTY, true, false, vm, &checker, &parser);
 
     while (!check(T_EOF, &parser))
     {

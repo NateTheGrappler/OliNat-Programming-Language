@@ -176,6 +176,11 @@ void printExpression(Expr* expr) //a recursive function for printing out express
             printf(")");
             break;
         }
+        case EXPR_THIS:
+        {
+            printf("THIS-"); //just whatever so I know what it is
+            break;
+        }
 
 
     }
@@ -372,6 +377,15 @@ static int fieldDefaultInstruction(const char* name, Chunk* chunk, int offset)
     printf("%-16s type: %s\n", name, typeName);
     return offset + 2;
 }
+static int invokeInstruction(const char* name, Chunk* chunk, int offset)
+{
+    uint8_t nameIndex = chunk->byteCode[offset + 1];
+    uint8_t argCount  = chunk->byteCode[offset + 2];
+    printf("%-16s %4d '", name, nameIndex);
+    printValue(chunk->constants.values[nameIndex]);
+    printf("' args: %d\n", argCount);
+    return offset + 3; // opcode + name index + arg count
+}
 
 
 //actually main printing function
@@ -470,5 +484,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return constantInstruction("OP_GET_FIELD", chunk, offset);
         case OP_SET_FIELD:
             return constantInstruction("OP_SET_FIELD", chunk, offset);
+        case OP_INVOKE:
+            return invokeInstruction("OP_INVOKE", chunk, offset);
     }
 }

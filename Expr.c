@@ -215,7 +215,13 @@ Expr* createSetField(Expr* callee, Expr* newValue, const char* fieldName, int fi
     expr->setField.fieldName = fieldName;
     return expr;
 }
-
+Expr* createThisExpr(int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_THIS;
+    expr->line = line;
+    return expr;
+}
 
 void freeExpr(Expr* expr, struct Vm* vm)
 {
@@ -311,6 +317,10 @@ void freeExpr(Expr* expr, struct Vm* vm)
         {
             freeExpr(expr->getField.callee, vm);
             break;
+        }
+        case EXPR_THIS:
+        {
+            break; //no real data to free
         }
     }
 

@@ -207,6 +207,25 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         }
         case EXPR_CALL:
         {
+            //check to see if the call is happening from a GET_FIELD in a class (bascically a method call)
+            if (expr->objectCall.callee->type == EXPR_GET_FIELD)
+            {
+                //compile instance and the given arguements
+                compileBytecode(expr->objectCall.callee->getField.callee, parser, vmChunk, compiler, vm);
+                for (int i = 0; i < expr->objectCall.argCount; i++)
+                {
+                    compileBytecode(expr->objectCall.args[i], parser, vmChunk, compiler, vm);
+                }
+                //emit OP_INVOKE
+                ObjString* name = copyString(expr->objectCall.callee->getField.fieldName, expr->objectCall.callee->getField.fieldLenght, vm);
+                uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
+                emitByte(OP_INVOKE, vmChunk, parser, vm);
+                emitByte(nameIndex, vmChunk, parser, vm);
+                emitByte((uint8_t)expr->objectCall.argCount, vmChunk, parser, vm);
+                break;
+            }
+
+            //plain call path
             compileExpressionByte(expr->objectCall.callee, parser, vmChunk, compiler, vm);
             for (int i = 0; i < expr->objectCall.argCount; i++)
             {
@@ -277,6 +296,12 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
             ObjString* name = copyString(expr->setField.fieldName, expr->setField.fieldLenght, vm);
             uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
             emitBytes(OP_SET_FIELD, nameIndex, vmChunk, parser, vm);
+            break;
+        }
+        case EXPR_THIS:
+        {
+            ///just get the this variable where its stored at
+            emitGetLocal(0, vmChunk, parser, vm);
             break;
         }
 

@@ -46,6 +46,7 @@ typedef struct AstCompiler
     int localCount;
     int scopeDepth;
     bool isTopLevel;
+    bool isClassMethod;
     ObjFunction* function; //that you write to
     struct AstCompiler* enclosing;
 } AstCompiler;

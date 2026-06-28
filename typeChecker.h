@@ -14,7 +14,14 @@
 #include "object.h"
 
 typedef struct ASTparser;
-
+typedef struct CheckerMethodInfo
+{
+    const char* name;
+    int length;
+    ValueType returnType;
+    ParamInfo param[MAX_PARAMS];
+    int paramCount;
+} CheckerMethodInfo;
 typedef struct  CheckerFieldInfo
 {
     ValueType type;
@@ -42,6 +49,11 @@ typedef struct
     CheckerFieldInfo* fieldsInfo;
     int fieldCount;
     int fieldCapacity;
+
+    //for class methods
+    CheckerMethodInfo* methodInfo;
+    int methodCount;
+    int methodCapcaity;
 } Symbol;
 
 
@@ -52,8 +64,11 @@ typedef struct
     int errorCount;
     Symbol symbols[MAX_SYMBOLS];
     int varCount;
+
     const char* lastClassName;
     int lastClassNameLength;
+    const char* currentClassName;
+    int currentClassNameLength;
 } TypeChecker;
 
 
