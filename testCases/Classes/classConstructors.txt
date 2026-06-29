@@ -167,3 +167,52 @@ println(l.isOn());
 println(l.color);
 // expected: true
 // expected: red
+
+
+//===================TEST EIGHT: constructor with arrays=====================//
+#pullf io
+class Light
+{
+    make bool on = false;
+    make string[] color = ["RED"];
+
+    make empty Light(bool startState, string[] colorArray)
+    {
+        this.on = startState;
+        this.color = colorArray;
+    }
+    make bool isOn()
+    {
+        return this.on;
+    }
+}
+make Light l = Light(true, ["Blue"]);
+println(l.color[0]);
+
+//===================TEST NINE arrays with diffferent sizes (proto dynamic)=====================//
+#pullf io
+class Light
+{
+    make bool on = false;
+    make int[] count = [1, 2, 3];
+
+    make empty Light(bool isOn, int[] newCount)
+    {
+        this.on = isOn;
+        this.count = newCount;
+    }
+
+    make bool isOn()
+    {
+        return this.on;
+    }
+}
+make int[] newCount = [3, 2, 1, 0];
+
+make Light l = Light(true, newCount);
+
+
+println(l.on);
+println(l.count[3]);
+
+

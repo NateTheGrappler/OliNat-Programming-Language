@@ -32,13 +32,14 @@ static bool isArray(ValueType type)
 
 static void typeError(TypeChecker* checker, ASTparser* parser, Expr* expr, const char* message, const char* messageType)
 {
-    if (parser->hadError) return;
+    if (parser->panicMode) return;
 
     fprintf(stderr, ":>>  | %s | at line %d: %s] \n", messageType, expr->line, message);
     checker->hadError = true;
     checker->errorCount++;
 
     parser->hadError = true;
+    parser->panicMode = true;
 }
 
 static ValueType checkBinaryReturnType(ValueType right, ValueType left)
@@ -673,6 +674,53 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             {
                 checker->lastClassName = symbol->name;
                 checker->lastClassNameLength = symbol->length;
+
+                //type check the params of a constructor
+                Symbol* classSymbol = lookUpSymbol(checker, symbol->name, symbol->length);
+                if (classSymbol != NULL && expr->objectCall.argCount > 0)
+                {
+                    bool constructorFound = false;
+                    //walk through the list of args that a class might take in
+                    for (int i = 0; i < classSymbol->methodCount; i++)
+                    {
+                        if (classSymbol->methodInfo[i].length == symbol->length && memcmp(classSymbol->methodInfo[i].name, symbol->name, symbol->length) == 0)
+                        {
+                            constructorFound = true;
+                            if (expr->objectCall.argCount != classSymbol->methodInfo[i].paramCount)
+                            {
+                                typeError(checker, parser, expr, "Wrong number of arguments passed to constructor.", "SYNTAX ERROR");
+                                return VALUE_ERROR;
+                            }
+
+                            for (int j =0; j < expr->objectCall.argCount; j++)
+                            {
+                                ValueType argType = checkExpression(checker, expr->objectCall.args[j], parser);
+                                if (classSymbol->methodInfo[i].param[j].type != VALUE_ANY && argType != classSymbol->methodInfo[i].param[j].type)
+                                {
+                                    typeError(checker, parser, expr, "Constructor argument type does not match parameter type.", "TYPE MISMATCH ERROR");
+                                    return VALUE_ERROR;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    //if args were passed but no constructor exists
+                    if (!constructorFound && expr->objectCall.argCount > 0)
+                    {
+                        typeError(checker, parser, expr, "Arguments passed to a class with no constructor.","TYPE ERROR");
+                        return VALUE_ERROR;
+                    }
+                }
+                else
+                {
+                    //if there are no args, just check that the expressions exist
+                    for (int i = 0; i < expr->objectCall.argCount; i++)
+                    {
+                        checkExpression(checker, expr->objectCall.args[i], parser);
+                    }
+                }
+
+
                 result = VALUE_INSTANCE;
                 break;
             }

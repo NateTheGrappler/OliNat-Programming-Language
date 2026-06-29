@@ -211,6 +211,31 @@ static bool match(TokenType type, ASTparser* parser)
     advance(parser);
     return true;
 }
+static void synchronize(ASTparser* parser)
+{
+    parser->panicMode = false;
+    while (!parser->current.type != T_EOF)
+    {
+        //check if there is a semi colon
+        if (parser->previous.type == T_SEMICOLON) return;
+
+        //start a new declaration, find a new place to start parsing
+        switch (parser->current.type)
+        {
+            case T_CLASS:
+            case T_MAKE:
+            case T_FOR:
+            case T_IF:
+            case T_WHILE:
+            case T_RETURN:
+            case T_HASH_PULLF:
+                return;
+            default:
+                break;
+        }
+        advance(parser);
+    }
+}
 
 
 //literal expression parsing
@@ -1401,6 +1426,8 @@ static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* co
     {
         statement(parser, checker, compiler, vm);
     }
+
+    if (parser->panicMode) synchronize(parser);
 }
 static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
 {
@@ -1663,5 +1690,5 @@ ObjFunction* compile(const char* source, Vm* vm)
     freeTypeChecker(&checker);
 
     //emitReturn(&vm->chunk, &parser);
-    return parser.hadError ? NULL : topScript;
+    return (parser.hadError || checker.hadError) ? NULL : topScript;
 }

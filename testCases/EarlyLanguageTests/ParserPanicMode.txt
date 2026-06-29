@@ -1,0 +1,135 @@
+//========================Test ONE: multiple type mismatches in variable declarations========================//
+#pullf io
+make int x = "hello";
+make double d = true;
+make bool b = 42;
+make string s = 3.14;
+println(x);
+Should report 4 type mismatch errors, one per line.
+
+
+//========================Test TWO: multiple undefined variables========================//
+#pullf io
+make int result = undeclaredA + undeclaredB;
+make string name = undeclaredC;
+println(result);
+Should report 3 undefined variable errors.
+
+//========================Test THREE: type mismatches in expressionss========================//
+#pullf io
+make int x = 10;
+make bool b = true;
+make int result = x + b;
+make double d = x + "hello";
+make bool check = x && b;
+Should report 3 type errors — adding bool to int, adding string to int, and using && on non-booleans.
+
+//========================Test FOUR: multiple bad function calls========================//
+#pullf io
+#pullf math
+make double result1 = sqrt("hello");
+make double result2 = pow(1.0);
+make double result3 = sin(true);
+println(result1);
+Should report 3 type errors — wrong arg type, wrong arg count, wrong arg type.
+
+
+//========================Test FIVE:  multiple errors inside a class body========================//
+#pullf io
+class Player
+{
+    make int health = "full";
+    make bool alive = 42;
+    make string name = true;
+}
+make Player p = Player();
+println(p.health);
+Should report 3 field initializer type mismatch errors.
+
+
+
+//========================Test SIX: multiple errors across class usage========================//
+#pullf io
+class Box
+{
+    make int value = 0;
+    make empty setValue(int v)
+    {
+        this.value = v;
+    }
+}
+make Box b = Box();
+b.setValue("wrong");
+b.setValue(1, 2);
+b.undefinedMethod(1);
+
+Should report wrong arg type, wrong arg count, and undefined method errors.
+
+
+
+//========================Test SEVEN: errors in control flow conditions========================//
+#pullf io
+make int x = 5;
+if (x)
+{
+    println(x);
+}
+while (x + 1)
+{
+    x--;
+}
+for (make int i = 0; i + 1; i++)
+{
+    println(i);
+}
+
+Should report 3 errors — if, while, and for conditions must be boolean.
+
+
+
+
+//========================Test EIGHT: mix of parse and type errors========================//
+#pullf io
+make int x = 10
+make string s = 42;
+make bool b = "hello";
+println(x);
+
+First error is a missing semicolon parse error, then after sync it should catch the two type mismatches.
+
+
+
+
+
+//========================Test NINE: errors in nested scopes========================//
+#pullf io
+make int x = 10;
+{
+    make string y = 42;
+    make bool z = "test";
+}
+make double d = true;
+
+Should report all 3 errors across scopes.
+
+
+
+
+
+// ========================Test TEN: constructor with wrong arg types========================//
+#pullf io
+class Vec
+{
+    make int x;
+    make int y;
+    make empty Vec(int a, int b)
+    {
+        this.x = a;
+        this.y = b;
+    }
+}
+make Vec v1 = Vec("hello", true);
+make Vec v2 = Vec(1);
+make Vec v3 = Vec(1, 2, 3);
+
+Should report wrong arg types on v1, wrong arg count on v2, and wrong arg count on v3.

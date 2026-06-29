@@ -970,7 +970,6 @@ static vmResult run(Vm* vm)
                             else if (obj->type == OBJ_STATIC_ARRAY)
                             {
                                 ObjStaticArray* array = (ObjStaticArray*)obj;
-                                printf("DEBUG: fieldType=%d arrayType=%d\n", fieldType, array->arrayType);
                                 switch (fieldType)
                                 {
                                     case VALUE_INT_ARRAY:    typeMatch = (array->arrayType == VALUE_INT);    break;
