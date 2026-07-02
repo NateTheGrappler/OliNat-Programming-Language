@@ -76,7 +76,22 @@ Value boolToStrNative(int argCount, Value* args, struct Vm* vm);
 //--------------hashMap natives----------------//
 //TODO: do later
 //--------------dynamic array natives----------------//
-//TODO: do later
+typedef struct
+{
+    Value* values;
+    int count;
+    int capacity;
+} NativeArrayList;
+
+void arrayListInit(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+void arrayListFree(void* data, struct Vm* vm);
+void arrayListMark(void* data, struct Vm* vm);
+
+Value arrayListPush(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListGet(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListSet(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListSize(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListRemoveAt(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
 
 //--------------string natives----------------//
 Value strLength(int argCount, Value* args, struct Vm* vm);

@@ -37,3 +37,4 @@ void freeObjects(struct Vm* vm);
 
 void collectGarbage(struct Vm* vm);
 void markObject(struct Obj* object, struct Vm* vm);
+//void markValue(Value value, struct Vm* vm);

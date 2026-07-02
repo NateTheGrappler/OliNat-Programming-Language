@@ -4,6 +4,7 @@
 #include "vm.h"
 #include "debug.h"
 
+
 static void resetStack(Vm* vm)
 {
     //reset the pointer of the stack to the start of array
@@ -243,6 +244,7 @@ static bool callValue(Value callee, int argCount, Vm* vm)
                 ObjInstance* instance = newInstance(class, vm);
                 pop(vm); //pop off stack
                 vm->stackTop[-argCount - 1] = CREATE_OBJECT_VAL((Obj*)instance);
+
 
                 if (class->constructor != NULL)
                 {

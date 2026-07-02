@@ -192,3 +192,4 @@ ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
     return instance;
 }
 
+

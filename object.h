@@ -49,6 +49,8 @@ typedef struct ObjString
 } ObjString;
 
 
+
+
 //functions and their extensions
 typedef struct ParamInfo
 {
@@ -119,6 +121,7 @@ typedef struct ObjInstance
 } ObjInstance;
 
 
+
 //static array literals
 typedef struct ObjStaticArray
 {
@@ -157,4 +160,5 @@ ObjUpValue* newUpValue(Value* slot, struct Vm* vm);
 ObjClosure* newClosure(ObjFunction* function, struct Vm* vm);
 ObjClass* newClass(const char* name, int nameLength, struct Vm* vm);
 ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm);
+
 #endif //OLI_NAT_OBJECT_H

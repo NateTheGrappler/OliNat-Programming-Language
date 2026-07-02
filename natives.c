@@ -431,8 +431,37 @@ Value boolToStrNative(int argCount, Value* args, struct Vm* vm)
 
 //--------------hashMap natives----------------//
 //TODO: do later
-//--------------dynamic array natives----------------//
-//TODO: do later
+
+//--------------dynamic array natives----------------
+
+void arrayListInit(ObjInstance* instance, int argCount, Value* args, struct Vm* vm)
+{
+    NativeArrayList* list = ALLOCATE(NativeArrayList, 1, vm);
+    list->values = NULL;
+    list->count = 0;
+    list->capacity = 0;
+    //instance->nativeData = list;
+}
+void arrayListFree(void* data, struct Vm* vm)
+{
+    NativeArrayList* list = (NativeArrayList*)data;
+    FREE_ARRAY(Value, list->values, list->capacity, vm);
+    FREE(NativeArrayList, list, vm);
+}
+void arrayListMark(void* data, struct Vm* vm)
+{
+    NativeArrayList* list = (NativeArrayList*)data;
+    for (int i = 0; i < list->count; i++)
+    {
+        //markValue(list->values[i], vm);
+    }
+}
+
+Value arrayListPush(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListGet(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListSet(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListSize(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
+Value arrayListRemoveAt(ObjInstance* instance, int argCount, Value* args, struct Vm* vm);
 
 //--------------string natives----------------//
 Value strLength(int argCount, Value* args, struct Vm* vm)
