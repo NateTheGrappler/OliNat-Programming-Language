@@ -126,6 +126,18 @@ bool MapDelete(Hashmap* hashmap, ObjString* key)
 }
 
 
+void mapAddAll(Hashmap* from, Hashmap* to, struct Vm* vm)
+{
+    for (int i = 0; i < from->capacity; i++)
+    {
+        Bucket* entry = &from->buckets[i];
+        if (entry->key != NULL)
+        {
+            MapSet(to, entry->key, entry->value, vm);
+        }
+    }
+}
+
 //Interning strings
 ObjString* hashmapFindString(Hashmap* hashmap, const char* chars, int length, uint32_t hash)
 {

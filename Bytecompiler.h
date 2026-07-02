@@ -13,6 +13,7 @@
 void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCompiler* compiler, Vm* vm);
 void compileBytecode(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCompiler* compiler, Vm* vm);
 void emitDefineGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm);
+void emitGetGlobal(const char* name, int length, Chunk* chunk, ASTparser* parser, Vm* vm);
 void emitByte(uint8_t byte, Chunk* chunk, ASTparser* parser, Vm* vm);
 short emitJump(uint8_t instruction, Chunk* chunk, ASTparser* parser, Vm* vm);
 void emitConstant(Value value, Chunk* chunk, ASTparser* parser, Vm* vm);

@@ -141,6 +141,7 @@ ObjClass* newClass(const char* name, int nameLength, struct Vm* vm)
     klass->nameLength = nameLength;
     klass->fieldCount = 0;
     klass->constructor = NULL;
+    klass->superClass = NULL;
     initMap(&klass->methods);
     return klass;
 }
@@ -154,14 +155,37 @@ ObjInstance* newInstance(ObjClass* klass,  struct Vm* vm)
     //push instance onto stack so gc can see it
     push(vm, CREATE_OBJECT_VAL((Obj*)instance));
 
-    //initalize after the gc can safely read it
-    instance->fields = ALLOCATE(Value, klass->fieldCount, vm);
-    instance->fieldCount = klass->fieldCount;
-
-    //copy over the fields from the class to the instance after they have been allocated for
-    for (int i = 0; i < klass->fieldCount; i++)
+    //count total fields across the whole inheritance chain
+    int totalFields = 0;
+    ObjClass* current = klass;
+    while (current != NULL)
     {
-        instance->fields[i] = klass->fields[i].defaultValue;
+        totalFields += current->fieldCount;
+        current = current->superClass;
+    }
+
+    //initalize after the gc can safely read it
+    instance->fields = ALLOCATE(Value, totalFields, vm);
+    instance->fieldCount = totalFields;
+
+    int slot = 0;
+    ObjClass* chain[256]; // max depth for class inheritance
+    int depth = 0;
+    current = klass;
+    while (current!=NULL)
+    {
+        //copy over the chain of class inheritence
+        chain[depth++] = current;
+        current = current->superClass;
+    }
+
+    //walk down the list of super classes and set the default values for each one according to if the newsubclasses set actual vals
+    for (int i = depth - 1; i >= 0; i--)
+    {
+        for (int j = 0; j < chain[i]->fieldCount; j++)
+        {
+            instance->fields[slot++] = chain[i]->fields[j].defaultValue;
+        }
     }
 
     pop(vm); //remove instance off stack

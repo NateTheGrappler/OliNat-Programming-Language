@@ -1,0 +1,335 @@
+//===================TEST ONE: basic call no 'this'=====================//
+#pullf io
+class Math
+{
+    make int add(int a, int b)
+    {
+        return a + b;
+    }
+    make int multiply(int a, int b)
+    {
+        return a * b;
+    }
+}
+make Math m = Math();
+make int sum = m.add(5, 3);
+make int product = m.multiply(4, 6);
+println(sum);
+println(product);
+// Expected: 8, 24
+
+
+//===================TEST TWO: multi-field inheritance, slot offsets=====================//
+#pullf io
+class Vehicle
+{
+    make string brand = "Generic";
+    make int wheels = 4;
+}
+class Car -> Vehicle
+{
+    make string model = "Sedan";
+    make bool isElectric = false;
+}
+make Car c = Car();
+println(c.brand);
+println(c.wheels);
+println(c.model);
+println(c.isElectric);
+// Expected: Generic, 4, Sedan, false
+
+
+//===================TEST THREE: method override replaces superclass version=====================//
+#pullf io
+class Shape
+{
+    make string describe()
+    {
+        return "A shape";
+    }
+}
+class Circle -> Shape
+{
+    make string describe()
+    {
+        return "A circle";
+    }
+}
+make Circle c = Circle();
+println(c.describe());
+// Expected: A circle
+
+
+//===================TEST FOUR: pullf calling overridden super method=====================//
+#pullf io
+class Animal
+{
+    make empty speak()
+    {
+        println("Generic animal sound");
+    }
+}
+class Dog -> Animal
+{
+    make empty speak()
+    {
+        pullf.speak();
+        println("Woof!");
+    }
+}
+make Dog d = Dog();
+d.speak();
+// Expected: Generic animal sound, Woof!
+
+
+//===================TEST FIVE: three-level field chain=====================//
+#pullf io
+class A
+{
+    make int x = 1;
+}
+class B -> A
+{
+    make int y = 2;
+}
+class C -> B
+{
+    make int z = 3;
+}
+make C obj = C();
+println(obj.x);
+println(obj.y);
+println(obj.z);
+// Expected: 1, 2, 3
+
+
+//===================TEST SIX: method inherited from grandparent, untouched by middle class=====================//
+#pullf io
+class A
+{
+    make empty greet()
+    {
+        println("Hello from A");
+    }
+}
+class B -> A
+{
+    make int extra = 10;
+}
+class C -> B
+{
+    make int more = 20;
+}
+make C obj = C();
+obj.greet();
+println(obj.extra);
+println(obj.more);
+// Expected: Hello from A, 10, 20
+
+
+//===================TEST SEVEN: pullf chained across three levels=====================//
+// FAILED: FIX LATER
+#pullf io
+class A
+{
+    make empty announce()
+    {
+        println("A announces");
+    }
+}
+class B -> A
+{
+    make empty announce()
+    {
+        pullf.announce();
+        println("B announces");
+    }
+}
+class C -> B
+{
+    make empty announce()
+    {
+        pullf.announce();
+        println("C announces");
+    }
+}
+make C obj = C();
+obj.announce();
+// Expected: A announces, B announces, C announces
+
+
+//===================TEST EIGHT: sibling subclasses stay isolated=====================//
+#pullf io
+class Animal
+{
+    make string name = "Animal";
+    make empty speak()
+    {
+        println("...");
+    }
+}
+class Dog -> Animal
+{
+    make empty speak()
+    {
+        println("Woof!");
+    }
+}
+class Cat -> Animal
+{
+    make empty speak()
+    {
+        println("Meow!");
+    }
+}
+make Dog d = Dog();
+make Cat c = Cat();
+d.speak();
+c.speak();
+println(d.name);
+println(c.name);
+// Expected: Woof!, Meow!, Animal, Animal
+
+
+//===================TEST NINE: multiple instances of same subclass, field independence=====================//
+#pullf io
+class Counter
+{
+    make int count = 0;
+    make empty setCount(int n)
+    {
+        this.count = n;
+    }
+}
+class NamedCounter -> Counter
+{
+    make string label = "default";
+    make empty setLabel(string l)
+    {
+        this.label = l;
+    }
+}
+make NamedCounter c1 = NamedCounter();
+make NamedCounter c2 = NamedCounter();
+c1.setCount(5);
+c1.setLabel("first");
+c2.setCount(99);
+c2.setLabel("second");
+println(c1.count);
+println(c1.label);
+println(c2.count);
+println(c2.label);
+// Expected: 5, first, 99, second
+
+
+//===================TEST TEN: constructor field inheritance + inherited method reading subclass-set field=====================//
+#pullf io
+class Person
+{
+    make string name = "";
+    make empty Person(string n)
+    {
+        this.name = n;
+    }
+    make empty introduce()
+    {
+        println("Hi, I'm");
+        println(this.name);
+    }
+}
+class Student -> Person
+{
+    make string school = "";
+    make empty Student(string n, string s)
+    {
+        this.name = n;
+        this.school = s;
+    }
+}
+make Student s = Student("Alice", "MIT");
+s.introduce();
+println(s.school);
+// Expected: Hi, I'm, Alice, MIT
+
+
+//===================TEST ELEVEN: arithmetic across a three-level field chain=====================//
+#pullf io
+class Base
+{
+    make int score = 100;
+}
+class Mid -> Base
+{
+    make int bonus = 50;
+}
+class Leaf -> Mid
+{
+    make int penalty = 10;
+}
+make Leaf l = Leaf();
+make int total = l.score + l.bonus - l.penalty;
+println(total);
+// Expected: 140
+
+
+//===================TEST TWELVE: pullf used as a field access, not a call=====================//
+#pullf io
+class Base
+{
+    make string label = "BaseLabel";
+}
+class Derived -> Base
+{
+    make empty printBaseLabel()
+    {
+        println(pullf.label);
+    }
+}
+make Derived d = Derived();
+d.printBaseLabel();
+// Expected: BaseLabel
+
+
+//===================TEST THIRTEEN: this-dispatch through inherited AND subclass-defined methods=====================//
+#pullf io
+class Calculator
+{
+    make int square(int n)
+    {
+        return this.multiplyBySelf(n);
+    }
+    make int multiplyBySelf(int n)
+    {
+        return n * n;
+    }
+}
+class ScientificCalculator -> Calculator
+{
+    make int cube(int n)
+    {
+        return n * this.square(n);
+    }
+}
+make ScientificCalculator sc = ScientificCalculator();
+println(sc.square(4));
+println(sc.cube(3));
+// Expected: 16, 27
+
+
+//===================TEST FOURTEEN: empty subclass, pure passthrough inheritance=====================//
+#pullf io
+class Base
+{
+    make string greeting = "Hello from Base";
+    make empty announce()
+    {
+        println(this.greeting);
+    }
+}
+class EmptySub -> Base
+{
+}
+make EmptySub e = EmptySub();
+e.announce();
+println(e.greeting);
+// Expected: Hello from Base, Hello from Base

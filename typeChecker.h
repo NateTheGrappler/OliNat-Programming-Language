@@ -44,6 +44,8 @@ typedef struct
     //for classes
     const char* className;
     int classNameLength;
+    const char* superClassName;
+    int superClassNameLength;
 
     //for class instances
     CheckerFieldInfo* fieldsInfo;

@@ -25,10 +25,16 @@ typedef enum {
     EXPR_AND,
     EXPR_SET_FIELD,
     EXPR_GET_FIELD,
-    EXPR_THIS
+    EXPR_THIS,
+    EXPR_PULLF
 } ExprType;
 
 struct Expr;
+typedef struct
+{
+    const char* methodName;
+    int nameLength;
+} ExprPullf;
 typedef struct
 {
     //hold nothing, just an expr to showcase a this operation
@@ -141,6 +147,7 @@ typedef struct Expr {
         SetField setField;
         GetField getField;
         Exprthis _this;
+        ExprPullf pullf;
     };
 } Expr;
 
@@ -163,6 +170,7 @@ Expr* createVariable     (const char* name, int length, int line, struct Vm* vm)
 Expr* createGetField     (Expr* callee, const char* fieldName, int fieldLength, int line, struct Vm* vm);
 Expr* createSetField     (Expr* callee, Expr* newValue, const char* fieldName, int fieldLength, int line, struct Vm* vm);
 Expr* createThisExpr     (int line, struct Vm* vm);
+Expr* createPullfExpr    (const char* name, int length, int line, struct Vm* vm);
 
 void freeExpr(Expr* expr, struct Vm* vm);
 

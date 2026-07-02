@@ -437,6 +437,28 @@ ValueType checkClassField(TypeChecker* checker, Expr* expr, ASTparser* parser)
             return classSymbol->fieldsInfo[i].type;
         }
     }
+
+    //look up the fields in the other classes, walk up the chains
+    Symbol* currentClass = classSymbol;
+    while (currentClass != NULL)
+    {
+        for (int i = 0; i < currentClass->fieldCount; i++)
+        {
+            if (currentClass->fieldsInfo[i].length == fieldLength && memcmp(currentClass->fieldsInfo[i].name, fieldName, fieldLength) == 0)
+            {
+                if (currentClass->fieldsInfo[i].type == VALUE_INSTANCE)
+                {
+                    checker->lastClassName = currentClass->fieldsInfo[i].className;
+                    checker->lastClassNameLength = currentClass->fieldsInfo[i].classNameLength;
+                }
+                return currentClass->fieldsInfo[i].type;
+            }
+        }
+        if (currentClass->superClassName == NULL) break;
+        currentClass = lookUpSymbol(checker, currentClass->superClassName, currentClass->superClassNameLength);
+    }
+
+
     typeError(checker, parser, expr, "Undefined field.", "TYPE ERROR");
     return VALUE_ERROR;
 }
@@ -477,6 +499,8 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
     checker->symbols[index].isTemp = false;
     checker->symbols[index].className = NULL;
     checker->symbols[index].classNameLength = 0;
+    checker->symbols[index].superClassName = NULL;
+    checker->symbols[index].superClassNameLength = 0;
     checker->symbols[index].fieldsInfo = NULL;
     checker->symbols[index].fieldCount = 0;
     checker->symbols[index].fieldCapacity = 0;
@@ -559,10 +583,65 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
         }
         case EXPR_CALL:
         {
+            //handling for super calls
+            if (expr->objectCall.callee->type == EXPR_PULLF)
+            {
+                //check youre inside of class
+                if (checker->currentClassName == NULL)
+                {
+                    typeError(checker, parser, expr, "Cannot use 'pullf' outside of a class", "LOGIC ERROR");
+                    result = VALUE_ERROR;
+                    break;
+                }
+
+                //check you have a super class
+                Symbol* currentClass = lookUpSymbol(checker, checker->currentClassName, checker->currentClassNameLength);
+                if (currentClass == NULL || currentClass->superClassName == NULL)
+                {
+                    typeError(checker, parser, expr, "Cannot use 'pullf' in a class with no superClass", "LOGIC ERROR");
+                    result = VALUE_ERROR;
+                    break;
+                }
+                Symbol* superClass = lookUpSymbol(checker, currentClass->superClassName, currentClass->superClassNameLength);
+                if (superClass == NULL)
+                {
+                    typeError(checker, parser, expr, "Unknown superclass.", "TYPE ERROR");
+                    result = VALUE_ERROR;
+                    break;
+                }
+
+                const char* methodName = expr->objectCall.callee->pullf.methodName;
+                int methodLength = expr->objectCall.callee->pullf.nameLength;
+
+                bool found = false;
+                for (int i = 0; i < superClass->methodCount; i++)
+                {
+                    if (superClass->methodInfo[i].length == methodLength &&
+                        memcmp(superClass->methodInfo[i].name, methodName, methodLength) == 0)
+                    {
+                        //check args
+                        for (int j = 0; j < expr->objectCall.argCount; j++)
+                        {
+                            checkExpression(checker, expr->objectCall.args[j], parser);
+                        }
+                        result = superClass->methodInfo[i].returnType;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    typeError(checker, parser, expr, "Undefined method in superclass.", "TYPE ERROR");
+                    result = VALUE_ERROR;
+                }
+                break;
+            }
+
+
+
             //------------handling for actual method calls inside of classes------------//
             if (expr->objectCall.callee->type == EXPR_GET_FIELD)
             {
-                //TODO: update this abhorrent code whenever I want to add the this keyword
                 //check the type of the call expressions calle which is the get field expression which holds it's own
                 //expr which is actually just the ValueInstance (very confusing I know)
                 ValueType objectType = checkExpression(checker, expr->objectCall.callee->getField.callee, parser);
@@ -650,6 +729,30 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
                         break;
                     }
                 }
+                if (!methodFound)
+                {
+                    //walk the chain upwards to find the method in a possible superclass
+                    Symbol* superSym = (classSymbol->superClassName != NULL)
+                    ? lookUpSymbol(checker, classSymbol->superClassName, classSymbol->superClassNameLength)
+                    : NULL;
+                    while (superSym != NULL && !methodFound)
+                    {
+                        for (int i = 0; i < superSym->methodCount; i++)
+                        {
+                            if (superSym->methodInfo[i].length == methodLength &&
+                                memcmp(superSym->methodInfo[i].name, methodName, methodLength) == 0)
+                            {
+                                result = superSym->methodInfo[i].returnType;
+                                methodFound = true;
+                                break;
+                            }
+                        }
+                        superSym = (superSym->superClassName != NULL)
+                            ? lookUpSymbol(checker, superSym->superClassName, superSym->superClassNameLength)
+                            : NULL;
+                    }
+                }
+
                 if (!methodFound)
                 {
                     typeError(checker, parser, expr, "Undefined method.", "TYPE ERROR");
@@ -911,6 +1014,64 @@ ValueType checkExpression(TypeChecker* checker, Expr* expr, ASTparser* parser)
             checker->lastClassName = checker->currentClassName;
             checker->lastClassNameLength = checker->currentClassNameLength;
             result = VALUE_INSTANCE; //since this is basically the clas s itself
+            break;
+        }
+        case EXPR_PULLF:
+        {
+            //must be in a class
+            if (checker->currentClassName == NULL)
+            {
+                typeError(checker, parser, expr, "Cannot use 'pullf' outside of a class method.", "LOGIC ERROR");
+                result = VALUE_ERROR;
+                break;
+            }
+
+            //get the current class symbol to find its superclass
+            Symbol* currentClass = lookUpSymbol(checker, checker->currentClassName, checker->currentClassNameLength);
+            if (currentClass->superClassName == NULL)
+            {
+                typeError(checker, parser, expr, "Cannot use 'pullf' in a class with no superclass.", "LOGIC ERROR");
+                result = VALUE_ERROR;
+                break;
+            }
+
+            Symbol* superClass = lookUpSymbol(checker, currentClass->superClassName, currentClass->superClassNameLength);
+            if (superClass == NULL)
+            {
+                typeError(checker, parser, expr, "Unknown superclass.", "TYPE ERROR");
+                result = VALUE_ERROR;
+                break;
+            }
+
+            const char* memberName = expr->pullf.methodName;
+            int memberLength = expr->pullf.nameLength;
+
+
+            //check methods first
+            bool found = false;
+            for (int i = 0; i < superClass->methodCount; i++)
+            {
+                if (superClass->methodInfo[i].length == memberLength && memcmp(superClass->methodInfo[i].name, memberName, memberLength) == 0)
+                {
+                    result = superClass->methodInfo[i].returnType;
+                    found = true;
+                }
+            }
+
+            //then check the fields
+            for (int i = 0; i < superClass->fieldCount; i++)
+            {
+                if (superClass->fieldsInfo[i].length == memberLength && memcmp(superClass->fieldsInfo[i].name, memberName, memberLength) == 0)
+                {
+                    result = superClass->fieldsInfo[i].type;
+                    found = true;
+                }
+            }
+            if (!found)
+            {
+                typeError(checker, parser, expr, "Undefined field or method in superclass.", "TYPE ERROR");
+                result = VALUE_ERROR;
+            }
             break;
         }
         default:

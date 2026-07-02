@@ -15,6 +15,7 @@ typedef struct Vm vm;
 
 void initMap(Hashmap* hashmap);
 void freeMap(Hashmap* hashmap, struct Vm* vm);
+void mapAddAll(Hashmap* from, Hashmap* to, struct Vm* vm);
 
 bool MapSet(Hashmap* hashmap, ObjString* key, Value value, struct Vm* vm);
 bool MapGet(Hashmap* hashmap, ObjString* key, Value* value);

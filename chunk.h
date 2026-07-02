@@ -53,7 +53,10 @@ typedef enum
     OP_GET_FIELD,
     OP_FIELD_DEFAULT,
     OP_INVOKE,
-    OP_CONSTRUCTOR
+    OP_CONSTRUCTOR,
+    OP_INHERIT,
+    OP_SUPER,
+    OP_SUPER_INVOKE
 } OpCode;
 
 typedef struct

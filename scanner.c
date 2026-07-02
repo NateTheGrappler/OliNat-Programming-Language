@@ -306,6 +306,7 @@ Token scanToken(Scanner* scanner)
         {
             if (match('-', scanner)) return makeToken(T_MINUS_MINUS, scanner);
             if (match('=', scanner)) return makeToken(T_MINUS_EQUAL, scanner);
+            if (match('>', scanner)) return makeToken(T_INHERIT, scanner);
             return makeToken(T_MINUS, scanner);
         }
         //handle strings

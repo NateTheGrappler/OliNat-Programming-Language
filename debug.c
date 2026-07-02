@@ -488,5 +488,9 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return invokeInstruction("OP_INVOKE", chunk, offset);
         case OP_CONSTRUCTOR:
             return  simpleInstruction("OP_CONSTRUCTOR", offset);
+        case OP_INHERIT:
+            return  simpleInstruction("OP_INHERIT", offset);
+        case OP_SUPER:
+            return  simpleInstruction("OP_SUPER", offset);
     }
 }

@@ -25,6 +25,7 @@ static Expr* _and(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr
 static Expr* acesssArray(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static Expr* variable(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* _this(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
+static Expr* pullf(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm);
 static Expr* functionCall(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr* left, Vm* vm);
 static void declaration(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
 static void statement(ASTparser* parser, TypeChecker* checker, AstCompiler* compiler, Vm* vm);
@@ -103,7 +104,7 @@ ParseRule rules[] = {
   [T_EMPTY]         = {NULL,     NULL,   PREC_NONE},
   [T_OR]            = {NULL,     _or,    PREC_OR},
   [T_RETURN]        = {NULL,     NULL,   PREC_NONE},
-  [T_PULLF]         = {NULL,     NULL,   PREC_NONE},
+  [T_PULLF]         = {pullf,     NULL,   PREC_NONE},
   [T_THIS]          = {_this,     NULL,   PREC_NONE},
   [T_TRUE]          = {boolean,  NULL,   PREC_NONE},
   [T_MAKE]          = {NULL,     NULL,   PREC_NONE},
@@ -453,6 +454,15 @@ static Expr* _or(bool canAssign, ASTparser* parser, AstCompiler* compiler, Expr*
 static Expr* _this(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
 {
     return createThisExpr(parser->previous.line, vm);
+}
+static Expr* pullf(bool canAssign, ASTparser* parser, AstCompiler* compiler, Vm* vm)
+{
+    consume(T_DOT, "Expected '.' after 'pullf'.", "SYNTAX ERROR", parser);
+    consume(T_IDENTIFIER, "Expected method or field name after 'pullf'.", "SYNTAX ERROR", parser);
+    const char* methodName = parser->previous.lexemeStart;
+    int methodLength = parser->previous.length;
+    return createPullfExpr(methodName, methodLength, parser->previous.line, vm);
+
 }
 static Expr* dot(bool canAssign, ASTparser* parser, AstCompiler* compiler,  Expr* left, Vm* vm)
 {
@@ -1273,6 +1283,7 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
     const char* name = parser->previous.lexemeStart;
     int nameLength = parser->previous.length;
 
+
     //add into symbol table, if it hasnt already gotten added in the first look through
     Symbol* existing = lookUpSymbol(checker, name, nameLength);
     if(existing == NULL)
@@ -1290,6 +1301,22 @@ static void classDeclaration(ASTparser* parser, TypeChecker* checker, AstCompile
     uint8_t nameIndex = addConstant(&compiler->function->chunk, CREATE_OBJECT_VAL((Obj*)nameString), vm);
     emitByte(nameIndex, &compiler->function->chunk, parser, vm);
 
+    //do inheritance
+    if (match(T_INHERIT, parser))
+    {
+        //get the name of the super class
+        consume(T_IDENTIFIER, "Expected a superclass name after the '->' token.", "SYNTAX ERROR", parser);
+        const char* superClassName = parser->previous.lexemeStart;
+        int superClassNameLength = parser->previous.length;
+
+        //update inner symbol metadata
+        existing->superClassName = superClassName;
+        existing->superClassNameLength = superClassNameLength;
+
+        //push the super class onto stack and the combine the two classes
+        emitGetGlobal(superClassName, superClassNameLength, &compiler->function->chunk, parser, vm);
+        emitByte(OP_INHERIT, &compiler->function->chunk, parser, vm);
+    }
 
     consume(T_LEFT_BRACE, "A class body was expected after a new class declaration, please use '{'.", "SYNTAX ERROR", parser);
     while (!check(T_RIGHT_BRACE, parser) && !check(T_EOF, parser))
@@ -1535,6 +1562,13 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         //add in symbol and then get it for editing fields
         addSymbol(checker, name, nameLength, 0, VALUE_CLASS, NULL, parser);
         Symbol* classSymbol = lookUpSymbol(checker, name, nameLength);
+
+        if (match(T_INHERIT, parser))
+        {
+            consume(T_IDENTIFIER, "Expected superclass name after '->'.", "SYNTAX ERROR", parser);
+            classSymbol->superClassName = parser->previous.lexemeStart;
+            classSymbol->superClassNameLength = parser->previous.length;
+        }
 
         if (check(T_LEFT_BRACE, parser))
         {

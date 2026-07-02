@@ -953,47 +953,63 @@ static vmResult run(Vm* vm)
                 }
                 ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
 
-
-                for (int i = 0; i < instance->class->fieldCount; i++)
+                //updated to now look through the fields of the upper super classes in heritance chain
+                int slotOffset = 0;
+                int depth = 0;
+                ObjClass* current = instance->class;
+                ObjClass* chain[256];
+                while (current != NULL)
                 {
-                    //check to see if you even have that given field
-                    if (name == instance->class->fields[i].name)
+                    //walk up to root first get right offset
+                    chain[depth++] = current;
+                    current = current->superClass;
+                }
+                for (int i = depth-1; i >=0; i--)
+                {
+                    for (int j = 0; j < chain[i]->fieldCount; j++)
                     {
-                        //make sure the type youre seeting is good and then set it
-                        bool typeMatch = (newValue.type == instance->class->fields[i].type);
-                        if (!typeMatch && IS_OBJECT(newValue))
+                        //check to see if you even have that given field
+                        if (name == chain[i]->fields[j].name)
                         {
-                            Obj* obj = GET_OBJECT_VAL(newValue);
-                            ValueType fieldType = instance->class->fields[i].type;
-
-                            if (fieldType == VALUE_STRING && obj->type == OBJ_STRING) {typeMatch = true;}
-                            else if (obj->type == OBJ_STATIC_ARRAY)
+                            //make sure the type youre seeting is good and then set it
+                            bool typeMatch = (newValue.type == chain[i]->fields[j].type);
+                            if (!typeMatch && IS_OBJECT(newValue))
                             {
-                                ObjStaticArray* array = (ObjStaticArray*)obj;
-                                switch (fieldType)
+                                Obj* obj = GET_OBJECT_VAL(newValue);
+                                ValueType fieldType = chain[i]->fields[j].type;
+
+                                if (fieldType == VALUE_STRING && obj->type == OBJ_STRING) {typeMatch = true;}
+                                else if (obj->type == OBJ_STATIC_ARRAY)
                                 {
-                                    case VALUE_INT_ARRAY:    typeMatch = (array->arrayType == VALUE_INT);    break;
-                                    case VALUE_FLOAT_ARRAY:  typeMatch = (array->arrayType == VALUE_FLOAT);  break;
-                                    case VALUE_DOUBLE_ARRAY: typeMatch = (array->arrayType == VALUE_DOUBLE); break;
-                                    case VALUE_BOOL_ARRAY:   typeMatch = (array->arrayType == VALUE_BOOL);   break;
-                                    case VALUE_STRING_ARRAY: typeMatch = (array->arrayType == VALUE_STRING); break;
-                                    case VALUE_EMPTY_ARRAY:  typeMatch = true;                               break;
-                                    default: break;
+                                    ObjStaticArray* array = (ObjStaticArray*)obj;
+                                    switch (fieldType)
+                                    {
+                                        case VALUE_INT_ARRAY:    typeMatch = (array->arrayType == VALUE_INT);    break;
+                                        case VALUE_FLOAT_ARRAY:  typeMatch = (array->arrayType == VALUE_FLOAT);  break;
+                                        case VALUE_DOUBLE_ARRAY: typeMatch = (array->arrayType == VALUE_DOUBLE); break;
+                                        case VALUE_BOOL_ARRAY:   typeMatch = (array->arrayType == VALUE_BOOL);   break;
+                                        case VALUE_STRING_ARRAY: typeMatch = (array->arrayType == VALUE_STRING); break;
+                                        case VALUE_EMPTY_ARRAY:  typeMatch = true;                               break;
+                                        default: break;
+                                    }
                                 }
                             }
-                        }
 
-                        if (!typeMatch)
-                        {
-                            runtimeError(vm, "Cannot assign a value of a different type to a field.", "TYPE MISMATCH ERROR");
-                            return INTERPRET_RUNTIME_ERROR;
-                        }
-                        instance->fields[i] = newValue;
-                        push(vm, newValue);
+                            if (!typeMatch)
+                            {
+                                runtimeError(vm, "Cannot assign a value of a different type to a field.", "TYPE MISMATCH ERROR");
+                                return INTERPRET_RUNTIME_ERROR;
+                            }
+                            instance->fields[slotOffset + j] = newValue;
+                            push(vm, newValue);
 
-                        goto done_set_field; //not the cleanest but what can you do
+                            goto done_set_field; //not the cleanest but what can you do
+                        }
                     }
+                    slotOffset += chain[i]->fieldCount;
                 }
+
+
                 //if you didnt find the field toss an error
                 runtimeError(vm, "Undefined field.", "RUNTIME ERROR");
                 return INTERPRET_RUNTIME_ERROR;
@@ -1014,14 +1030,28 @@ static vmResult run(Vm* vm)
                 }
                 ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
 
-                //check to see if the name is a field
-                for (int i = 0; i < instance->class->fieldCount; i++)
+                //updated to now look through the fields of the upper super classes in heritance chain
+                int slotOffset = 0;
+                int depth = 0;
+                ObjClass* current = instance->class;
+                ObjClass* chain[256];
+                while (current != NULL)
                 {
-                    if (name == instance->class->fields[i].name)
+                     //walk up to root first get right offset
+                    chain[depth++] = current;
+                    current = current->superClass;
+                }
+                for (int i = depth-1; i >=0; i--)
+                {
+                    for (int j = 0; j < chain[i]->fieldCount; j++)
                     {
-                        push(vm, instance->fields[i]); //push value of instance's field onto stack
-                        goto done_get_field;
+                        if (name == chain[i]->fields[j].name)
+                        {
+                            push(vm, instance->fields[slotOffset+j]);
+                            goto done_get_field;
+                        }
                     }
+                    slotOffset += chain[i]->fieldCount;
                 }
 
                 Value method;
@@ -1092,6 +1122,107 @@ static vmResult run(Vm* vm)
                 ObjClass* class = (ObjClass*)GET_OBJECT_VAL(peek(vm, 1));
                 class->constructor = (ObjClosure*)GET_OBJECT_VAL(peek(vm, 0));
                 pop(vm);
+                break;
+            }
+            case OP_INHERIT:
+            {
+                Value superValue = peek(vm, 0);
+                if (!IS_OBJECT(superValue) || GET_OBJECT_VAL(superValue)->type != OBJ_CLASS)
+                {
+                    runtimeError(vm, "The object a class is inheriting from must be another class.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjClass* superClass= (ObjClass*)GET_OBJECT_VAL(superValue);
+                ObjClass* inheritingClass = (ObjClass*)GET_OBJECT_VAL(peek(vm, 1));
+
+                //set pointer and copy methods
+                mapAddAll(&superClass->methods, &inheritingClass->methods, vm);
+                inheritingClass->superClass = superClass;
+
+                pop(vm); //super class
+                break;
+            }
+            case OP_SUPER:
+            {
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                Value instanceVal = peek(vm, 0);
+                ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
+
+                ObjClass* super = instance->class->superClass;
+                if (super == NULL)
+                {
+                    runtimeError(vm, "This class has no superclass to call 'pullf' on", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                //check methods first
+                Value method;
+                if (MapGet(&super->methods, name, &method))
+                {
+                    push(vm, method);
+                    break;
+                }
+
+                //then check fields (get offset since super sit at bottom)
+                int slotOffset = 0;
+                for (int i = 0; i < super->fieldCount; i++)
+                {
+                    if (name == super->fields[i].name)
+                    {
+                        push(vm, instance->fields[slotOffset + i]);
+                        goto done_pullf;
+                    }
+                }
+
+                runtimeError(vm, "Undefined field or method in superclass.", "RUNTIME ERROR");
+                return INTERPRET_RUNTIME_ERROR;
+
+                done_pullf:
+                break;
+            }
+            case OP_SUPER_INVOKE:
+            {
+                //same as regular invoke, but just get the superclass instead of regular class
+                Value nameVal = READ_CONSTANT();
+                ObjString* name = AS_STRING(nameVal);
+                uint8_t argCount = READ_BYTE();
+
+                Value instanceVal = peek(vm, argCount);
+                if (!IS_OBJECT(instanceVal) || GET_OBJECT_VAL(instanceVal)->type != OBJ_INSTANCE)
+                {
+                    runtimeError(vm, "Can only call pullf from a class instance.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                ObjInstance* instance = (ObjInstance*)GET_OBJECT_VAL(instanceVal);
+
+                ObjClass* super = instance->class->superClass;
+                if (super == NULL)
+                {
+                    runtimeError(vm, "No superclass to call pullf on.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                Value method;
+                if (!MapGet(&super->methods, name, &method))
+                {
+                    runtimeError(vm, "Undefined method in superclass.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjClosure* closure = (ObjClosure*)GET_OBJECT_VAL(method);
+                if (argCount != closure->function->arity)
+                {
+                    runtimeError(vm, "Wrong number of arguments to superclass method.", "RUNTIME ERROR");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                CallFrame* newFrame = &vm->frames[vm->frameCount++];
+                newFrame->closure = closure;
+                newFrame->ip = closure->function->chunk.byteCode;
+                newFrame->slots = vm->stackTop - argCount - 1;
+                frame = &vm->frames[vm->frameCount - 1];
                 break;
             }
 

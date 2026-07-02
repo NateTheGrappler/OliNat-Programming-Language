@@ -107,6 +107,7 @@ typedef struct ObjClass
 
     Hashmap methods;
     ObjClosure* constructor;
+    struct ObjClass* superClass;
 
 } ObjClass;
 typedef struct ObjInstance

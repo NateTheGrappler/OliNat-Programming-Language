@@ -207,6 +207,21 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         }
         case EXPR_CALL:
         {
+            if (expr->objectCall.callee->type == EXPR_PULLF)
+            {
+                emitGetLocal(0, vmChunk, parser, vm); // push 'this'
+                for (int i = 0; i < expr->objectCall.argCount; i++)
+                {
+                    compileBytecode(expr->objectCall.args[i], parser, vmChunk, compiler, vm);
+                }
+                ObjString* name = copyString(expr->objectCall.callee->pullf.methodName, expr->objectCall.callee->pullf.nameLength, vm);
+                uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
+                emitByte(OP_SUPER_INVOKE, vmChunk, parser, vm);
+                emitByte(nameIndex, vmChunk, parser, vm);
+                emitByte((uint8_t)expr->objectCall.argCount, vmChunk, parser, vm);
+                break;
+            }
+
             //check to see if the call is happening from a GET_FIELD in a class (bascically a method call)
             if (expr->objectCall.callee->type == EXPR_GET_FIELD)
             {
@@ -302,6 +317,15 @@ void compileExpressionByte(Expr* expr, ASTparser* parser, Chunk* vmChunk, AstCom
         {
             ///just get the this variable where its stored at
             emitGetLocal(0, vmChunk, parser, vm);
+            break;
+        }
+        case EXPR_PULLF:
+        {
+            emitGetLocal(0, vmChunk, parser, vm); //push 'this' aka the instance onto stack
+            ObjString* name = copyString(expr->pullf.methodName, expr->pullf.nameLength, vm);
+            uint8_t nameIndex = addConstant(vmChunk, CREATE_OBJECT_VAL((Obj*)name), vm);
+            emitByte(OP_SUPER, vmChunk, parser, vm);
+            emitByte(nameIndex, vmChunk, parser, vm);
             break;
         }
 

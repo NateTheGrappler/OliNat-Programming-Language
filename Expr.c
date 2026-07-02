@@ -222,6 +222,18 @@ Expr* createThisExpr(int line, struct Vm* vm)
     expr->line = line;
     return expr;
 }
+Expr* createPullfExpr(const char* name, int length, int line, struct Vm* vm)
+{
+    Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
+    expr->type = EXPR_PULLF;
+    expr->line = line;
+
+    expr->pullf.methodName = name;
+    expr->pullf.nameLength= length;
+
+    return expr;
+}
+
 
 void freeExpr(Expr* expr, struct Vm* vm)
 {
@@ -321,6 +333,10 @@ void freeExpr(Expr* expr, struct Vm* vm)
         case EXPR_THIS:
         {
             break; //no real data to free
+        }
+        case EXPR_PULLF:
+        {
+            break; //pretty much same as this and var
         }
     }
 
