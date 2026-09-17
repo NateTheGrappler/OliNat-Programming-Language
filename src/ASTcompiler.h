@@ -4,6 +4,9 @@
 
 #ifndef OLI_NAT_ASTCOMPILER_H
 #define OLI_NAT_ASTCOMPILER_H
+
+#include <stdint.h>
+
 #define UINT16_COUNT (UINT16_MAX + 1)
 #define MAX_UPVALUES 256
 #define MAX_LOCALS 256

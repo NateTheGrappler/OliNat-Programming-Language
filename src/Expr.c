@@ -82,7 +82,7 @@ Expr* createVariable(const char* name, int length, int line, struct Vm* vm)
     expr->variable.name = name;
     return expr;
 }
-Expr* createVarAssignment(char* name, int length, Expr* value, int line, struct Vm* vm)
+Expr* createVarAssignment(const char* name, int length, Expr* value, int line, struct Vm* vm)
 {
     Expr* expr = (Expr*)reallocate(NULL, 0, sizeof(Expr), vm);
     expr->type = EXPR_ASSIGN;

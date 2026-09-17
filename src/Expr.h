@@ -156,7 +156,7 @@ Expr* createLiteralFloat (float value, int line, struct Vm* vm);
 Expr* createLiteralInt   (int value, int line, struct Vm* vm);
 Expr* createLiteralBool  (bool value, int line, struct Vm* vm);
 Expr* createLiteralString(char* value, int line, struct Vm* vm);
-Expr* createVarAssignment(char* name, int length, Expr* value, int line, struct Vm* vm);
+Expr* createVarAssignment(const char* name, int length, Expr* value, int line, struct Vm* vm);
 Expr* createStaticArray  (Expr** args, int count, ValueType type, int line, struct Vm* vm);
 Expr* createArraySet     (Expr* left, Expr* index, Expr* value, int line, struct Vm* vm);
 Expr* createArrayGet     (Expr* left, Expr* index, int line, struct Vm* vm);

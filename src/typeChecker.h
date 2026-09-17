@@ -13,7 +13,7 @@
 #include "debug.h"
 #include "object.h"
 
-typedef struct ASTparser;
+struct ASTparser;
 typedef struct CheckerMethodInfo
 {
     const char* name;

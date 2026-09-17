@@ -1,39 +1,31 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.20)
 project(Oli_Nat C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(Oli_Nat main.c
-        common.h
-        scanner.c
-        scanner.h
-        debug.c
-        debug.h
-        ASTcompiler.c
-        ASTcompiler.h
-        Bytecompiler.c
-        Bytecompiler.h
-        vm.c
-        vm.h
-        Expr.c
-        Expr.h
-        memory.c
-        memory.h
-        typeChecker.c
-        typeChecker.h
-        chunk.c
-        chunk.h
-        Value.c
-        Value.h
-        object.c
-        object.h
-        Hashmap.h
-        Hashmap.c
-        common.c
-        natives.h
-        natives.c
-        hashmap_types.h
+add_executable(Oli_Nat
+        src/main.c
+        src/scanner.c
+        src/debug.c
+        src/ASTcompiler.c
+        src/Bytecompiler.c
+        src/vm.c
+        src/Expr.c
+        src/memory.c
+        src/typeChecker.c
+        src/chunk.c
+        src/Value.c
+        src/object.c
+        src/Hashmap.c
+        src/common.c
+        src/natives.c
 )
+
+target_include_directories(Oli_Nat PRIVATE
+        include
+        src
+)
+
 target_link_libraries(Oli_Nat m)
 
 target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)

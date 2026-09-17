@@ -306,7 +306,7 @@ static void sweep(struct Vm* vm)
 //main function
 void collectGarbage(struct Vm* vm)
 {
-#ifdef DEBUG_LOG_GC  size_t before = vm.bytesAllocated;
+#ifdef DEBUG_LOG_GC
     printf("-- gc begin\n");
     size_t before = vm->bytesAllocated;
 #endif

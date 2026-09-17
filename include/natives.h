@@ -13,7 +13,7 @@
 #include <bits/time.h>
 #include <math.h>
 
-typedef struct Vm;
+struct Vm;
 
 //-----------------io natives--------------------//
 Value printNative(int argCount, Value* args, struct Vm* vm);
