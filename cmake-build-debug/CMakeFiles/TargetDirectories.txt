@@ -1,0 +1,3 @@
+/home/natang/Coding Projects/OliNat-Programming-Language/cmake-build-debug/CMakeFiles/Oli_Nat.dir
+/home/natang/Coding Projects/OliNat-Programming-Language/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/natang/Coding Projects/OliNat-Programming-Language/cmake-build-debug/CMakeFiles/rebuild_cache.dir

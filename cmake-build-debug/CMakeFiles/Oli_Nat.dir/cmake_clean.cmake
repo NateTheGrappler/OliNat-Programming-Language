@@ -1,0 +1,40 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/Oli_Nat.dir/link.d"
+  "CMakeFiles/Oli_Nat.dir/src/ASTcompiler.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/ASTcompiler.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/Bytecompiler.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/Bytecompiler.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/Expr.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/Expr.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/Hashmap.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/Hashmap.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/Value.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/Value.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/chunk.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/chunk.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/common.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/common.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/debug.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/debug.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/main.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/main.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/memory.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/memory.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/natives.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/natives.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/object.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/object.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/scanner.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/scanner.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/typeChecker.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/typeChecker.c.o.d"
+  "CMakeFiles/Oli_Nat.dir/src/vm.c.o"
+  "CMakeFiles/Oli_Nat.dir/src/vm.c.o.d"
+  "Oli_Nat"
+  "Oli_Nat.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/Oli_Nat.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
