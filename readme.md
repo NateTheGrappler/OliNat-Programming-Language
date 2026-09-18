@@ -39,7 +39,7 @@ source → scanner → Pratt parser → AST → type checker → bytecode compil
 
 ### Syntax Example
 
-```
+```C++
 #pullf io
 
 class Player
