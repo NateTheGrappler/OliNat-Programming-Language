@@ -1,0 +1,17 @@
+#pullf io
+class Vehicle
+{
+    make string brand = "Generic";
+    make int wheels = 4;
+}
+class Car -> Vehicle
+{
+    make string model = "Sedan";
+    make bool isElectric = false;
+}
+make Car c = Car();
+println(c.brand);
+println(c.wheels);
+println(c.model);
+println(c.isElectric);
+// Expected: Generic, 4, Sedan, false

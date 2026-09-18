@@ -1,0 +1,3 @@
+C:\msys64\ucrt64\bin\cmake.exe -E rm -f CMakeFiles\Oli_Nat.dir/objects.a
+C:\msys64\ucrt64\bin\ar.exe qc CMakeFiles\Oli_Nat.dir/objects.a @CMakeFiles\Oli_Nat.dir\objects1.rsp
+C:\msys64\ucrt64\bin\cc.exe -static -static-libgcc -Wl,--whole-archive CMakeFiles\Oli_Nat.dir/objects.a -Wl,--no-whole-archive -o Oli_Nat.exe -Wl,--out-implib,libOli_Nat.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Oli_Nat.dir\linkLibs.rsp

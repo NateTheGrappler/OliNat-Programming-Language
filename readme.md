@@ -10,6 +10,17 @@ Oli-Nat compiles source code through a full pipeline into bytecode executed by a
 source → scanner → Pratt parser → AST → type checker → bytecode compiler → VM
 ```
 
+## Table of Contents
+- [Overview](#overview)
+- [Language Features](#language-features)
+- [Standard Library](#standard-library)
+- [Architecture](#architecture)
+- [Opcodes](#opcodes)
+- [Building From Source](#building-from-source)
+- [Example Programs](#example-programs)
+- [Roadmap](#roadmap)
+
+
 ## Language Features
 
 - Static typing with explicit type annotations
@@ -177,6 +188,7 @@ All heap objects are allocated through a central `reallocate` function that trac
 git clone https://github.com/NateTheGrappler/OliNat-Programming-Language.git
 cd OliNat-Programming-Language
 mkdir cmake-build
+cd cmake-build
 cmake ..
 make
 ./Oli_Nat </path/to/your/source.oli>
@@ -200,7 +212,16 @@ mingw32-make
 ./Oli_Nat.exe </path/to/your/source.oli>
 ```
 
-#### Developer Tips:
+## Example Programs
+
+The [`testCases/`](testCases) folder has runnable `.oli` example programs covering classes, control flow, and the standard library. Once built, try one out:
+
+Run inside of cmake-build directory containing `Oli_Nat` executable
+```bash
+./Oli_Nat ../testCases/Classes/InheritanceTestBaby.oli
+```
+
+### Developer Tips:
 Enable debug tracing by defining `DEBUG_TRACE_EXECUTION` to print the stack state and disassembled instruction before each opcode. Define `DEBUG_LOG_GC` to trace garbage collection events.
 You can also uncomment the santitization libraries in the `cmake.txt` file in order to utilize that library if you have it
 installed
