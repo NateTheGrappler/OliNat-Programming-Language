@@ -28,5 +28,11 @@ target_include_directories(Oli_Nat PRIVATE
 
 target_link_libraries(Oli_Nat m)
 
-target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)
-target_link_options(Oli_Nat PRIVATE -fsanitize=address)
+#in case a user tries to run on windows, ship it with needed dll
+if (MINGW)
+    target_link_options(Oli_Nat PRIVATE -static -static-libgcc)
+endif()
+
+#debugging options for checking memory addresses
+#target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)
+#target_link_options(Oli_Nat PRIVATE -fsanitize=address)

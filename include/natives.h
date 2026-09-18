@@ -5,13 +5,20 @@
 #ifndef OLI_NAT_NATIVES_H
 #define OLI_NAT_NATIVES_H
 #include "common.h"
-#include "values.h"
+#include "Value.h"
 #include "object.h"
 #include "debug.h"
 #include <errno.h>
 #include <time.h>
-#include <bits/time.h>
 #include <math.h>
+
+
+//add in the windows needed library if compiling for windows
+//only add in the sleep function because if you add in the whole windows.h it causes
+//a name collision with the TokenType enum
+#ifdef _WIN32
+__declspec(dllimport) void __stdcall Sleep(unsigned long dwMilliseconds);
+#endif
 
 struct Vm;
 

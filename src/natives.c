@@ -169,7 +169,7 @@ Value sleepNative(int argCount, Value* args, struct Vm* vm) //pause program for 
     if (IS_DOUBLE(args[0])) { ms = GET_DOUBLE_VAL(args[0]); }
 
 #ifdef _WIN32
-    Sleep((DWORD)ms);
+    Sleep((unsigned long)ms);
 #else
     struct timespec ts;
     ts.tv_sec = (time_t)(ms / 1000);

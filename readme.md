@@ -1,4 +1,4 @@
-# Oli-Nat
+![Oli-Nat-Banner](/assets/Oli-Nat-Logo-Banner.png)
 
 A statically-typed bytecode VM language built in C from scratch.
 
@@ -21,6 +21,7 @@ source → scanner → Pratt parser → AST → type checker → bytecode compil
 - First-class functions with closures and upvalue capture
 - Classes with typed fields, default values, and methods
 - Class instance creation and field access via dot notation
+- Classes with inheritance and custom constructors
 - String concatenation and O(1) string equality via interning
 - Arithmetic and comparison operators with numeric type promotion
 - Standard library via `#pullf` imports
@@ -168,21 +169,45 @@ All heap objects are allocated through a central `reallocate` function that trac
 | `OP_SET_FIELD`                | Set a field on an instance with type checking        |
 | `OP_POP`                      | Discard top of stack                                 |
 
-## Building
+## Building From Source:
+
+### Linux / MacOS
 
 ```bash
-mkdir cmake-build-debug
-cd cmake-build-debug
+git clone https://github.com/NateTheGrappler/OliNat-Programming-Language.git
+cd OliNat-Programming-Language
+mkdir cmake-build
 cmake ..
 make
-./Oli_Nat source.oli
+./Oli_Nat </path/to/your/source.oli>
+```
+### Windows (MSYS2 / MinGW-w64)
+
+1. Install [MSYS2](https://msys2.org)
+2. Open the **UCRT64** shell and install the toolchain:
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make
+```
+3. Build inside said shell
+```
+mkdir cmake-build
+cd cmake-build
+cmake .. -G "MinGW Makefiles"
+mingw32-make
+```
+4. Run Program In any terminal
+```PowerShell
+./Oli_Nat.exe </path/to/your/source.oli>
 ```
 
+#### Developer Tips:
 Enable debug tracing by defining `DEBUG_TRACE_EXECUTION` to print the stack state and disassembled instruction before each opcode. Define `DEBUG_LOG_GC` to trace garbage collection events.
+You can also uncomment the santitization libraries in the `cmake.txt` file in order to utilize that library if you have it
+installed
+Feel free to look through the code's guts and have fun with it as I did!
 
 ## Roadmap
-
-- Method calls with `this` binding
-- Inheritance and method dispatch up the class hierarchy
-- Constructors with parameters
+- Adding in the ability to link code through multiple files
+- Native Random Functions
+- Native Dynamic Arrays and Hashmaps/Dictionaries
 - Possibly a graphics library
