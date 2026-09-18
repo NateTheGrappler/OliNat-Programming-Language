@@ -1,3 +1,0 @@
-C:/Users/guzin/Code/OliNat-Programming-Language/cmake-build/CMakeFiles/Oli_Nat.dir
-C:/Users/guzin/Code/OliNat-Programming-Language/cmake-build/CMakeFiles/edit_cache.dir
-C:/Users/guzin/Code/OliNat-Programming-Language/cmake-build/CMakeFiles/rebuild_cache.dir
