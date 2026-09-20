@@ -91,6 +91,7 @@ void registerMathNatives(Vm* vm)
     defineNative(vm, "ceil", ceilNative);
     defineNative(vm, "expo", expoNative);
     defineNative(vm, "pow", powNative);
+    defineNative(vm, "rand", randomNative);
 }
 void registerTimeNatives(Vm* vm)
 {

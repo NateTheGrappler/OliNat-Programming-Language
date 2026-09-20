@@ -12,7 +12,6 @@
 #include <time.h>
 #include <math.h>
 
-
 //add in the windows needed library if compiling for windows
 //only add in the sleep function because if you add in the whole windows.h it causes
 //a name collision with the TokenType enum
@@ -42,6 +41,7 @@ Value expoNative(int argCount, Value* args, struct Vm* vm);
 Value powNative(int argCount, Value* args, struct Vm* vm);
 
 //--------------Random natives----------------// //TODO: add random
+Value randomNative(int argCount, Value* args, struct Vm* vm); // generates random numbers depending on a range inputed by the user 
 
 //--------------time natives----------------//
 Value clockNative(int argCount, Value* args, struct Vm* vm); //mark time, returns double
