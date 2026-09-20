@@ -107,7 +107,18 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser, struct 
     registerNativeSymbol(checker, "floor", 5, VALUE_DOUBLE, mathParams, 1, parser, vm); //floor(double/float/int num) -> double
     registerNativeSymbol(checker, "ceil", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //ceil(double/float/int num) -> double
     registerNativeSymbol(checker, "expo", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //expo(double/float/int toTheEPower) -> double
+    
+    //random native -manny 
+    ParamInfo randParams[2];
+    randParams[0].type = VALUE_INT;
+    randParams[0].name = "num1";
+    randParams[0].length = 4;
+    randParams[1].type = VALUE_INT;
+    randParams[1].name = "num2";
+    randParams[1].length = 4;
+    registerNativeSymbol(checker, "rand" , 4, VALUE_INT ,randParams, 2, parser, vm); //rand(Int) 
 
+    
     ParamInfo mathParams2[2];
     mathParams2[0].type = VALUE_ANY_NUM;
     mathParams2[0].name = "num1";

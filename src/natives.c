@@ -8,6 +8,8 @@
 
 #include "vm.h"
 
+
+
 //-----------------io natives--------------------//
 Value printNative(int argCount, Value* args, struct Vm* vm)
 {
@@ -155,6 +157,23 @@ Value powNative(int argCount, Value* args, struct Vm* vm)
 }
 
 //--------------Random natives----------------// //TODO: add random
+Value randomNative(int argCount, Value* args,struct Vm* vm){
+
+    if(IS_INT(args[0]) && IS_INT(args[1])){                      
+
+        srand(time(NULL)); 
+
+        int min = GET_INT_VAL(args[0]); 
+        int max = GET_INT_VAL(args[1]); 
+
+        int randNum = (rand() % (max - min +1)) + min; 
+        
+        return CREATE_INT_VAL(randNum); 
+
+    }
+
+    return CREATE_EMPTY_VAL(); 
+}
 
 //--------------time natives----------------//
 Value clockNative(int argCount, Value* args, struct Vm* vm) //mark time, returns double
