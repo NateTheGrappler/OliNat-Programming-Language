@@ -1,0 +1,80 @@
+//===================TEST ONE: basic single argument math=====================//
+#pullf stdlib
+
+println(sqrt(16));
+println(abs(-5));
+println(floor(3.7));
+println(ceil(3.2));
+
+// Expected: 4.000000
+// Expected: 5.000000
+// Expected: 3.000000
+// Expected: 4.000000
+
+
+//===================TEST TWO: pow takes a base and an exponent=====================//
+#pullf stdlib
+
+println(pow(2, 10));
+println(pow(9, 0.5));
+
+// Expected: 1024.000000
+// Expected: 3.000000
+
+
+//===================TEST THREE: trigonometry takes radians, not degrees=====================//
+#pullf stdlib
+
+println(sin(0));
+println(cos(0));
+println(tan(0));
+
+// Expected: 0.000000
+// Expected: 1.000000
+// Expected: 0.000000
+
+
+//===================TEST FOUR: logarithms and exponentials=====================//
+#pullf stdlib
+
+println(ln(1));
+println(log10(100));
+println(log2(8));
+println(expo(0));
+
+// Expected: 0.000000
+// Expected: 2.000000
+// Expected: 3.000000
+// Expected: 1.000000
+
+
+//===================TEST FIVE: results are doubles, so they compose with normal math=====================//
+#pullf stdlib
+
+make double hypotenuse = sqrt(pow(3, 2) + pow(4, 2));
+println(hypotenuse);
+
+make int rounded = doubleToInt(floor(7.9));
+println(rounded);
+
+// Expected: 5.000000
+// Expected: 7
+
+
+//===================TEST SIX: math natives work inside class methods=====================//
+#pullf stdlib
+
+class RightTriangle
+{
+    make double sideA = 3.0;
+    make double sideB = 4.0;
+
+    make double hypotenuse()
+    {
+        return sqrt(pow(this.sideA, 2) + pow(this.sideB, 2));
+    }
+}
+make RightTriangle t = RightTriangle();
+println(t.hypotenuse());
+
+// Expected: 5.000000

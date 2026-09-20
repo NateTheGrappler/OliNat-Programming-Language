@@ -1,0 +1,114 @@
+//===================TEST ONE: two closures sharing one upvalue=====================//
+// deposit and withdraw both close over `balance`, so they mutate the same storage
+// rather than each getting their own copy.
+#pullf stdlib
+
+make int vault()
+{
+    make int balance = 0;
+
+    make empty deposit(int amount)
+    {
+        balance += amount;
+    }
+    make empty withdraw(int amount)
+    {
+        if (amount > balance)
+        {
+            println("declined");
+        }
+        else
+        {
+            balance -= amount;
+        }
+    }
+    make int report()
+    {
+        return balance;
+    }
+
+    deposit(100);
+    deposit(50);
+    withdraw(30);
+    withdraw(5000);
+    return report();
+}
+
+make int vaultBalance = vault();
+assert(vaultBalance == 120, "expected 150 in, 30 out, and the oversized withdrawal ignored");
+println(vaultBalance);
+
+// Expected: declined
+// Expected: 120
+
+
+//===================TEST TWO: each outer call gets a fresh upvalue=====================//
+// The inner closure is created again per call, so the second run starts back at zero
+// instead of continuing from where the first one left off.
+#pullf stdlib
+
+make int tally()
+{
+    make int hits = 0;
+    make empty bump()
+    {
+        hits++;
+    }
+    bump();
+    bump();
+    return hits;
+}
+
+make int first = tally();
+make int second = tally();
+println(intToStr(first) + " " + intToStr(second));
+
+assert(first == 2, "first run should have counted two");
+assert(second == 2, "second run should start over at zero");
+
+// Expected: 2 2
+
+
+//===================TEST THREE: a closure mutating a string upvalue=====================//
+#pullf stdlib
+
+make string assemble()
+{
+    make string first = "Oli";
+    make string last = "Nat";
+
+    make empty join()
+    {
+        first = first + "-" + last;
+    }
+    join();
+    return first;
+}
+
+println(assemble());
+
+// Expected: Oli-Nat
+
+
+//===================TEST FOUR: a closure reading an array upvalue=====================//
+#pullf stdlib
+
+make int sumUp()
+{
+    make int[] nums = [1, 2, 3, 4];
+
+    make int total()
+    {
+        make int acc = 0;
+        for (make int i = 0; i < length(nums); i++)
+        {
+            acc += nums[i];
+        }
+        return acc;
+    }
+    return total();
+}
+
+println(sumUp());
+
+// Expected: 10

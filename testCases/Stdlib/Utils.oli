@@ -1,0 +1,66 @@
+//===================TEST ONE: length reports the size of an array literal=====================//
+#pullf stdlib
+
+make int[] nums = [3, 1, 4, 1, 5];
+println(length(nums));
+
+// Expected: 5
+
+
+//===================TEST TWO: length works for every element type=====================//
+#pullf stdlib
+
+make string[] words = ["oli", "nat", "rocks"];
+make bool[] flags = [true, false, true, true];
+make double[] ratios = [0.5, 1.25];
+
+println(length(words));
+println(length(flags));
+println(length(ratios));
+
+// Expected: 3
+// Expected: 4
+// Expected: 2
+
+
+//===================TEST THREE: length pairs with for loops to walk an array=====================//
+#pullf stdlib
+
+make int[] scores = [10, 20, 30];
+make int total = 0;
+
+for (make int i = 0; i < length(scores); i++)
+{
+    total += scores[i];
+}
+println(total);
+
+// Expected: 60
+
+
+//===================TEST FOUR: length works on the result of a function returning an array=====================//
+#pullf stdlib
+
+make int[] buildRow(int sideA, int sideB)
+{
+    return [sideA, sideB, sideA + sideB];
+}
+make int[] row = buildRow(2, 3);
+
+println(length(row));
+println(row[2]);
+
+// Expected: 3
+// Expected: 5
+
+
+//===================TEST FIVE: assert takes an optional message, and guards the rest of the file=====================//
+#pullf stdlib
+
+make string[] queue = ["a", "b"];
+assert(length(queue) == 2);
+assert(length(queue) != 3, "queue should not have shrunk");
+
+println("all tests passed!");
+
+// Expected: all tests passed!

@@ -1,0 +1,68 @@
+//===================TEST ONE: parsing numbers and booleans out of strings=====================//
+#pullf stdlib
+
+println(strToInt("42"));
+println(strToDouble("1.5"));
+println(strToFloat("2.5"));
+println(strToBool("false"));
+
+// Expected: 42
+// Expected: 1.500000
+// Expected: 2.500000f
+// Expected: false
+
+
+//===================TEST TWO: parsed values are real numbers, not text=====================//
+#pullf stdlib
+
+make int parsed = strToInt("10");
+println(parsed + 8);
+
+make double measured = strToDouble("0.5");
+println(measured * 3);
+
+// Expected: 18
+// Expected: 1.500000
+
+
+//===================TEST THREE: numbers into strings=====================//
+#pullf stdlib
+
+println(intToStr(7) + " apples");
+println(doubleToStr(2.25));
+println(floatToStr(1.5f));
+println(boolToStr(true) + " / " + boolToStr(false));
+
+// Expected: 7 apples
+// Expected: 2.250000
+// Expected: 1.500000
+// Expected: true / false
+
+
+//===================TEST FOUR: widening and narrowing between numeric types=====================//
+#pullf stdlib
+
+println(intToDouble(3));
+println(intToFloat(3));
+println(doubleToFloat(1.5));
+println(doubleToInt(9.9));
+println(floatToInt(2.5f));
+
+// Expected: 3.000000
+// Expected: 3.000000f
+// Expected: 1.500000f
+// Expected: 9
+// Expected: 2
+
+
+//===================TEST FIVE: conversions round-trip, asserted like Stdlib/Strings.txt=====================//
+#pullf stdlib
+
+assert(strToInt(intToStr(1234)) == 1234, "int should survive a string round trip");
+assert(strToBool(boolToStr(true)) == true, "bool should survive a string round trip");
+assert(intToStr(99) == "99", "intToStr should not pad the digits");
+assert(strToDouble(doubleToStr(12.75)) == 12.75, "double should survive a string round trip");
+
+println("all tests passed!");
+
+// Expected: all tests passed!

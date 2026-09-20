@@ -1,0 +1,167 @@
+//===================TEST ONE: fields are inherited through every level=====================//
+#pullf stdlib
+
+class Base
+{
+    make int score = 100;
+}
+class Mid -> Base
+{
+    make int bonus = 50;
+}
+class Leaf -> Mid
+{
+    make int penalty = 10;
+}
+
+make Leaf l = Leaf();
+println(l.score);
+println(l.bonus);
+println(l.penalty);
+
+make int total = l.score + l.bonus - l.penalty;
+println(total);
+
+// Expected: 100
+// Expected: 50
+// Expected: 10
+// Expected: 140
+
+
+//===================TEST TWO: a subclass constructor sets inherited fields too=====================//
+#pullf stdlib
+
+class Pet
+{
+    make string name = "";
+    make int age = 0;
+}
+class Dog -> Pet
+{
+    make string breed = "unknown";
+
+    make empty Dog(string n, int a, string b)
+    {
+        this.name = n;
+        this.age = a;
+        this.breed = b;
+    }
+}
+
+make Dog d = Dog("Rex", 4, "shepherd");
+println(d.name);
+println(d.age);
+println(d.breed);
+
+// Expected: Rex
+// Expected: 4
+// Expected: shepherd
+
+
+//===================TEST THREE: override a method and reach the parent version with pullf=====================//
+#pullf stdlib
+
+class Recorder
+{
+    make string header = "-- log --";
+
+    make empty write(string message)
+    {
+        println(this.header);
+    }
+}
+class TimestampedRecorder -> Recorder
+{
+    make empty write(string message)
+    {
+        pullf.write(message);
+        println(message);
+    }
+}
+
+make TimestampedRecorder r = TimestampedRecorder();
+r.write("opened the file");
+
+// Expected: -- log --
+// Expected: opened the file
+
+
+//===================TEST FOUR: inherited methods dispatch to the overriding subclass method=====================//
+// describe() is only defined on Shape, but 'this' is the Circle, so area() resolves to the
+// Circle version rather than the Shape version.
+#pullf stdlib
+
+class Shape
+{
+    make int side = 3;
+
+    make int area()
+    {
+        return this.side * 0;
+    }
+    make string describe()
+    {
+        return "area is " + intToStr(this.area());
+    }
+}
+class Square -> Shape
+{
+    make int area()
+    {
+        return this.side * this.side;
+    }
+}
+
+make Shape generic = Shape();
+make Square s = Square();
+println(generic.describe());
+println(s.describe());
+
+// Expected: area is 0
+// Expected: area is 9
+
+
+//===================TEST FIVE: sibling subclasses do not see each other's members=====================//
+#pullf stdlib
+
+class Animal
+{
+    make string name = "Animal";
+
+    make empty speak()
+    {
+        println("...");
+    }
+}
+class Cow -> Animal
+{
+    make empty speak()
+    {
+        println("Moo!");
+    }
+    make int legs = 4;
+}
+class Snake -> Animal
+{
+    make empty speak()
+    {
+        println("Hiss!");
+    }
+    make bool venomous = true;
+}
+
+make Cow cow = Cow();
+make Snake snake = Snake();
+cow.speak();
+snake.speak();
+println(cow.name);
+println(snake.name);
+println(cow.legs);
+println(snake.venomous);
+
+// Expected: Moo!
+// Expected: Hiss!
+// Expected: Animal
+// Expected: Animal
+// Expected: 4
+// Expected: true

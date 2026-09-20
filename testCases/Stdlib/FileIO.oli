@@ -1,0 +1,39 @@
+// Writes a scratch file into the current working directory. The last test deletes
+// it again, so running the whole file leaves nothing behind. Run it from the build
+// directory as the README describes:
+//   ./Oli_Nat ../testCases/Stdlib/FileIO.oli
+//===================TEST ONE: write, check, read back=====================//
+#pullf stdlib
+
+make string path = "oli_nat_scratch.txt";
+
+writeFile(path, "written by Oli-Nat");
+println(fileExists(path));
+println(readFile(path));
+
+// Expected: true
+// Expected: written by Oli-Nat
+
+
+//===================TEST TWO: append adds to the end of what is already there=====================//
+#pullf stdlib
+
+make string path = "oli_nat_scratch.txt";
+
+writeFile(path, "one");
+appendFile(path, " two");
+println(readFile(path));
+
+// Expected: one two
+
+
+//===================TEST THREE: delete removes the file=====================//
+#pullf stdlib
+
+make string path = "oli_nat_scratch.txt";
+
+writeFile(path, "temporary");
+deleteFile(path);
+println(fileExists(path));
+
+// Expected: false
