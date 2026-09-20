@@ -6,8 +6,17 @@ A statically-typed bytecode VM language built in C from scratch.
 
 Oli-Nat compiles source code through a full pipeline into bytecode executed by a custom stack-based virtual machine. Every stage is hand-written with no external dependencies.
 
-```
-source → scanner → Pratt parser → AST → type checker → bytecode compiler → VM
+```mermaid
+flowchart LR
+    Source[Source Code] --> Scanner[Scanner]
+    Scanner --> Parser[Pratt Parser]
+    Parser --> AST[AST]
+    AST --> TypeChecker[Type Checker]
+    TypeChecker --> Compiler[Bytecode Compiler]
+    Compiler --> VM[VM]
+    
+    VM --> |owns| GC[Garbage Collector]
+    GC --> |marks/sweeps| Heap[Heap Objects]
 ```
 
 ## Table of Contents
@@ -88,19 +97,6 @@ Imported via `#pullf <library>`. Available libraries:
 | `stdlib`    | All of the above                                      |
 
 ## Architecture
-
-```mermaid
-flowchart LR
-    Source[Source Code] --> Scanner[Scanner]
-    Scanner --> Parser[Pratt Parser]
-    Parser --> AST[AST]
-    AST --> TypeChecker[Type Checker]
-    TypeChecker --> Compiler[Bytecode Compiler]
-    Compiler --> VM[VM]
-    
-    VM --> |owns| GC[Garbage Collector]
-    GC --> |marks/sweeps| Heap[Heap Objects]
-```
 
 ### Pipeline Stages
 
