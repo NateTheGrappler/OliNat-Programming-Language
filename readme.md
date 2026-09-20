@@ -89,6 +89,19 @@ Imported via `#pullf <library>`. Available libraries:
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    Source[Source Code] --> Scanner[Scanner]
+    Scanner --> Parser[Pratt Parser]
+    Parser --> AST[AST]
+    AST --> TypeChecker[Type Checker]
+    TypeChecker --> Compiler[Bytecode Compiler]
+    Compiler --> VM[VM]
+    
+    VM --> |owns| GC[Garbage Collector]
+    GC --> |marks/sweeps| Heap[Heap Objects]
+```
+
 ### Pipeline Stages
 
 **Scanner** (`scanner.h/c`) — lazy token-at-a-time scanning, O(1) memory. Keyword recognition via a trie-style switch on the first character.
