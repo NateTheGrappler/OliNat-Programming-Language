@@ -32,6 +32,14 @@ make int[] makeIntArray(int[] a)
 }
 make int[] x = makeIntArray([1, 2, 3]);
 
+// ============ BOOLEAN ARRAYS AS PARAMS ====================
+make bool[] returnBoolArray(bool[] values)
+{
+    return values;
+}
+make bool[] returnedBoolArray = returnBoolArray([true, false]);
+make bool secondReturnedBool = returnedBoolArray[1];
+
 // ============ ARRAYS IN EXPRESSIONS ============
 make int x = intArray[0] + intArray[1];
 make bool b = boolArray[0];

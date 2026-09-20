@@ -631,7 +631,7 @@ static ValueType getVarDeclarationType(ASTparser* parser, TypeChecker* checker)
             if (match(T_LEFT_BRACKET, parser))
             {
                 consume(T_RIGHT_BRACKET, "Please make sure all '[' have a corresponding ']' in your function params.", "SYNTAX ERROR", parser);
-                return VALUE_STRING_ARRAY;
+                return VALUE_BOOL_ARRAY;
             }
             return VALUE_BOOL;
         }
