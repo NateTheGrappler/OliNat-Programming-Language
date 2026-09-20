@@ -1,0 +1,41 @@
+# Contributing to Oli-Nat
+
+First off, thank you for even thinking about contributing. Oli-Nat started as a personal project to teach myself C, and it's grown into something I'm genuinely proud of, so having other people interested enough to want to poke around in it or improve it means a lot. Whether you're fixing a typo, reporting a weird crash, or thinking about tackling something bigger, you're welcome here, and you don't need to be an expert in compilers or virtual machines to contribute something valuable.
+
+## New here? Start however feels comfortable
+
+There's no wrong way to get involved. If you found a bug, open an issue and tell me about it, even if you're not sure how to fix it yourself. If you're curious how something works and the code isn't clear, open an issue asking about that too, it probably means the code or the docs could be clearer for the next person as well. If you want to try fixing something yourself, feel free to just dive in and open a pull request. For bigger changes, it's often nice to open an issue first just to chat about the idea before you put a lot of work into it, mostly so we're on the same page, not because there's some approval gate you need to get through.
+
+If you've never contributed to an open source project before, that's completely fine, everyone starts somewhere, and this is a small enough project that mistakes are easy to fix and nothing you do is going to break anything permanently.
+
+## Getting the project running
+
+The README has full build instructions for both Linux and macOS as well as Windows using MSYS2. If you get stuck getting it to build, that's worth opening an issue about too, since it probably means the instructions could be clearer. Once you have a change, it's helpful if it builds cleanly on whichever platform you're using, and the project has automated checks that build it on both Linux and Windows automatically once you open a pull request, so don't worry about testing every platform yourself.
+
+## About the code style
+
+There isn't a strict style guide, so don't stress too much about formatting. Just take a glance at the surrounding code in whatever file you're editing and try to roughly match what's already there, things like how braces are placed or how functions are named. If you're not sure, just make your change and I'm happy to help tidy up formatting during review rather than have that be a blocker to you contributing at all.
+
+## Testing your changes
+
+Inside the testCases folder there are example Oli-Nat programs you can run to see the language in action. If you're fixing a bug, it's lovely (but never required) to add a tiny example file that shows the bug being fixed. If you're adding a feature, a small example showing it off is a nice touch too. There's no formal automated test suite yet, so for now testing mostly means running your changed interpreter against some example programs and checking the output looks right.
+
+## Opening a pull request
+
+Try to keep a pull request focused on one thing, it makes it much easier for me to understand and review quickly. In the description, just tell me what you changed and why in plain language, you don't need to write anything formal. If your change touches the type checker, the bytecode compiler, or the garbage collector, a little extra explanation of your thinking is appreciated since those parts of the code can be subtle, but don't let that scare you off from touching them either.
+
+## Reporting a bug
+
+If something crashes or behaves unexpectedly, opening an issue with the Oli-Nat code that caused it is incredibly helpful, along with whether you're on Linux or Windows. It doesn't need to be a minimal example, just whatever you have is a great starting point, and I'm happy to help narrow it down from there together.
+
+## A few bigger things on the horizon
+
+Linking programs across multiple files, native dynamic arrays and hashmaps, and possibly a graphics library are all things on the roadmap. If any of those sound exciting to you, I'd love to hear from you, even just to talk through ideas in an issue before any code gets written.
+
+## License
+
+Oli-Nat is licensed under the MIT license, which means it's fully open source, and by contributing you're agreeing that your contributions are shared under that same license.
+
+## Thank you
+
+Seriously, thank you for reading this far and for considering spending your time on this project. Every question, bug report, and pull request, no matter how small, genuinely helps, and I'd rather answer ten beginner questions than have someone feel too intimidated to ask.
