@@ -4,7 +4,6 @@
 #include "natives.h"
 
 #include <ctype.h>
-#include <iso646.h>
 
 #include "vm.h"
 
@@ -16,7 +15,7 @@ Value printNative(int argCount, Value* args, struct Vm* vm)
     printValue(args[0]);
     return CREATE_EMPTY_VAL();
 }
-Value printlnNatve(int argCount, Value* args, struct Vm* vm)
+Value printlnNative(int argCount, Value* args, struct Vm* vm)
 {
     printValue(args[0]);
     printf("\n");
@@ -136,7 +135,7 @@ Value expoNative(int argCount, Value* args, struct Vm* vm)
 Value powNative(int argCount, Value* args, struct Vm* vm)
 {
     Value a = args[0]; //base
-    Value b = args[1]; //powere
+    Value b = args[1]; //power
     if (IS_INT(a) && IS_INT(b))
     {
         return CREATE_DOUBLE_VAL(pow(GET_INT_VAL(a), GET_INT_VAL(b)));
@@ -156,7 +155,7 @@ Value powNative(int argCount, Value* args, struct Vm* vm)
     return CREATE_EMPTY_VAL();
 }
 
-//--------------Random natives----------------// //TODO: add random
+//--------------Random natives----------------//
 Value randomNative(int argCount, Value* args,struct Vm* vm){
 
     if(IS_INT(args[0]) && IS_INT(args[1])){                      
@@ -581,6 +580,23 @@ Value strReplace(int argCount, Value* args, struct Vm* vm)
     return CREATE_OBJECT_VAL((Obj*)returnString);
 }
 
+Value strReverse(int argCount, Value* args, struct Vm* vm)
+{
+    ObjString* original = AS_STRING(args[0]);
+    int length = original->length;
+
+    char* buffer = ALLOCATE(char, length + 1, vm);
+    for (int i = 0; i < length; i++)
+    {
+        buffer[length - i - 1] = original->chars[i];
+    }
+    buffer[length] = '\0';
+
+    ObjString* returnString = copyString(buffer, (int)strlen(buffer), vm);
+    FREE_ARRAY(char, buffer, length+1, vm)
+    return CREATE_OBJECT_VAL((Obj*)returnString);
+}
+
 //--------------utils natives----------------//
 Value lengthNative(int argCount, Value* args, struct Vm* vm)
 {
@@ -604,4 +620,3 @@ Value assertNative(int argCount, Value* args, struct Vm* vm)
     }
     return CREATE_EMPTY_VAL();
 }
-//TODO: add in more functions for strings like strLength, strContains, strSlice, strReplace, toUpper, toLower

@@ -74,7 +74,7 @@ static void defineNative(Vm* vm, const char* name, NativeFn function)
 void registerIONatives(Vm* vm)
 {
     defineNative(vm, "print", printNative);
-    defineNative(vm, "println", printlnNatve);
+    defineNative(vm, "println", printlnNative);
     defineNative(vm, "intake", intakeNative);
 }
 void registerMathNatives(Vm* vm)
@@ -151,6 +151,7 @@ void registerStringNatives(Vm* vm)
     defineNative(vm, "strToUpper", strToUpper);
     defineNative(vm, "strToLower", strToLower);
     defineNative(vm, "strReplace", strReplace);
+    defineNative(vm, "strReverse", strReverse);
 }
 
 

@@ -227,6 +227,7 @@ void registerStringSymbols(TypeChecker* checker, struct ASTparser* parser, struc
     registerNativeSymbol(checker, "strLength", 9, VALUE_INT, stringParams, 1, parser, vm);
     registerNativeSymbol(checker, "strToUpper", 10, VALUE_STRING, stringParams, 1, parser, vm);
     registerNativeSymbol(checker, "strToLower", 10, VALUE_STRING, stringParams, 1, parser, vm);
+    registerNativeSymbol(checker, "strReverse", 10, VALUE_STRING, stringParams, 1, parser, vm);
 
     ParamInfo twoStringParams[2];
     twoStringParams[0].name   = "stringVal";

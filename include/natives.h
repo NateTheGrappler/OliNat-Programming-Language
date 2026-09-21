@@ -23,7 +23,7 @@ struct Vm;
 
 //-----------------io natives--------------------//
 Value printNative(int argCount, Value* args, struct Vm* vm);
-Value printlnNatve(int argCount, Value* args, struct Vm* vm);
+Value printlnNative(int argCount, Value* args, struct Vm* vm);
 Value intakeNative(int argCount, Value* args, struct Vm* vm);
 
 //--------------math natives----------------//
@@ -107,6 +107,7 @@ Value strSlice(int argCount, Value* args, struct Vm* vm);
 Value strToLower(int argCount, Value* args, struct Vm* vm);
 Value strToUpper(int argCount, Value* args, struct Vm* vm);
 Value strReplace(int argCount, Value* args, struct Vm* vm);
+Value strReverse(int argCount, Value* args, struct Vm* vm);
 
 //--------------utils natives----------------//
 Value lengthNative(int argCount, Value* args, struct Vm* vm);
