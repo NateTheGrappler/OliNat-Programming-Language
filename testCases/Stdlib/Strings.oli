@@ -11,5 +11,6 @@ assert(strSlice(str, 0, 5) == "Hello", "slice should be Hello");
 assert(strToUpper(str) == "HELLO WORLD", "should be uppercase");
 assert(strToLower(str) == "hello world", "should be lowercase");
 assert(strReplace(str, "World", "Oli-Nat") == "Hello Oli-Nat", "should replace");
+assert(strReverse(str) == "dlroW olleH", "should be reversed");
 
 println("all tests passed!");
