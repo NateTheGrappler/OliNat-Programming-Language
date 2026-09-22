@@ -98,6 +98,46 @@ Imported via `#pullf <library>`. Available libraries:
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    Source[Source Code<br/>.oli file] --> Scanner[Scanner<br/>tokenizer]
+    Scanner --> |tokens| ASTCompiler[Pratt Parser<br/>two-pass compiler]
+    
+    ASTCompiler --> |pass 1 registers| Symbols[Symbol Table<br/>functions & classes]
+    ASTCompiler --> |pass 2 produces| AST[AST<br/>discriminated union]
+    
+    AST --> TypeChecker[Type Checker<br/>flat symbol table]
+    TypeChecker --> |validates| TypeResult[Typed AST<br/>ready for emission]
+    
+    TypeResult --> ByteCompiler[Bytecode Compiler<br/>recursive walk]
+    ByteCompiler --> |writes| Chunk[Chunk<br/>bytecode + constants]
+    
+    Chunk --> VM[VM<br/>stack-based interpreter]
+    VM --> |executes| Opcodes[Opcodes<br/>type-promoted arithmetic]
+    VM --> |manages| Heap[Heap Objects<br/>strings, classes, closures]
+    
+    VM --> |triggers| GC[Garbage Collector<br/>mark-and-sweep]
+    GC --> |marks/sweeps| Heap
+    
+    subgraph Compilation["Compilation Pipeline"]
+        Scanner
+        ASTCompiler
+        Symbols
+        AST
+        TypeChecker
+        TypeResult
+        ByteCompiler
+        Chunk
+    end
+    
+    subgraph Runtime["Runtime"]
+        VM
+        Opcodes
+        Heap
+        GC
+    end
+```
+
 ### Pipeline Stages
 
 **Scanner** (`scanner.h/c`) — lazy token-at-a-time scanning, O(1) memory. Keyword recognition via a trie-style switch on the first character.
