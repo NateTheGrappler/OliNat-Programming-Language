@@ -3,6 +3,28 @@
 #include "Expr.h"
 #include "debug.h"
 
+
+//extra dependencies for compiling to webASM and building
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define WEB_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+#define WEB_EXPORT
+#endif
+
+//run the code straight from a source code string instead of reading a file input
+WEB_EXPORT
+int runFromSource(const char* source)
+{
+    Vm vm;
+    initVM(&vm);
+    vmResult result = interpret(source, &vm);
+    freeVM(&vm);
+    fflush(stdout);
+    fflush(stderr);
+    return (int)result;
+}
+
 //TODO: ADD IN YAMS FUNCTION (PRINTS OUT YAM ASCII
 
 
@@ -40,6 +62,7 @@ static const char* readFile(const char* filepath)
     return sourceBuffer;
 }
 
+
 //handle the reference to getting the info from the file and
 //passing it to rest of vm
 static void runFile(const char* filePath, Vm* vm)
@@ -69,16 +92,11 @@ int main(int argc, const char* argv[])
     {
         //instead of taking in a file or something, just treat the given inputted source string as the actual source code for the lanuage
         const char* tempSource = "#pullf io\n println(10);";
-        vmResult result = interpret(tempSource, &vm);
+        vmResult result = (vmResult)runFromSource(tempSource);
 
-        if (result == INTERPRET_RUNTIME_ERROR)
-        {
-            exit(65);
-        }
-        if (result == INTERPRET_COMPILE_ERROR)
-        {
-            exit(70);
-        }
+        if (result == INTERPRET_RUNTIME_ERROR) exit(65);
+        if (result == INTERPRET_COMPILE_ERROR) exit(70);
+        
     }
     else if (argc == 2)
     {

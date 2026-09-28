@@ -1,0 +1,1 @@
+/usr/share/emscripten/emcc -sSTACK_SIZE=5MB -sALLOW_MEMORY_GROWTH=1 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createOliNat -sENVIRONMENT=web,worker,node -sINVOKE_RUN=0 -sEXPORTED_FUNCTIONS=_runFromSource -sEXPORTED_RUNTIME_METHODS=cwrap @CMakeFiles/Oli_Nat.dir/objects1.rsp -o Oli_Nat.mjs @CMakeFiles/Oli_Nat.dir/linkLibs.rsp

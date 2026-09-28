@@ -1,0 +1,3 @@
+#pullf io
+
+println("Hello From WASM!");

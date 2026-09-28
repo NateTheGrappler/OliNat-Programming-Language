@@ -1,0 +1,885 @@
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineSystem.cmake:12 (find_program)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_UNAME"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "uname"
+    candidate_directories:
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+    searched_directories:
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/uname"
+      - "/home/natang/.local/bin/uname"
+      - "/usr/local/sbin/uname"
+      - "/usr/local/bin/uname"
+      - "/usr/sbin/uname"
+    found: "/usr/bin/uname"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineSystem.cmake:207 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The target system is: Emscripten - 1 - x86
+      The host system is: Linux - 7.0.0-34-generic - x86_64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeUnixFindMake.cmake:5 (find_program)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_MAKE_PROGRAM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "gmake"
+      - "make"
+      - "smake"
+    candidate_directories:
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/gmake"
+      - "/home/natang/.local/bin/gmake"
+      - "/usr/local/sbin/gmake"
+      - "/usr/local/bin/gmake"
+      - "/usr/sbin/gmake"
+    found: "/usr/bin/gmake"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_STRIP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-strip"
+      - "strip"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-strip"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-strip"
+      - "/home/natang/.local/bin/llvm-strip"
+      - "/usr/local/sbin/llvm-strip"
+      - "/usr/local/bin/llvm-strip"
+      - "/usr/sbin/llvm-strip"
+      - "/usr/bin/llvm-strip"
+      - "/sbin/llvm-strip"
+      - "/bin/llvm-strip"
+      - "/usr/games/llvm-strip"
+      - "/usr/local/games/llvm-strip"
+      - "/snap/bin/llvm-strip"
+      - "/bin/llvm-strip"
+      - "/sbin/llvm-strip"
+      - "/usr/share/emscripten/strip"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/strip"
+      - "/home/natang/.local/bin/strip"
+      - "/usr/local/sbin/strip"
+      - "/usr/local/bin/strip"
+      - "/usr/sbin/strip"
+    found: "/usr/bin/strip"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "ld.lld"
+      - "ld"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/ld.lld"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/ld.lld"
+      - "/home/natang/.local/bin/ld.lld"
+      - "/usr/local/sbin/ld.lld"
+      - "/usr/local/bin/ld.lld"
+      - "/usr/sbin/ld.lld"
+      - "/usr/bin/ld.lld"
+      - "/sbin/ld.lld"
+      - "/bin/ld.lld"
+      - "/usr/games/ld.lld"
+      - "/usr/local/games/ld.lld"
+      - "/snap/bin/ld.lld"
+      - "/bin/ld.lld"
+      - "/sbin/ld.lld"
+      - "/usr/share/emscripten/ld"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/ld"
+      - "/home/natang/.local/bin/ld"
+      - "/usr/local/sbin/ld"
+      - "/usr/local/bin/ld"
+      - "/usr/sbin/ld"
+    found: "/usr/bin/ld"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJDUMP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-objdump"
+      - "objdump"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-objdump"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-objdump"
+      - "/home/natang/.local/bin/llvm-objdump"
+      - "/usr/local/sbin/llvm-objdump"
+      - "/usr/local/bin/llvm-objdump"
+      - "/usr/sbin/llvm-objdump"
+      - "/usr/bin/llvm-objdump"
+      - "/sbin/llvm-objdump"
+      - "/bin/llvm-objdump"
+      - "/usr/games/llvm-objdump"
+      - "/usr/local/games/llvm-objdump"
+      - "/snap/bin/llvm-objdump"
+      - "/bin/llvm-objdump"
+      - "/sbin/llvm-objdump"
+      - "/usr/share/emscripten/objdump"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/objdump"
+      - "/home/natang/.local/bin/objdump"
+      - "/usr/local/sbin/objdump"
+      - "/usr/local/bin/objdump"
+      - "/usr/sbin/objdump"
+    found: "/usr/bin/objdump"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJCOPY"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-objcopy"
+      - "objcopy"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-objcopy"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-objcopy"
+      - "/home/natang/.local/bin/llvm-objcopy"
+      - "/usr/local/sbin/llvm-objcopy"
+      - "/usr/local/bin/llvm-objcopy"
+      - "/usr/sbin/llvm-objcopy"
+      - "/usr/bin/llvm-objcopy"
+      - "/sbin/llvm-objcopy"
+      - "/bin/llvm-objcopy"
+      - "/usr/games/llvm-objcopy"
+      - "/usr/local/games/llvm-objcopy"
+      - "/snap/bin/llvm-objcopy"
+      - "/bin/llvm-objcopy"
+      - "/sbin/llvm-objcopy"
+      - "/usr/share/emscripten/objcopy"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/objcopy"
+      - "/home/natang/.local/bin/objcopy"
+      - "/usr/local/sbin/objcopy"
+      - "/usr/local/bin/objcopy"
+      - "/usr/sbin/objcopy"
+    found: "/usr/bin/objcopy"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_READELF"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-readelf"
+      - "readelf"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-readelf"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-readelf"
+      - "/home/natang/.local/bin/llvm-readelf"
+      - "/usr/local/sbin/llvm-readelf"
+      - "/usr/local/bin/llvm-readelf"
+      - "/usr/sbin/llvm-readelf"
+      - "/usr/bin/llvm-readelf"
+      - "/sbin/llvm-readelf"
+      - "/bin/llvm-readelf"
+      - "/usr/games/llvm-readelf"
+      - "/usr/local/games/llvm-readelf"
+      - "/snap/bin/llvm-readelf"
+      - "/bin/llvm-readelf"
+      - "/sbin/llvm-readelf"
+      - "/usr/share/emscripten/readelf"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/readelf"
+      - "/home/natang/.local/bin/readelf"
+      - "/usr/local/sbin/readelf"
+      - "/usr/local/bin/readelf"
+      - "/usr/sbin/readelf"
+    found: "/usr/bin/readelf"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_DLLTOOL"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-dlltool"
+      - "dlltool"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-dlltool"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-dlltool"
+      - "/home/natang/.local/bin/llvm-dlltool"
+      - "/usr/local/sbin/llvm-dlltool"
+      - "/usr/local/bin/llvm-dlltool"
+      - "/usr/sbin/llvm-dlltool"
+      - "/usr/bin/llvm-dlltool"
+      - "/sbin/llvm-dlltool"
+      - "/bin/llvm-dlltool"
+      - "/usr/games/llvm-dlltool"
+      - "/usr/local/games/llvm-dlltool"
+      - "/snap/bin/llvm-dlltool"
+      - "/bin/llvm-dlltool"
+      - "/sbin/llvm-dlltool"
+      - "/usr/share/emscripten/dlltool"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/dlltool"
+      - "/home/natang/.local/bin/dlltool"
+      - "/usr/local/sbin/dlltool"
+      - "/usr/local/bin/dlltool"
+      - "/usr/sbin/dlltool"
+      - "/usr/bin/dlltool"
+      - "/sbin/dlltool"
+      - "/bin/dlltool"
+      - "/usr/games/dlltool"
+      - "/usr/local/games/dlltool"
+      - "/snap/bin/dlltool"
+      - "/bin/dlltool"
+      - "/sbin/dlltool"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_ADDR2LINE"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-addr2line"
+      - "addr2line"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/llvm-addr2line"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/llvm-addr2line"
+      - "/home/natang/.local/bin/llvm-addr2line"
+      - "/usr/local/sbin/llvm-addr2line"
+      - "/usr/local/bin/llvm-addr2line"
+      - "/usr/sbin/llvm-addr2line"
+      - "/usr/bin/llvm-addr2line"
+      - "/sbin/llvm-addr2line"
+      - "/bin/llvm-addr2line"
+      - "/usr/games/llvm-addr2line"
+      - "/usr/local/games/llvm-addr2line"
+      - "/snap/bin/llvm-addr2line"
+      - "/bin/llvm-addr2line"
+      - "/sbin/llvm-addr2line"
+      - "/usr/share/emscripten/addr2line"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/addr2line"
+      - "/home/natang/.local/bin/addr2line"
+      - "/usr/local/sbin/addr2line"
+      - "/usr/local/bin/addr2line"
+      - "/usr/sbin/addr2line"
+    found: "/usr/bin/addr2line"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_TAPI"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "tapi"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/tapi"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/tapi"
+      - "/home/natang/.local/bin/tapi"
+      - "/usr/local/sbin/tapi"
+      - "/usr/local/bin/tapi"
+      - "/usr/sbin/tapi"
+      - "/usr/bin/tapi"
+      - "/sbin/tapi"
+      - "/bin/tapi"
+      - "/usr/games/tapi"
+      - "/usr/local/games/tapi"
+      - "/snap/bin/tapi"
+      - "/bin/tapi"
+      - "/sbin/tapi"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/usr/share/cmake-4.2/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "clang-scan-deps-19.1"
+      - "clang-scan-deps-19"
+      - "clang-scan-deps19"
+      - "clang-scan-deps"
+    candidate_directories:
+      - "/usr/share/emscripten/"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/"
+      - "/home/natang/.local/bin/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/sbin/"
+      - "/usr/bin/"
+      - "/sbin/"
+      - "/bin/"
+      - "/usr/games/"
+      - "/usr/local/games/"
+      - "/snap/bin/"
+      - "/bin/"
+      - "/sbin/"
+    searched_directories:
+      - "/usr/share/emscripten/clang-scan-deps-19.1"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/clang-scan-deps-19.1"
+      - "/home/natang/.local/bin/clang-scan-deps-19.1"
+      - "/usr/local/sbin/clang-scan-deps-19.1"
+      - "/usr/local/bin/clang-scan-deps-19.1"
+      - "/usr/sbin/clang-scan-deps-19.1"
+      - "/usr/bin/clang-scan-deps-19.1"
+      - "/sbin/clang-scan-deps-19.1"
+      - "/bin/clang-scan-deps-19.1"
+      - "/usr/games/clang-scan-deps-19.1"
+      - "/usr/local/games/clang-scan-deps-19.1"
+      - "/snap/bin/clang-scan-deps-19.1"
+      - "/bin/clang-scan-deps-19.1"
+      - "/sbin/clang-scan-deps-19.1"
+      - "/usr/share/emscripten/clang-scan-deps-19"
+      - "/home/natang/.nvm/versions/node/v24.19.0/bin/clang-scan-deps-19"
+      - "/home/natang/.local/bin/clang-scan-deps-19"
+      - "/usr/local/sbin/clang-scan-deps-19"
+      - "/usr/local/bin/clang-scan-deps-19"
+      - "/usr/sbin/clang-scan-deps-19"
+    found: "/usr/bin/clang-scan-deps-19"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/Platform/Emscripten.cmake:6 (find_file)"
+      - "/usr/share/cmake-4.2/Modules/CMakeSystemSpecificInformation.cmake:32 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "_EMSCRIPTEN_PLATFORM_MODULE"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "Platform/Emscripten.cmake"
+    candidate_directories:
+      - "/usr/share/emscripten/cmake/Modules/"
+    found: "/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot;/usr/share/emscripten/cache/sysroot"
+...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake-4.2/Modules/Platform/Emscripten.cmake:6 (find_file)"
+      - "/usr/share/cmake-4.2/Modules/CMakeSystemSpecificInformation.cmake:32 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "_EMSCRIPTEN_PLATFORM_MODULE"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "Platform/Emscripten.cmake"
+    candidate_directories:
+      - "/usr/share/emscripten/cmake/Modules/"
+    found: "/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    search_context:
+      ENV{PATH}:
+        - "/home/natang/.nvm/versions/node/v24.19.0/bin"
+        - "/home/natang/.local/bin"
+        - "/home/natang/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/sbin"
+        - "/usr/bin"
+        - "/sbin"
+        - "/bin"
+        - "/usr/games"
+        - "/usr/local/games"
+        - "/snap/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/share/emscripten/cache/sysroot"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/"
+      CMAKE_FIND_ROOT_PATH: "/usr/share/emscripten/cache/sysroot"
+...

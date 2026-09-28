@@ -33,6 +33,21 @@ if (MINGW)
     target_link_options(Oli_Nat PRIVATE -static -static-libgcc)
 endif()
 
+if (EMSCRIPTEN)
+    set_target_properties(Oli_Nat PROPERTIES SUFFIX ".mjs")
+    target_link_options(Oli_Nat PRIVATE
+        -sSTACK_SIZE=5MB
+        -sALLOW_MEMORY_GROWTH=1
+        -sMODULARIZE=1
+        -sEXPORT_ES6=1
+        -sEXPORT_NAME=createOliNat
+        -sENVIRONMENT=web,worker,node
+        -sINVOKE_RUN=0
+        -sEXPORTED_FUNCTIONS=_runFromSource
+        -sEXPORTED_RUNTIME_METHODS=cwrap
+    )
+endif()
+
 #debugging options for checking memory addresses
 #target_compile_options(Oli_Nat PRIVATE -fsanitize=address -g)
 #target_link_options(Oli_Nat PRIVATE -fsanitize=address)
