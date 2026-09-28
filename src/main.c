@@ -67,8 +67,18 @@ int main(int argc, const char* argv[])
 
     if (argc == 1)
     {
-        //take in code from repl
-        repl();
+        //instead of taking in a file or something, just treat the given inputted source string as the actual source code for the lanuage
+        const char* tempSource = "#pullf io\n println(10);";
+        vmResult result = interpret(tempSource, &vm);
+
+        if (result == INTERPRET_RUNTIME_ERROR)
+        {
+            exit(65);
+        }
+        if (result == INTERPRET_COMPILE_ERROR)
+        {
+            exit(70);
+        }
     }
     else if (argc == 2)
     {
