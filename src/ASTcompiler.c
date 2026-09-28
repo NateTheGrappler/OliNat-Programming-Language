@@ -215,7 +215,7 @@ static bool match(TokenType type, ASTparser* parser)
 static void synchronize(ASTparser* parser)
 {
     parser->panicMode = false;
-    while (!parser->current.type != T_EOF)
+    while (parser->current.type != T_EOF)
     {
         //check if there is a semi colon
         if (parser->previous.type == T_SEMICOLON) return;

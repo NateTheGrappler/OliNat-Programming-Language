@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/natang/Coding Projects/emcc-WASM-Playground/OliNat-Programming-Language-WASM/cmake-build-wasm/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
