@@ -44,7 +44,11 @@ if (EMSCRIPTEN)
         -sENVIRONMENT=web,worker,node
         -sINVOKE_RUN=0
         -sEXPORTED_FUNCTIONS=_runFromSource
-        -sEXPORTED_RUNTIME_METHODS=cwrap
+        -sEXPORTED_RUNTIME_METHODS=cwrap,ccall
+        -O2
+        -sASYNCIFY
+        -sASYNCIFY_STACK_SIZE=65536
+        -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=$stringToNewUTF8
     )
 endif()
 

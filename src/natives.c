@@ -7,6 +7,16 @@
 
 #include "vm.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+//suspend the VM until JS resolves Module.requestInput() with the user's line
+EM_ASYNC_JS(char*, waitForInput, (), {
+    const line = await Module.requestInput();
+    return stringToNewUTF8(line);
+});
+#endif
+
 
 
 //-----------------io natives--------------------//
@@ -26,23 +36,32 @@ Value intakeNative(int argCount, Value* args, struct Vm* vm)
 {
     if (argCount > 0 && IS_STRING(args[0])) { printf("%s", AS_CSTRING(args[0])); fflush(stdout); } //print prompt if one
 
-    char buffer[1024];
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
-    {
-        //error
-        ObjString* emptyString = copyString("", 0, vm);
-        return CREATE_OBJECT_VAL((Obj*)emptyString);
-    }
+    #ifdef __EMSCRIPTEN__
+        //pause the vm, waut for the user input, copy it as a string, free it, and then just hand it off
+        //as a string representation for the interpreter to handle
+        char* line = waitForInput();
+        ObjString* result = copyString(line, (int)strlen(line), vm);
+        free(line);
+        return CREATE_OBJECT_VAL((Obj*)result);
+    #else
+        char buffer[1024];
+        if (fgets(buffer, sizeof(buffer), stdin) == NULL)
+        {
+            //error
+            ObjString* emptyString = copyString("", 0, vm);
+            return CREATE_OBJECT_VAL((Obj*)emptyString);
+        }
 
-    int length = (int)strlen(buffer);
-    if (length > 0 && buffer[length - 1] == '\n')
-    {
-        buffer[length - 1] = '\0';
-        length--;
-    }
+        int length = (int)strlen(buffer);
+        if (length > 0 && buffer[length - 1] == '\n')
+        {
+            buffer[length - 1] = '\0';
+            length--;
+        }
 
-    ObjString* result = copyString(buffer, length, vm);
-    return CREATE_OBJECT_VAL((Obj*)result);
+        ObjString* result = copyString(buffer, length, vm);
+        return CREATE_OBJECT_VAL((Obj*)result);
+    #endif
 }
 
 //--------------math natives----------------//
