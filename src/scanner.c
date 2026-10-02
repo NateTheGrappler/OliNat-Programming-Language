@@ -228,7 +228,7 @@ static Token identifier(Scanner* scanner)
 }
 
 //skipping all that whitespace nonsense
-static void skipWhiteSpace(Scanner* scanner)
+static bool skipWhiteSpace(Scanner* scanner)
 {
     for (;;)
     {
@@ -252,8 +252,23 @@ static void skipWhiteSpace(Scanner* scanner)
                     while (peekChar(scanner) != '\n' && !isAtEnd(scanner)) advance(scanner);
                     break;
                 }
-                return;
-            default: return;
+                if (peekNextChar(scanner) == '*')
+                {
+                    advance(scanner);
+                    advance(scanner);
+                    while (!isAtEnd(scanner) &&
+                           !(peekChar(scanner) == '*' && peekNextChar(scanner) == '/'))
+                    {
+                        if (peekChar(scanner) == '\n') scanner->line++;
+                        advance(scanner);
+                    }
+                    if (isAtEnd(scanner)) return false;
+                    advance(scanner);
+                    advance(scanner);
+                    break;
+                }
+                return true;
+            default: return true;
         }
     }
 }
@@ -261,7 +276,8 @@ static void skipWhiteSpace(Scanner* scanner)
 
 Token scanToken(Scanner* scanner)
 {
-    skipWhiteSpace(scanner);
+    if (!skipWhiteSpace(scanner))
+        return errorToken("Unterminated block comment.", scanner);
 
     scanner->start = scanner->current;
 
