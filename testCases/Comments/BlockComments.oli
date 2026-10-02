@@ -1,0 +1,8 @@
+#pullf io
+
+/* A comment can span
+   multiple lines. */
+make int value = 8 /* inline comment */ / 2;
+/**/ /* Adjacent comments also work. */
+println(value);
+println("/* This is still a string. */");
