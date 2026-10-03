@@ -156,12 +156,14 @@ Value powNative(int argCount, Value* args, struct Vm* vm)
 }
 
 //--------------Random natives----------------//
-Value randomNative(int argCount, Value* args,struct Vm* vm){
-
-    if(IS_INT(args[0]) && IS_INT(args[1])){                      
-
-        srand(time(NULL)); 
-
+Value randomNative(int argCount, Value* args, struct Vm* vm)
+{
+    return CREATE_FLOAT_VAL((double)rand() / RAND_MAX);
+}
+Value randintNative(int argCount, Value* args, struct Vm* vm)
+{
+    if(IS_INT(args[0]) && IS_INT(args[1]))
+    {
         int min = GET_INT_VAL(args[0]); 
         int max = GET_INT_VAL(args[1]); 
 
@@ -172,6 +174,11 @@ Value randomNative(int argCount, Value* args,struct Vm* vm){
     }
 
     return CREATE_EMPTY_VAL(); 
+}
+Value seedNative(int argCount, Value* args, struct Vm* vm)
+{
+    if(IS_INT(args[0])) srand(GET_INT_VAL(args[0]));
+    return CREATE_EMPTY_VAL();
 }
 
 //--------------time natives----------------//

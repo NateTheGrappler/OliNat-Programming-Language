@@ -1,0 +1,14 @@
+#pullf io
+#pullf random
+#pullf utils
+
+make float r = random();
+assert(0 <= r && r <= 1, "Not in range [0, 1]");
+
+make int r2 = randint(2, 7);
+assert(2 <= r2 && r2 <= 7, "Not in range [2, 7]");
+
+//TODO: Test seed
+seed(4); //make sure it doesn't crash
+
+println("all tests passed!");

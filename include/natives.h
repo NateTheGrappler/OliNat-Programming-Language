@@ -40,8 +40,10 @@ Value ceilNative(int argCount, Value* args, struct Vm* vm);
 Value expoNative(int argCount, Value* args, struct Vm* vm);
 Value powNative(int argCount, Value* args, struct Vm* vm);
 
-//--------------Random natives----------------// //TODO: add random
-Value randomNative(int argCount, Value* args, struct Vm* vm); // generates random numbers depending on a range inputed by the user 
+//--------------Random natives----------------//
+Value randomNative(int argCount, Value* args, struct Vm* vm);
+Value randintNative(int argCount, Value* args, struct Vm* vm); // generates random integer depending on a range inputted by the user
+Value seedNative(int argCount, Value* args, struct Vm* vm);
 
 //--------------time natives----------------//
 Value clockNative(int argCount, Value* args, struct Vm* vm); //mark time, returns double

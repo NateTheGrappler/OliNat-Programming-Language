@@ -108,17 +108,6 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser, struct 
     registerNativeSymbol(checker, "ceil", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //ceil(double/float/int num) -> double
     registerNativeSymbol(checker, "expo", 4, VALUE_DOUBLE, mathParams, 1, parser, vm);  //expo(double/float/int toTheEPower) -> double
     
-    //random native -manny 
-    ParamInfo randParams[2];
-    randParams[0].type = VALUE_INT;
-    randParams[0].name = "num1";
-    randParams[0].length = 4;
-    randParams[1].type = VALUE_INT;
-    randParams[1].name = "num2";
-    randParams[1].length = 4;
-    registerNativeSymbol(checker, "rand" , 4, VALUE_INT ,randParams, 2, parser, vm); //rand(Int) 
-
-    
     ParamInfo mathParams2[2];
     mathParams2[0].type = VALUE_ANY_NUM;
     mathParams2[0].name = "num1";
@@ -127,6 +116,25 @@ void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser, struct 
     mathParams2[1].name = "num2";
     mathParams2[1].length = 4;
     registerNativeSymbol(checker, "pow", 3, VALUE_DOUBLE, mathParams2, 2, parser, vm);  //expo(double/float/int toTheEPower) -> double
+}
+void registerRandomSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm) {
+    registerNativeSymbol(checker, "random" , 6, VALUE_FLOAT ,NULL , 0, parser, vm); //random()
+
+    ParamInfo randParams[1];
+    randParams[0].type = VALUE_INT;
+    randParams[0].name = "num";
+    randParams[0].length = 3;
+    registerNativeSymbol(checker, "seed" , 4, VALUE_FLOAT ,randParams , 1, parser, vm); //seed(int)
+
+    //random native -manny
+    ParamInfo randParams2[2];
+    randParams2[0].type = VALUE_INT;
+    randParams2[0].name = "num1";
+    randParams2[0].length = 4;
+    randParams2[1].type = VALUE_INT;
+    randParams2[1].name = "num2";
+    randParams2[1].length = 4;
+    registerNativeSymbol(checker, "randint" , 7, VALUE_INT ,randParams2, 2, parser, vm); //randint(min, max)
 }
 void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm)
 {

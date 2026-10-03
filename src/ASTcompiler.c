@@ -1162,6 +1162,7 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
     {
         registerIONatives(vm);
         registerMathNatives(vm);
+        registerRandomNatives(vm);
         registerTimeNatives(vm);
         registerFileIONatives(vm);
         registerTypeNatives(vm);
@@ -1170,6 +1171,7 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
 
         registerIOSymbols(checker, parser, vm);
         registerMathSymbols(checker, parser, vm);
+        registerRandomSymbols(checker, parser, vm);
         registerTimeSymbols(checker, parser, vm);
         registerFileIOSymbols(checker, parser, vm);
         registerTypeSymbols(checker, parser, vm);
@@ -1185,6 +1187,11 @@ static void nativeFunction(ASTparser* parser, TypeChecker* checker, AstCompiler*
     {
         registerMathNatives(vm);
         registerMathSymbols(checker, parser, vm);
+    }
+    else if (strncmp(library, "random", length) == 0) //extra math functions
+    {
+        registerRandomNatives(vm);
+        registerRandomSymbols(checker, parser, vm);
     }
     else if (strncmp(library, "chronos", length) == 0) //time like clock and date
     {
@@ -1537,6 +1544,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         {
             registerIOSymbols(checker, parser, vm);
             registerMathSymbols(checker, parser, vm);
+            registerRandomSymbols(checker, parser, vm);
             registerTimeSymbols(checker, parser, vm);
             registerFileIOSymbols(checker, parser, vm);
             registerTypeSymbols(checker, parser, vm);
@@ -1544,6 +1552,7 @@ static void declareFunction(ASTparser* parser, TypeChecker* checker, Vm* vm)
         }
         else if (strncmp(library, "io", length) == 0) { registerIOSymbols(checker, parser, vm); }
         else if (strncmp(library, "math", length) == 0) { registerMathSymbols(checker, parser, vm); }
+        else if (strncmp(library, "random", length) == 0) { registerRandomSymbols(checker, parser, vm); }
         else if (strncmp(library, "chronos", length) == 0) { registerTimeSymbols(checker, parser, vm); }
         else if (strncmp(library, "fileIO", length)== 0)  { registerFileIOSymbols(checker, parser, vm); }
         else if (strncmp(library, "types", length)== 0){ registerTypeSymbols(checker, parser, vm); }

@@ -90,6 +90,7 @@ void addSymbol(TypeChecker* checker, const char* name, int length, int depth, Va
 //stdlib stuff
 void registerIOSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerMathSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
+void registerRandomSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerTimeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerFileIOSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);
 void registerTypeSymbols(TypeChecker* checker, struct ASTparser* parser, struct Vm* vm);

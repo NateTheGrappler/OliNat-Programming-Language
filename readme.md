@@ -85,16 +85,17 @@ for (make int i = 0; i < 5; i++)
 
 Imported via `#pullf <library>`. Available libraries:
 
-| Library     | Contents                                              |
-|-------------|-------------------------------------------------------|
-| `io`        | `print`, `println`, `intake`                          |
-| `math`      | `sin`, `cos`, `tan`, `sqrt`, `pow`, `floor`, `ceil`, `abs`, `ln`, `log10`, `log2`, `expo` |
-| `chronos`   | `clock`, `time`, `sleep`, `dateString`, `timeString`  |
-| `fileIO`    | `readFile`, `writeFile`, `appendFile`, `fileExists`, `deleteFile` |
-| `types`     | `intToStr`, `intToDouble`, `intToFloat`, `doubleToStr`, `doubleToInt`, `doubleToFloat`, `floatToStr`, `floatToInt`, `floatToDouble`, `strToInt`, `strToDouble`, `strToFloat`, `strToBool`, `boolToStr` |
-| `Strings`   | `strLength`, `strContains`, `strSlice`, `strToUpper`, `strToLower`, `strReplace` |
-| `utils`     | `length`, `assert`                                    |
-| `stdlib`    | All of the above                                      |
+| Library   | Contents                                                                                                                                                                                               |
+|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `io`      | `print`, `println`, `intake`                                                                                                                                                                           |
+| `math`    | `sin`, `cos`, `tan`, `sqrt`, `pow`, `floor`, `ceil`, `abs`, `ln`, `log10`, `log2`, `expo`                                                                                                              |
+| `random`  | `random`, `seed`, `randint`                                                                                                                                                                            |
+| `chronos` | `clock`, `time`, `sleep`, `dateString`, `timeString`                                                                                                                                                   |
+| `fileIO`  | `readFile`, `writeFile`, `appendFile`, `fileExists`, `deleteFile`                                                                                                                                      |
+| `types`   | `intToStr`, `intToDouble`, `intToFloat`, `doubleToStr`, `doubleToInt`, `doubleToFloat`, `floatToStr`, `floatToInt`, `floatToDouble`, `strToInt`, `strToDouble`, `strToFloat`, `strToBool`, `boolToStr` |
+| `Strings` | `strLength`, `strContains`, `strSlice`, `strToUpper`, `strToLower`, `strReplace`, `strReverse`                                                                                                         |
+| `utils`   | `length`, `assert`                                                                                                                                                                                     |
+| `stdlib`  | All of the above                                                                                                                                                                                       |
 
 ## Architecture
 

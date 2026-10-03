@@ -68,6 +68,7 @@ Value peek(Vm* vm, int distance);
 //stdlib stuff
 void registerIONatives(Vm* vm);
 void registerMathNatives(Vm* vm);
+void registerRandomNatives(Vm* vm);
 void registerTimeNatives(Vm* vm);
 void registerFileIONatives(Vm* vm);
 void registerTypeNatives(Vm* vm);
