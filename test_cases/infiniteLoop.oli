@@ -1,0 +1,6 @@
+#pullf io
+
+// never ends: the runner should time out and report a FAIL
+while (true)
+{
+}

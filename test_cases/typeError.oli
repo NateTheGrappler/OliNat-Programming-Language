@@ -1,0 +1,5 @@
+#pullf io
+
+// should fail at compile time: assigning a bool to an int
+make int x = true;
+println(x);

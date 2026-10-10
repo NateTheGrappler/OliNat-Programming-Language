@@ -1,0 +1,25 @@
+#pullf io
+
+// if/else, while, and for loops
+make int total = 0;
+for (make int i = 1; i <= 5; i++)
+{
+    total += i;
+}
+println(total);
+
+make int count = 3;
+while (count > 0)
+{
+    println(count);
+    count--;
+}
+
+if (total > 10)
+{
+    println("big");
+}
+else
+{
+    println("small");
+}

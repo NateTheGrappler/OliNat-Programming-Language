@@ -1,0 +1,17 @@
+#pullf io
+
+// class fields, defaults, and methods
+class Counter
+{
+    make int value = 0;
+
+    make empty bump(int amount)
+    {
+        this.value += amount;
+    }
+}
+
+make Counter c = Counter();
+c.bump(5);
+c.bump(2);
+println(c.value);

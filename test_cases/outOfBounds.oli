@@ -1,0 +1,6 @@
+#pullf io
+
+// prints once, then crashes at runtime on a bad index
+make int[] nums = [1, 2, 3];
+println(nums[0]);
+println(nums[99]);

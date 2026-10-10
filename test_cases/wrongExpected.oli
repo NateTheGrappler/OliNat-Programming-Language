@@ -1,0 +1,11 @@
+#pullf io
+
+// basic arithmetic and operator precedence
+make int a = 10;
+make int b = 3;
+
+println(a + b);
+println(a - b);
+println(a * b);
+println(a + b * 2);
+println((a + b) * 2);
