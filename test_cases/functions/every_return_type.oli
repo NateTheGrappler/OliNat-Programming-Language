@@ -1,0 +1,13 @@
+#pullf io
+
+make int giveInt() { return 1; }
+make float giveFloat() { return 2.5f; }
+make double giveDouble() { return 3.75; }
+make bool giveBool() { return true; }
+make string giveString() { return "four"; }
+
+println(giveInt());
+println(giveFloat());
+println(giveDouble());
+println(giveBool());
+println(giveString());

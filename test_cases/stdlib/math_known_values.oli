@@ -1,0 +1,17 @@
+#pullf math
+#pullf io
+
+println(sqrt(16));
+println(pow(2, 10));
+println(pow(4, 0.5));
+println(abs(-7));
+println(abs(3.5));
+println(floor(2.7));
+println(ceil(2.1));
+println(ln(1));
+println(log10(1000));
+println(log2(8));
+println(expo(0));
+println(sin(0));
+println(cos(0));
+println(tan(0));

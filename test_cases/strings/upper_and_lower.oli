@@ -1,0 +1,6 @@
+#pullf Strings
+#pullf io
+
+println(strToUpper("Oli-Nat 2026"));
+println(strToLower("Oli-Nat 2026"));
+println(strToUpper(""));

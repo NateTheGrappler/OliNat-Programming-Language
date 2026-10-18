@@ -1,0 +1,6 @@
+#pullf io
+
+if (5)
+{
+    println("BUG: an int was accepted as a condition");
+}

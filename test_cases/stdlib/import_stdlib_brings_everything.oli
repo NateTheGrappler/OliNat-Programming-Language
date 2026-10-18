@@ -1,0 +1,6 @@
+#pullf stdlib
+
+println(intToStr(1) + "!");
+println(sqrt(9));
+println(strToUpper("ok"));
+println(length([1, 2]));

@@ -1,0 +1,15 @@
+#pullf io
+
+make int firstOver(int[] nums, int limit)
+{
+    for (make int i = 0; i < 5; i++)
+    {
+        if (nums[i] > limit)
+        {
+            return nums[i];
+        }
+    }
+    return -1;
+}
+println(firstOver([1, 4, 9, 16, 25], 5));
+println(firstOver([1, 2, 3, 4, 5], 100));

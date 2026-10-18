@@ -1,0 +1,5 @@
+#pullf types
+#pullf io
+
+println("before");
+println(strToBool("yes"));

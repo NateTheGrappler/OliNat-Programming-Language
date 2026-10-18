@@ -1,0 +1,7 @@
+#pullf io
+
+println("Oli" + "-" + "Nat");
+println("" + "x" + "");
+make string greeting = "hello";
+greeting = greeting + ", world";
+println(greeting);

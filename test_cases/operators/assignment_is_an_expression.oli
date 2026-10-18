@@ -1,0 +1,5 @@
+#pullf io
+
+make int x = 0;
+println(1 + (x = 27));
+println(x);

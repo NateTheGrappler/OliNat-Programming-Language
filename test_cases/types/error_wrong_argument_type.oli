@@ -1,0 +1,7 @@
+#pullf io
+
+make int double_it(int n)
+{
+    return n * 2;
+}
+println(double_it("four"));

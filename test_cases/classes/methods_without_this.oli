@@ -1,0 +1,16 @@
+#pullf io
+
+class MathBox
+{
+    make int add(int a, int b)
+    {
+        return a + b;
+    }
+    make int multiply(int a, int b)
+    {
+        return a * b;
+    }
+}
+make MathBox m = MathBox();
+println(m.add(5, 3));
+println(m.multiply(4, 6));

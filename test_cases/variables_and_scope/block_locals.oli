@@ -1,0 +1,9 @@
+#pullf io
+
+{
+    make int x = 5;
+    make string label = "inside";
+    println(x);
+    println(label);
+}
+println("outside");

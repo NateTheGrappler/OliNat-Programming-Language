@@ -1,0 +1,6 @@
+#pullf io
+
+make int answer()
+{
+    return "forty two";
+}

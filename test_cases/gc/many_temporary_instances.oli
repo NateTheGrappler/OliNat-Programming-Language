@@ -1,0 +1,17 @@
+#pullf io
+
+class Node
+{
+    make int value = 0;
+    make empty Node(int v)
+    {
+        this.value = v;
+    }
+}
+make int total = 0;
+for (make int i = 0; i < 50000; i++)
+{
+    make Node n = Node(i);
+    total += n.value;
+}
+println(total);

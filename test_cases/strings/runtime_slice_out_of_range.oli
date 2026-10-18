@@ -1,0 +1,5 @@
+#pullf Strings
+#pullf io
+
+println("before");
+println(strSlice("oli", 0, 10));

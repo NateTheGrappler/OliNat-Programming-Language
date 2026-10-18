@@ -1,0 +1,6 @@
+#pullf io
+
+println("before");
+make int zero = 0;
+println(10 / zero);
+println("BUG: execution continued after dividing by zero");

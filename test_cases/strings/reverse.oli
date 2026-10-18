@@ -1,0 +1,6 @@
+#pullf Strings
+#pullf io
+
+println(strReverse("abc"));
+println(strReverse("racecar"));
+println(strReverse(""));

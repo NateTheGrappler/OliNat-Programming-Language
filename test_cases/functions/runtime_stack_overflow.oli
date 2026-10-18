@@ -1,0 +1,9 @@
+#pullf io
+
+// Infinite recursion must end in a clean error, not a segfault
+make int forever(int n)
+{
+    return forever(n + 1);
+}
+println("start");
+forever(0);

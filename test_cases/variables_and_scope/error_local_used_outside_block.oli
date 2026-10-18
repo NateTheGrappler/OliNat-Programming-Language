@@ -1,0 +1,6 @@
+#pullf io
+
+{
+    make int inner = 5;
+}
+println(inner);

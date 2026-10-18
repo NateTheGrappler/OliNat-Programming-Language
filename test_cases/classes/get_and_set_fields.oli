@@ -1,0 +1,14 @@
+#pullf io
+
+class Point
+{
+    make int x = 0;
+    make int y = 0;
+}
+make Point p = Point();
+p.x = 3;
+p.y = p.x + 4;
+println(p.x);
+println(p.y);
+p.x += 10;
+println(p.x);

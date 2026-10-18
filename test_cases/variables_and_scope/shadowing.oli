@@ -1,0 +1,13 @@
+#pullf io
+
+make int x = 1;
+{
+    make int x = 2;
+    println(x);
+    {
+        make int x = 3;
+        println(x);
+    }
+    println(x);
+}
+println(x);

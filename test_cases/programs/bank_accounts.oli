@@ -1,0 +1,58 @@
+#pullf stdlib
+
+class Account
+{
+    make string owner = "";
+    make int balance = 0;
+
+    make empty Account(string name, int start)
+    {
+        this.owner = name;
+        this.balance = start;
+    }
+    make empty deposit(int amount)
+    {
+        this.balance += amount;
+    }
+    make bool withdraw(int amount)
+    {
+        if (amount > this.balance)
+        {
+            return false;
+        }
+        this.balance -= amount;
+        return true;
+    }
+    make string summary()
+    {
+        return this.owner + ": " + intToStr(this.balance);
+    }
+}
+
+class Savings -> Account
+{
+    make int ratePercent = 10;
+
+    make empty Savings(string name, int start)
+    {
+        this.owner = name;
+        this.balance = start;
+    }
+    make empty addInterest()
+    {
+        this.balance += this.balance * this.ratePercent / 100;
+    }
+}
+
+make Account a = Account("Oli", 100);
+a.deposit(50);
+println(a.withdraw(500));
+println(a.withdraw(30));
+println(a.summary());
+
+make Savings s = Savings("Nat", 1000);
+s.addInterest();
+println(s.summary());
+s.withdraw(100);
+s.addInterest();
+println(s.summary());

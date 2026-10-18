@@ -1,0 +1,17 @@
+#pullf stdlib
+
+make bool isVowel(string c)
+{
+    return c == "a" or c == "e" or c == "i" or c == "o" or c == "u";
+}
+
+make string text = "oli nat programming language";
+make int vowels = 0;
+for (make int i = 0; i < strLength(text); i++)
+{
+    if (isVowel(strSlice(text, i, i + 1)))
+    {
+        vowels++;
+    }
+}
+println("vowels: " + intToStr(vowels));

@@ -1,0 +1,12 @@
+#pullf io
+
+make int outer()
+{
+    make int x = 7;
+    make int inner()
+    {
+        return x;
+    }
+    return inner();
+}
+println(outer());

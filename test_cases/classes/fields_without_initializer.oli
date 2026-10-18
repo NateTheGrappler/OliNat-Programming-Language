@@ -1,0 +1,13 @@
+#pullf io
+
+// Fields with no '=' get a zero value for their type
+class Blank
+{
+    make int count;
+    make bool flag;
+    make double ratio;
+}
+make Blank b = Blank();
+println(b.count);
+println(b.flag);
+println(b.ratio);

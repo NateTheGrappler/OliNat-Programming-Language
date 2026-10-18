@@ -1,0 +1,19 @@
+#pullf stdlib
+
+make int run()
+{
+    make string tag = "kept";
+    make int count = 0;
+    make empty churn()
+    {
+        for (make int i = 0; i < 20000; i++)
+        {
+            make string junk = tag + intToStr(i);
+            count++;
+        }
+    }
+    churn();
+    println(tag);
+    return count;
+}
+println(run());

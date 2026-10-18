@@ -1,0 +1,7 @@
+#pullf io
+
+make int volume(int width, int height, int depth)
+{
+    return width * height * depth;
+}
+println(volume(2, 3, 4));

@@ -1,0 +1,7 @@
+#pullf math
+#pullf io
+
+// floor rounds DOWN (toward negative infinity), not toward zero
+println(floor(-2.5));
+println(ceil(-2.5));
+println(floor(-3));

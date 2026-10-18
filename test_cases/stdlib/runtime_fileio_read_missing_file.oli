@@ -1,0 +1,4 @@
+#pullf stdlib
+
+println("before");
+println(readFile("this_file_does_not_exist.tmp"));

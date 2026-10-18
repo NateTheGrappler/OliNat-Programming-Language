@@ -17,6 +17,9 @@ jobs:
           cd cmake-build
           cmake ..
           make
+      #run the tests only on the ubuntu version for now, have the script accept windows conventions later
+      - name: Run test suite
+        run: python3 tools/bin/run_tests.py
 
   build-windows:
     runs-on: windows-latest
@@ -35,3 +38,7 @@ jobs:
           cd cmake-build
           cmake .. -G "MinGW Makefiles"
           mingw32-make
+          execute-script:
+
+
+

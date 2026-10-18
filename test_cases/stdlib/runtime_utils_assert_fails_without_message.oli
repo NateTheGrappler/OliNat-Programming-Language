@@ -1,0 +1,6 @@
+#pullf utils
+#pullf io
+
+println("before");
+assert(false);
+println("BUG: execution continued after a failed assert");

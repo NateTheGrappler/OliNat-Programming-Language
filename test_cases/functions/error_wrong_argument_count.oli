@@ -1,0 +1,7 @@
+#pullf io
+
+make int square(int n)
+{
+    return n * n;
+}
+println(square(2, 3));

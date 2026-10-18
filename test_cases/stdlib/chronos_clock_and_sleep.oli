@@ -1,0 +1,15 @@
+#pullf stdlib
+
+// Times change every run, so test properties rather than exact values
+make double start = clock();
+make int busy = 0;
+for (make int i = 0; i < 100000; i++)
+{
+    busy++;
+}
+println(clock() >= start);
+sleep(10);
+println("woke up");
+println(time() > 0.0);
+println(strLength(timeString()) == 8);
+println(strLength(dateString()) == 10);

@@ -1,0 +1,6 @@
+#pullf io
+
+// A full-line comment
+println("first"); // a comment at the end of a line
+// println("this line is commented out and must not run");
+println("http://olinat.net"); // '//' inside a string is not a comment

@@ -1,0 +1,14 @@
+#pullf io
+
+class Box
+{
+    make int width = 10;
+    make int height = 20;
+    make empty Box(int newWidth)
+    {
+        this.width = newWidth;
+    }
+}
+make Box b = Box(99);
+println(b.width);
+println(b.height);

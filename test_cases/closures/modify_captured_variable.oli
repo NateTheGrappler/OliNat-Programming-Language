@@ -1,0 +1,14 @@
+#pullf io
+
+// The inner function writes to the outer variable, and the outer function sees it
+make int outer()
+{
+    make int x = 1;
+    make empty setToTen()
+    {
+        x = 10;
+    }
+    setToTen();
+    return x;
+}
+println(outer());

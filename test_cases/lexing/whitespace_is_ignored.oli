@@ -1,0 +1,9 @@
+#pullf io
+
+make   int	spaced
+   =
+ 5	;
+
+
+
+println(  spaced  *  2  )  ;

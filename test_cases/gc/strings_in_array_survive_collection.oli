@@ -1,0 +1,11 @@
+#pullf stdlib
+
+make string[] kept = ["alpha", "beta", "gamma"];
+kept[0] = "al" + "pha" + intToStr(2);
+for (make int i = 0; i < 50000; i++)
+{
+    make string junk = "junk" + intToStr(i);
+}
+println(kept[0]);
+println(kept[1]);
+println(kept[2]);

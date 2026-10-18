@@ -1,0 +1,14 @@
+#pullf stdlib
+
+// Creates a temp file in the current directory and always cleans it up
+make string path = "oli_nat_fileio_test.tmp";
+
+writeFile(path, "hello");
+println(readFile(path));
+appendFile(path, " world");
+println(readFile(path));
+writeFile(path, "replaced");
+println(readFile(path));
+println(fileExists(path));
+deleteFile(path);
+println(fileExists(path));

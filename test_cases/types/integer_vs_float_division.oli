@@ -1,0 +1,7 @@
+#pullf io
+
+println(7 / 2);
+println(-7 / 2);
+println(7.0 / 2);
+println(7 / 2.0);
+println(1.0f / 4);

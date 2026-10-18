@@ -1,0 +1,6 @@
+#pullf io
+
+while ("yes")
+{
+    println("BUG");
+}

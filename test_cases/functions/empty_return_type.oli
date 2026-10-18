@@ -1,0 +1,8 @@
+#pullf io
+
+make empty greet(string name)
+{
+    println("hello " + name);
+}
+greet("oli");
+greet("nat");

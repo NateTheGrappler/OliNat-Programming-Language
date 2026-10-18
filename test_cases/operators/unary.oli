@@ -1,0 +1,9 @@
+#pullf io
+
+println(-5);
+println(-(-4));
+println(!true);
+println(!!true);
+println(!(1 > 2));
+make int x = 9;
+println(-x);

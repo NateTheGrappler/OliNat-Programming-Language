@@ -1,0 +1,13 @@
+#pullf io
+
+// Only returns on one path: the other path must be caught
+make int positiveOnly(int x)
+{
+    if (x > 0)
+    {
+        return 1;
+    }
+}
+println(positiveOnly(5));
+println(positiveOnly(-5));
+println("BUG: execution continued");

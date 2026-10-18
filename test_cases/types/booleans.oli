@@ -1,0 +1,8 @@
+#pullf io
+
+println(true);
+println(false);
+println(1 < 2);
+println(!(1 < 2));
+make bool flag = 3 == 3;
+println(flag);

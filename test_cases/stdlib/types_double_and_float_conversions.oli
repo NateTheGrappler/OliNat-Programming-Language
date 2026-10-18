@@ -1,0 +1,11 @@
+#pullf types
+#pullf io
+
+// Converting to int truncates toward zero
+println(doubleToInt(3.9));
+println(doubleToInt(-3.9));
+println(doubleToStr(2.5));
+println(doubleToFloat(0.25));
+println(floatToInt(2.9f));
+println(floatToStr(1.5f));
+println(floatToDouble(0.5f));

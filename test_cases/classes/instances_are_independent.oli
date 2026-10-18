@@ -1,0 +1,17 @@
+#pullf io
+
+class Counter
+{
+    make int count = 0;
+    make empty bump()
+    {
+        this.count++;
+    }
+}
+make Counter a = Counter();
+make Counter b = Counter();
+a.bump();
+a.bump();
+b.bump();
+println(a.count);
+println(b.count);

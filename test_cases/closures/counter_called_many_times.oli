@@ -1,0 +1,16 @@
+#pullf io
+
+make int countTo(int limit)
+{
+    make int count = 0;
+    make empty step()
+    {
+        count++;
+    }
+    for (make int i = 0; i < limit; i++)
+    {
+        step();
+    }
+    return count;
+}
+println(countTo(1000));

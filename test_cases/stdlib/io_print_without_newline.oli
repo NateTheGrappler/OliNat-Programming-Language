@@ -1,0 +1,8 @@
+#pullf io
+
+print("a");
+print("b");
+println("c");
+print(1);
+print(true);
+println(2.5);

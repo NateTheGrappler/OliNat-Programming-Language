@@ -1,0 +1,14 @@
+#pullf io
+
+// Arrays are heap objects, so a function changing one changes the caller's array
+make empty zeroFirst(int[] values)
+{
+    values[0] = 0;
+}
+make int[] nums = [5, 6, 7];
+zeroFirst(nums);
+println(nums[0]);
+
+make int[] alias = nums;
+alias[1] = 99;
+println(nums[1]);

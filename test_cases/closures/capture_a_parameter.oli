@@ -1,0 +1,12 @@
+#pullf io
+
+make int adder(int base)
+{
+    make int add(int n)
+    {
+        return base + n;
+    }
+    return add(5);
+}
+println(adder(10));
+println(adder(-5));

@@ -1,0 +1,19 @@
+#pullf io
+
+class Base
+{
+    make int score = 100;
+}
+class Mid -> Base
+{
+    make int bonus = 50;
+}
+class Leaf -> Mid
+{
+    make int penalty = 10;
+}
+make Leaf l = Leaf();
+println(l.score);
+println(l.bonus);
+println(l.penalty);
+println(l.score + l.bonus - l.penalty);

@@ -1,0 +1,27 @@
+#pullf io
+
+// Oli-Nat has no % operator, so remainder is built from integer division
+make int mod(int a, int b)
+{
+    return a - (a / b) * b;
+}
+
+for (make int i = 1; i <= 15; i++)
+{
+    if (mod(i, 15) == 0)
+    {
+        println("FizzBuzz");
+    }
+    else if (mod(i, 3) == 0)
+    {
+        println("Fizz");
+    }
+    else if (mod(i, 5) == 0)
+    {
+        println("Buzz");
+    }
+    else
+    {
+        println(i);
+    }
+}

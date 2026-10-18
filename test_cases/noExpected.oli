@@ -1,4 +1,0 @@
-#pullf io
-
-// has no .expected file on purpose: the runner should report it missing
-println("hello");

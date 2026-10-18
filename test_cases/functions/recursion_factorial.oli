@@ -1,0 +1,13 @@
+#pullf io
+
+make int factorial(int n)
+{
+    if (n <= 1)
+    {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+println(factorial(1));
+println(factorial(5));
+println(factorial(10));

@@ -1,0 +1,13 @@
+#pullf io
+
+make int i = 7;
+make float f = 1.5f;
+make double d = 2.25;
+make bool t = true;
+make string s = "oli";
+
+println(i);
+println(f);
+println(d);
+println(t);
+println(s);

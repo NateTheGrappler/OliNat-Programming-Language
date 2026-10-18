@@ -1,0 +1,36 @@
+#pullf stdlib
+
+make empty bubbleSort(int[] values)
+{
+    make int n = length(values);
+    for (make int i = 0; i < n - 1; i++)
+    {
+        for (make int j = 0; j < n - 1 - i; j++)
+        {
+            if (values[j] > values[j + 1])
+            {
+                make int tmp = values[j];
+                values[j] = values[j + 1];
+                values[j + 1] = tmp;
+            }
+        }
+    }
+}
+
+make string join(int[] values)
+{
+    make string out = "";
+    for (make int i = 0; i < length(values); i++)
+    {
+        if (i > 0)
+        {
+            out = out + " ";
+        }
+        out = out + intToStr(values[i]);
+    }
+    return out;
+}
+
+make int[] nums = [5, 3, 8, 1, 9, 2];
+bubbleSort(nums);
+println(join(nums));

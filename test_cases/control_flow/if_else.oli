@@ -1,0 +1,18 @@
+#pullf io
+
+if (true)
+{
+    println("if ran");
+}
+if (false)
+{
+    println("BUG: false branch ran");
+}
+if (1 > 2)
+{
+    println("BUG: wrong branch");
+}
+else
+{
+    println("else ran");
+}

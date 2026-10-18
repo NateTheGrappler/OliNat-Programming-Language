@@ -1,0 +1,11 @@
+#pullf random
+#pullf io
+
+// Exact random values differ between C libraries, so compare runs instead of printing them
+seed(42);
+make int a = randint(1, 100);
+make int b = randint(1, 100);
+seed(42);
+make int c = randint(1, 100);
+make int d = randint(1, 100);
+println(a == c and b == d);

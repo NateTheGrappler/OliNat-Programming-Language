@@ -1,0 +1,22 @@
+#pullf io
+
+// Overriding in a subclass must not change the parent's own behavior
+class Base
+{
+    make int value = 1;
+    make int get()
+    {
+        return this.value;
+    }
+}
+class Child -> Base
+{
+    make int get()
+    {
+        return this.value * 100;
+    }
+}
+make Child c = Child();
+make Base b = Base();
+println(c.get());
+println(b.get());

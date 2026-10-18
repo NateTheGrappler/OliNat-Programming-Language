@@ -1,0 +1,21 @@
+#pullf io
+
+class Pet
+{
+    make string name = "";
+    make int age = 0;
+}
+class Dog -> Pet
+{
+    make string breed = "unknown";
+    make empty Dog(string n, int a, string b)
+    {
+        this.name = n;
+        this.age = a;
+        this.breed = b;
+    }
+}
+make Dog d = Dog("Rex", 4, "shepherd");
+println(d.name);
+println(d.age);
+println(d.breed);

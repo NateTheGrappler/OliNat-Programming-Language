@@ -1,0 +1,14 @@
+#pullf io
+
+make int fib(int n)
+{
+    if (n < 2)
+    {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+println(fib(0));
+println(fib(1));
+println(fib(10));
+println(fib(20));

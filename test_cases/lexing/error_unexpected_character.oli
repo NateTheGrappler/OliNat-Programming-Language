@@ -1,0 +1,4 @@
+#pullf io
+
+make int x = 5 @ 3;
+println(x);

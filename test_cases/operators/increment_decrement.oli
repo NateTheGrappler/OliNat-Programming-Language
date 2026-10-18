@@ -1,0 +1,15 @@
+#pullf io
+
+make int i = 5;
+i++;
+println(i);
+i--;
+i--;
+println(i);
+
+make int total = 0;
+for (make int n = 0; n < 4; n++)
+{
+    total++;
+}
+println(total);

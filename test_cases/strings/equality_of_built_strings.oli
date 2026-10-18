@@ -1,0 +1,9 @@
+#pullf Strings
+#pullf io
+
+// Strings built different ways must still compare equal (string interning)
+make string literal = "ab";
+make string built = "a" + "b";
+println(literal == built);
+println(strReverse("ba") == literal);
+println(built != "abc");

@@ -1,0 +1,12 @@
+#pullf io
+
+while (false)
+{
+    println("BUG: loop body ran");
+}
+make int n = 10;
+while (n < 0)
+{
+    println("BUG: loop body ran");
+}
+println("done");

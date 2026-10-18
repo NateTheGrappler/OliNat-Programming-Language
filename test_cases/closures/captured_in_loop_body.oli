@@ -1,0 +1,16 @@
+#pullf io
+
+// Every iteration has its own 'snapshot', so each closure sees its own value
+make empty run()
+{
+    for (make int i = 0; i < 3; i++)
+    {
+        make int snapshot = i * 10;
+        make int read()
+        {
+            return snapshot;
+        }
+        println(read());
+    }
+}
+run();

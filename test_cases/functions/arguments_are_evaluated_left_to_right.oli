@@ -1,0 +1,12 @@
+#pullf io
+
+make int note(int n)
+{
+    println(n);
+    return n;
+}
+make int sum3(int a, int b, int c)
+{
+    return a + b + c;
+}
+println(sum3(note(1), note(2), note(3)));

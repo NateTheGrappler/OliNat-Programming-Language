@@ -1,0 +1,5 @@
+#pullf io
+
+make int[] nums = [1, 2, 3];
+println("before");
+nums[10] = 5;

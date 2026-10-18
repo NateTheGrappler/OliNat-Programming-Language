@@ -1,0 +1,15 @@
+#pullf io
+
+class Engine
+{
+    make int horsepower = 300;
+}
+class Car
+{
+    make Engine engine = Engine();
+    make string model = "roadster";
+}
+make Car c = Car();
+println(c.engine.horsepower);
+c.engine.horsepower = 450;
+println(c.engine.horsepower);

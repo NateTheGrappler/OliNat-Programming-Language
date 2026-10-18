@@ -1,0 +1,11 @@
+#pullf io
+
+class Alone
+{
+    make empty greet()
+    {
+        pullf.greet();
+    }
+}
+make Alone a = Alone();
+a.greet();

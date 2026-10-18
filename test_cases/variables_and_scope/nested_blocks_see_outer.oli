@@ -1,0 +1,18 @@
+#pullf io
+
+{
+    make int a = 1;
+    {
+        make int b = a + 1;
+        {
+            make int c = b + 1;
+            {
+                make int d = c + 1;
+                {
+                    make int e = d + 1;
+                    println(a + b + c + d + e);
+                }
+            }
+        }
+    }
+}

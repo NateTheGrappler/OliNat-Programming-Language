@@ -1,0 +1,8 @@
+#pullf stdlib
+
+make string s = "";
+for (make int i = 0; i < 3000; i++)
+{
+    s = s + "x";
+}
+println(strLength(s));

@@ -1,0 +1,24 @@
+#pullf io
+
+class Counter
+{
+    make int count = 0;
+    make empty increment(int amount)
+    {
+        this.count += amount;
+    }
+    make empty reset()
+    {
+        this.count = 0;
+    }
+    make int get()
+    {
+        return this.count;
+    }
+}
+make Counter c = Counter();
+c.increment(5);
+c.increment(3);
+println(c.get());
+c.reset();
+println(c.count);

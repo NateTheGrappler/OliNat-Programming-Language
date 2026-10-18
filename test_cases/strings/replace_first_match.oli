@@ -1,0 +1,5 @@
+#pullf Strings
+#pullf io
+
+println(strReplace("hello world", "world", "oli"));
+println(strReplace("aaa", "a", "b"));

@@ -1,0 +1,27 @@
+#pullf io
+
+make int mod(int a, int b)
+{
+    return a - (a / b) * b;
+}
+make int collatzSteps(int start)
+{
+    make int n = start;
+    make int steps = 0;
+    while (n != 1)
+    {
+        if (mod(n, 2) == 0)
+        {
+            n = n / 2;
+        }
+        else
+        {
+            n = 3 * n + 1;
+        }
+        steps++;
+    }
+    return steps;
+}
+println(collatzSteps(1));
+println(collatzSteps(6));
+println(collatzSteps(27));

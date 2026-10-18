@@ -1,0 +1,9 @@
+#pullf stdlib
+
+make int[] scores = [10, 20, 30, 40];
+make int total = 0;
+for (make int i = 0; i < length(scores); i++)
+{
+    total += scores[i];
+}
+println(total);

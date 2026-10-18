@@ -1,0 +1,16 @@
+#pullf io
+
+// Identifiers that START with a keyword must not be scanned as that keyword
+make int makeup = 1;
+make int iffy = 2;
+make int formula = 3;
+make int classy = 4;
+make int returned = 5;
+make int android = 6;
+make int order = 7;
+make int integer = 8;
+make int thisOne = 9;
+make bool trueish = false;
+
+println(makeup + iffy + formula + classy + returned + android + order + integer + thisOne);
+println(trueish);

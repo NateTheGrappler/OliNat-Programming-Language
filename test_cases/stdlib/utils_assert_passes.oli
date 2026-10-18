@@ -1,0 +1,7 @@
+#pullf utils
+#pullf io
+
+make string[] queue = ["a", "b"];
+assert(length(queue) == 2);
+assert(length(queue) != 3, "queue should not have shrunk");
+println("all asserts passed");

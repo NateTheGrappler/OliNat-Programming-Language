@@ -1,0 +1,30 @@
+#pullf stdlib
+
+make int binarySearch(int[] sorted, int target)
+{
+    make int low = 0;
+    make int high = length(sorted) - 1;
+    while (low <= high)
+    {
+        make int mid = (low + high) / 2;
+        if (sorted[mid] == target)
+        {
+            return mid;
+        }
+        if (sorted[mid] < target)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid - 1;
+        }
+    }
+    return -1;
+}
+
+make int[] data = [1, 3, 5, 7, 9, 11, 13, 15];
+println(binarySearch(data, 11));
+println(binarySearch(data, 1));
+println(binarySearch(data, 15));
+println(binarySearch(data, 4));

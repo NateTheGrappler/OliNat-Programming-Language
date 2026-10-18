@@ -1,0 +1,4 @@
+#pullf io
+
+make string name = "oli";
+name = 42;

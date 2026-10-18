@@ -1,0 +1,26 @@
+#pullf io
+
+class Animal
+{
+    make string speak()
+    {
+        return "...";
+    }
+}
+class Cat -> Animal
+{
+    make string speak()
+    {
+        return "Meow";
+    }
+}
+class Fish -> Animal
+{
+    make int fins = 2;
+}
+make Animal a = Animal();
+make Cat c = Cat();
+make Fish f = Fish();
+println(a.speak());
+println(c.speak());
+println(f.speak());

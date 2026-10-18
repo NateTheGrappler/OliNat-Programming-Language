@@ -1,0 +1,7 @@
+#pullf types
+#pullf io
+
+println(intToStr(42) + "!");
+println(intToStr(-7));
+println(intToDouble(3));
+println(intToFloat(3));

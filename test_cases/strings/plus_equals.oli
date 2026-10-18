@@ -1,0 +1,5 @@
+#pullf io
+
+make string s = "oli";
+s += "-nat";
+println(s);

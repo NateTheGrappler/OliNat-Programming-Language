@@ -1,0 +1,10 @@
+#pullf types
+#pullf io
+
+println(strToInt("123") + 1);
+println(strToInt("-45"));
+println(strToDouble("2.5"));
+println(strToFloat("1.25"));
+println(strToBool("true"));
+println(strToBool("false"));
+println(boolToStr(false) + "!");

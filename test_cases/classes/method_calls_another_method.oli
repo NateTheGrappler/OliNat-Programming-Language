@@ -1,0 +1,17 @@
+#pullf io
+
+class Rectangle
+{
+    make int width = 3;
+    make int height = 4;
+    make int area()
+    {
+        return this.width * this.height;
+    }
+    make int doubledArea()
+    {
+        return this.area() * 2;
+    }
+}
+make Rectangle r = Rectangle();
+println(r.doubledArea());

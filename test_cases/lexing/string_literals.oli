@@ -1,0 +1,9 @@
+#pullf io
+
+// Empty strings, whitespace inside strings, and escape sequences
+println("");
+println("hello world");
+println("  padded  ");
+println("tab\there");
+println("line one\nline two");
+println("back\\slash");

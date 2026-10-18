@@ -1,0 +1,19 @@
+#pullf stdlib
+
+make int[] buildRow(int a, int b)
+{
+    return [a, b, a + b];
+}
+make int sumAll(int[] values)
+{
+    make int total = 0;
+    for (make int i = 0; i < length(values); i++)
+    {
+        total += values[i];
+    }
+    return total;
+}
+make int[] row = buildRow(2, 3);
+println(row[2]);
+println(sumAll(row));
+println(sumAll(buildRow(10, 20)));

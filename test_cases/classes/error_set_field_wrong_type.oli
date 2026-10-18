@@ -1,0 +1,8 @@
+#pullf io
+
+class Player
+{
+    make int health = 100;
+}
+make Player p = Player();
+p.health = "lots";

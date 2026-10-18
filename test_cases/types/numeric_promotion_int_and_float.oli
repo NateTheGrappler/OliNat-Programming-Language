@@ -1,0 +1,6 @@
+#pullf io
+
+// int combined with float promotes to float
+println(1 + 2.5f);
+println(2.5f * 2);
+println(3 - 0.5f);

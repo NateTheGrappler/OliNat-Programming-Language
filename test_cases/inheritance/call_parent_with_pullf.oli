@@ -1,0 +1,20 @@
+#pullf io
+
+class Recorder
+{
+    make string header = "-- log --";
+    make empty write(string message)
+    {
+        println(this.header);
+    }
+}
+class TimestampedRecorder -> Recorder
+{
+    make empty write(string message)
+    {
+        pullf.write(message);
+        println(message);
+    }
+}
+make TimestampedRecorder r = TimestampedRecorder();
+r.write("saved");

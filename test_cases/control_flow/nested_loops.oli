@@ -1,0 +1,16 @@
+#pullf stdlib
+
+// Prints a 3x3 multiplication table
+for (make int i = 1; i <= 3; i++)
+{
+    make string row = "";
+    for (make int j = 1; j <= 3; j++)
+    {
+        if (j > 1)
+        {
+            row = row + " ";
+        }
+        row = row + intToStr(i * j);
+    }
+    println(row);
+}

@@ -1,0 +1,6 @@
+#pullf io
+
+for (make int i = 5; i > 0; i--)
+{
+    println(i);
+}

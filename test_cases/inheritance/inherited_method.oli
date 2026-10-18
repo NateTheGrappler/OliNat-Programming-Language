@@ -1,0 +1,17 @@
+#pullf io
+
+class Animal
+{
+    make string name = "animal";
+    make string describe()
+    {
+        return "I am " + this.name;
+    }
+}
+class Dog -> Animal
+{
+    make int legs = 4;
+}
+make Dog d = Dog();
+d.name = "Rex";
+println(d.describe());

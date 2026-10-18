@@ -1,0 +1,6 @@
+#pullf stdlib
+
+make string path = "oli_nat_multiline_test.tmp";
+writeFile(path, "first\nsecond");
+println(readFile(path));
+deleteFile(path);

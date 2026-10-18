@@ -1,0 +1,11 @@
+#pullf io
+
+println(1 == 1);
+println(1 == 2);
+println(1 != 2);
+println(2.5 == 2.5);
+println(true == true);
+println(true != false);
+println("oli" == "oli");
+println("oli" == "nat");
+println("oli" != "nat");

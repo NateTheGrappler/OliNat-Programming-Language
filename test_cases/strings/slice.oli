@@ -1,0 +1,6 @@
+#pullf Strings
+#pullf io
+
+println(strSlice("olinat", 0, 3));
+println(strSlice("olinat", 3, 6));
+println(strSlice("olinat", 2, 2));

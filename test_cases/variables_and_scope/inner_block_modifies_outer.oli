@@ -1,0 +1,10 @@
+#pullf io
+
+make int total = 0;
+{
+    total = total + 10;
+    {
+        total = total + 5;
+    }
+}
+println(total);

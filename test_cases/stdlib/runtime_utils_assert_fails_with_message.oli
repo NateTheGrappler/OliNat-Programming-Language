@@ -1,0 +1,6 @@
+#pullf utils
+#pullf io
+
+println("before");
+assert(1 == 2, "one is not two");
+println("BUG: execution continued after a failed assert");

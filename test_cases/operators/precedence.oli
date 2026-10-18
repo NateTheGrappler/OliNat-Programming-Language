@@ -1,0 +1,12 @@
+#pullf io
+
+println(2 + 3 * 4);
+println((2 + 3) * 4);
+println(10 - 4 - 3);
+println(100 / 10 / 5);
+println(2 * 3 + 4 * 5);
+println(-2 * 3);
+println(-(2 + 3));
+println(1 + 2 == 3);
+println(1 < 2 and 3 < 4);
+println(false and true or true);

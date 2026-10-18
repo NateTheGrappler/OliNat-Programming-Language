@@ -1,0 +1,20 @@
+#pullf io
+
+// innermost reaches two levels up to change x
+make int outer()
+{
+    make int x = 7;
+    make int middle()
+    {
+        make int y = 100;
+        make int innermost()
+        {
+            x = 10;
+            return x + y;
+        }
+        return innermost();
+    }
+    make int fromMiddle = middle();
+    return fromMiddle + x;
+}
+println(outer());

@@ -1,0 +1,7 @@
+#pullf io
+
+make int answer()
+{
+    return 42;
+}
+println(answer());

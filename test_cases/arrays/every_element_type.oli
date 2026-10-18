@@ -1,0 +1,13 @@
+#pullf io
+
+make int[] ints = [1, 2, 3];
+make float[] floats = [1.5f, 2.5f];
+make double[] doubles = [0.25, 0.5];
+make bool[] bools = [true, false];
+make string[] strings = ["oli", "nat"];
+
+println(ints[2]);
+println(floats[1]);
+println(doubles[0]);
+println(bools[1]);
+println(strings[0]);

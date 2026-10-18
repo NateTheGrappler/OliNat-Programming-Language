@@ -1,0 +1,7 @@
+#pullf io
+
+for (make int i = 10; i < 5; i++)
+{
+    println("BUG: loop body ran");
+}
+println("done");

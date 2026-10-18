@@ -1,0 +1,9 @@
+#pullf stdlib
+
+// Creates 100k strings; nearly all become garbage immediately
+make string last = "";
+for (make int i = 0; i < 100000; i++)
+{
+    last = "item" + intToStr(i);
+}
+println(last);

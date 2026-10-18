@@ -1,0 +1,13 @@
+#pullf io
+
+// The right-hand side must only run when it can change the result.
+make bool sideEffect(string label)
+{
+    println(label);
+    return true;
+}
+
+println(false and sideEffect("BUG: 'and' did not short circuit"));
+println(true or sideEffect("BUG: 'or' did not short circuit"));
+println(true and sideEffect("and evaluated right side"));
+println(false or sideEffect("or evaluated right side"));

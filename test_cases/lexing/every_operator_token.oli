@@ -1,0 +1,35 @@
+#pullf io
+
+// Touches every operator the scanner knows about at least once
+make int a = 10;
+make int b = 3;
+
+println(a + b);
+println(a - b);
+println(a * b);
+println(a / b);
+println(a == b);
+println(a != b);
+println(a > b);
+println(a >= 10);
+println(a < b);
+println(a <= 10);
+println(!true);
+println(-a);
+println(true and false);
+println(true or false);
+println(true && true);
+println(false || true);
+
+a += 1;
+println(a);
+a -= 2;
+println(a);
+a *= 2;
+println(a);
+a /= 3;
+println(a);
+a++;
+println(a);
+a--;
+println(a);

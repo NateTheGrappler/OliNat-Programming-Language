@@ -1,0 +1,19 @@
+#pullf io
+
+class Node
+{
+    make int value = 0;
+    make string label = "";
+    make empty Node(int v, string l)
+    {
+        this.value = v;
+        this.label = l;
+    }
+}
+make Node keeper = Node(7, "keeper");
+for (make int i = 0; i < 50000; i++)
+{
+    make Node junk = Node(i, "junk");
+}
+println(keeper.value);
+println(keeper.label);

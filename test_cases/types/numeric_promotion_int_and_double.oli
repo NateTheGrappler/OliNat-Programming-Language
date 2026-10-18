@@ -1,0 +1,7 @@
+#pullf io
+
+// int combined with double promotes to double
+println(1 + 2.5);
+println(2.5 + 1);
+println(1.5 * 2);
+println(10 - 0.5);

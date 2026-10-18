@@ -1,0 +1,12 @@
+#pullf io
+
+// The VM allows 64 call frames, so 50 levels of recursion must work
+make int depth(int n)
+{
+    if (n == 0)
+    {
+        return 0;
+    }
+    return 1 + depth(n - 1);
+}
+println(depth(50));

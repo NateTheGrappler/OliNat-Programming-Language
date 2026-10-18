@@ -1,0 +1,4 @@
+#pullf io
+
+make int notAFunction = 5;
+notAFunction();

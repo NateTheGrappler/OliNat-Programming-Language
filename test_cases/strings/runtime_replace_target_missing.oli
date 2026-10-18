@@ -1,0 +1,5 @@
+#pullf Strings
+#pullf io
+
+println("before");
+println(strReplace("hello", "xyz", "oli"));

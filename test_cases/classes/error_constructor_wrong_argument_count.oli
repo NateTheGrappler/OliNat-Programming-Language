@@ -1,0 +1,11 @@
+#pullf io
+
+class Point
+{
+    make int x = 0;
+    make empty Point(int newX)
+    {
+        this.x = newX;
+    }
+}
+make Point p = Point(1, 2, 3);

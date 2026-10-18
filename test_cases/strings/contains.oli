@@ -1,0 +1,6 @@
+#pullf Strings
+#pullf io
+
+println(strContains("olinat", "nat"));
+println(strContains("olinat", "xyz"));
+println(strContains("olinat", ""));

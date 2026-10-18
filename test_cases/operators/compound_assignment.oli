@@ -1,0 +1,17 @@
+#pullf io
+
+make int x = 10;
+x += 5;
+println(x);
+x -= 3;
+println(x);
+x *= 2;
+println(x);
+x /= 4;
+println(x);
+
+make double d = 1.5;
+d += 1.0;
+println(d);
+d *= 2.0;
+println(d);

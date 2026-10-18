@@ -1,0 +1,20 @@
+#pullf random
+#pullf io
+
+seed(7);
+make bool inRange = true;
+for (make int i = 0; i < 1000; i++)
+{
+    make int roll = randint(1, 6);
+    if (roll < 1 or roll > 6)
+    {
+        inRange = false;
+    }
+    make float r = random();
+    if (r < 0.0f or r > 1.0f)
+    {
+        inRange = false;
+    }
+}
+println(inRange);
+println(randint(5, 5));

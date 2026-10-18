@@ -1,0 +1,17 @@
+#pullf stdlib
+
+// Each call of tally() gets its own 'hits', so the count starts over
+make int tally()
+{
+    make int hits = 0;
+    make empty bump()
+    {
+        hits++;
+    }
+    bump();
+    bump();
+    return hits;
+}
+make int first = tally();
+make int second = tally();
+println(intToStr(first) + " " + intToStr(second));

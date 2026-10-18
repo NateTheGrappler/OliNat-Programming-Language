@@ -1,0 +1,7 @@
+#pullf stdlib
+
+println(length([1, 2, 3, 4, 5]));
+println(length(["a", "b", "c"]));
+println(length([true, false, true, true]));
+println(length([0.5, 1.25]));
+println(length([7]));

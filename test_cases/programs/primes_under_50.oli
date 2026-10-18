@@ -1,0 +1,35 @@
+#pullf stdlib
+
+make int mod(int a, int b)
+{
+    return a - (a / b) * b;
+}
+make bool isPrime(int n)
+{
+    if (n < 2)
+    {
+        return false;
+    }
+    for (make int d = 2; d * d <= n; d++)
+    {
+        if (mod(n, d) == 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+make string out = "";
+for (make int i = 0; i < 50; i++)
+{
+    if (isPrime(i))
+    {
+        if (out != "")
+        {
+            out = out + " ";
+        }
+        out = out + intToStr(i);
+    }
+}
+println(out);
