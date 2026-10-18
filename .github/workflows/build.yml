@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Configure and build
+      - name: Build and Run Tests
         run: |
           mkdir cmake-build
           cd cmake-build
@@ -38,7 +38,6 @@ jobs:
           cd cmake-build
           cmake .. -G "MinGW Makefiles"
           mingw32-make
-          execute-script:
 
 
 
